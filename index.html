@@ -3,184 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>jakebitt | Personal Hub</title>
+    <title>jakebitt | Coming Soon</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg: #0b0f1a;
-            --card-bg: #161e2d;
+            --bg: #0f172a;
             --accent: #38bdf8;
             --text: #f8fafc;
-            --text-dim: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.5);
         }
 
         body {
-            margin: 0; background-color: var(--bg); color: var(--text);
-            font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            margin-bottom: 2rem;
+        }
+
+        /* --- THE STATUS BADGE (YOUR THEME) --- */
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .status-badge:hover { transform: scale(1.05); }
+
+        .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        /* --- PROJECT GRID (MATCHED TO THEME) --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            text-align: left;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+            position: relative;
+        }
+        .card:hover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        /* --- FLOATING ADMIN BAR --- */
+        .admin-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 1.5rem;
+            border-radius: 3rem;
+            border: 1px solid var(--accent);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
 
         .hidden { display: none !important; }
 
-        /* --- SEARCH & NAV --- */
-        .header-section {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 3rem; flex-wrap: wrap; gap: 20px;
-        }
-
-        .search-container {
-            position: relative; display: flex; align-items: center;
-            background: var(--card-bg); border: 1px solid #334155;
-            border-radius: 12px; padding: 0 15px; width: 100%; max-width: 400px;
-        }
-
-        .search-container input {
-            border: none; background: transparent; padding: 12px;
-            color: white; width: 100%; outline: none;
-        }
-
-        /* --- ADMIN PANEL --- */
-        .admin-controls {
-            background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 1.5rem; border-radius: 20px; margin-bottom: 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(10px);
-        }
-
-        /* --- BENTO CARDS --- */
-        #main-content { padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
-
-        .card {
-            background: var(--card-bg); padding: 2rem; border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.03); transition: all 0.3s ease;
-            text-decoration: none; color: inherit; position: relative;
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--card-color);
-            box-shadow: 0 10px 30px -10px var(--card-color);
-        }
-
-        .card-img {
-            width: 100%; height: 160px; object-fit: cover;
-            border-radius: 12px; margin-bottom: 1.5rem; background: #000;
-        }
-
-        .card-icon {
-            width: 42px; height: 42px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05); color: var(--card-color); margin-bottom: 1rem;
-        }
-
-        .delete-btn {
-            position: absolute; top: 1rem; right: 1rem; background: #ef4444;
-            color: white; border: none; border-radius: 6px; padding: 5px; cursor: pointer;
-            z-index: 20; opacity: 0; transition: 0.2s;
-        }
-        .card:hover .delete-btn { opacity: 1; }
-
-        /* --- UTILS --- */
-        .btn {
-            background: var(--accent); color: #000; border: none;
-            padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer;
-        }
-
+        /* --- MODALS --- */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            display: flex; align-items: center; justify-content: center; z-index: 100;
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 200;
         }
-
         .modal-content {
-            background: var(--card-bg); padding: 2rem; border-radius: 20px;
-            width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%; max-width: 400px;
+            border: 1px solid var(--accent);
         }
-
         input, textarea, select {
-            width: 100%; padding: 12px; margin: 8px 0 16px 0;
-            background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white;
+            width: 100%; padding: 10px; margin: 10px 0;
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 8px; color: white; box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <section id="construction-view" class="hidden" style="height:100vh; display:flex; align-items:center; justify-content:center; text-align:center;">
-        <div>
-            <h1 style="font-size:4rem; margin:0;">jakebitt</h1>
-            <p style="color:var(--text-dim);">Building in progress...</p>
-            <button class="btn" onclick="showLogin()" style="background:transparent; color:white; border:1px solid #334155; margin-top:20px;">Admin Login</button>
-        </div>
-    </section>
-
-    <section id="main-content">
-        <div id="admin-bar" class="admin-controls hidden">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <strong>Admin Mode</strong>
-                <label style="font-size:0.8rem;"><input type="checkbox" id="m-toggle" onchange="updateMaintenance(this.checked)"> Maintenance Mode</label>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" onclick="openModal()">+ Add Project</button>
-                <button class="btn" style="background:transparent; color:white;" onclick="signOut()">Logout</button>
+    <div class="container">
+        <div class="logo">jakebitt</div>
+        
+        <div id="construction-view">
+            <p>Building something interesting.</p>
+            <div class="status-badge" onclick="showLogin()">
+                <span class="pulse"></span>
+                Under Construction
             </div>
         </div>
 
-        <div class="header-section">
-            <div>
-                <h1 style="font-size: 3rem; margin:0;">Vault</h1>
-                <p style="color: var(--text-dim);">Projects & Experiments</p>
-            </div>
-            <div class="search-container">
-                <i data-lucide="search" size="18" style="color:var(--text-dim)"></i>
-                <input type="text" id="project-search" placeholder="Search projects..." oninput="filterProjects(this.value)">
-            </div>
-        </div>
-
-        <div class="grid" id="project-grid"></div>
-    </section>
-
-    <div id="p-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 style="margin-top:0;">New Project Card</h2>
-            <input type="text" id="p-title" placeholder="Project Title">
-            <textarea id="p-desc" placeholder="Description"></textarea>
-            <input type="text" id="p-url" placeholder="Project Link (URL)">
-            <input type="text" id="p-img" placeholder="Image URL (Optional)">
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div>
-                    <label>Icon</label>
-                    <select id="p-icon">
-                        <option value="rocket">Rocket</option>
-                        <option value="code">Code</option>
-                        <option value="cpu">Hardware</option>
-                        <option value="printer">3D Print</option>
-                        <option value="gamepad-2">Gaming</option>
-                        <option value="camera">Photo</option>
-                        <option value="music">Music</option>
-                        <option value="globe">Web</option>
-                        <option value="layers">Layers</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Glow Color</label>
-                    <input type="color" id="p-color" value="#38bdf8">
-                </div>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn" onclick="saveProject()" style="flex:2;">Save Project</button>
-                <button class="btn" onclick="closeModal()" style="flex:1; background:transparent; color:white;">Cancel</button>
-            </div>
+        <div id="main-content" class="hidden">
+            <p id="vault-subtitle">A collection of my recent projects.</p>
+            <div class="grid" id="project-grid"></div>
         </div>
     </div>
 
+    <div id="admin-bar" class="admin-bar hidden">
+        <span style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">ADMIN</span>
+        <button class="btn" onclick="openModal()">+ Add Project</button>
+        <button class="btn" style="background:transparent; color:white; border:1px solid #334155;" onclick="signOut()">Sign Out</button>
+    </div>
+
     <div id="login-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="text-align:center;">
-            <h2>Admin Login</h2>
-            <button class="btn" onclick="signIn('apple')" style="width:100%; margin-top:20px;">Sign in with Apple</button>
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Admin Access</h2>
+            <button class="btn" onclick="signIn('apple')" style="width:100%; margin-bottom:10px;">Login with Apple</button>
             <button class="btn" onclick="hideLogin()" style="width:100%; background:transparent; color:white;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="p-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="margin:0;">New Project</h3>
+            <input type="text" id="p-title" placeholder="Title">
+            <textarea id="p-desc" placeholder="Description"></textarea>
+            <input type="text" id="p-url" placeholder="Link URL">
+            <select id="p-icon">
+                <option value="layers">Layers</option>
+                <option value="code">Code</option>
+                <option value="cpu">Hardware</option>
+                <option value="printer">3D Print</option>
+            </select>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" onclick="saveProject()" style="flex:1;">Save</button>
+                <button class="btn" onclick="closeModal()" style="flex:1; background:transparent; color:white;">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -189,7 +213,6 @@
         const SUPABASE_KEY = 'sb_publishable_8wx1wqn0uRWKw1WamOWCbw_aL0lVIjv';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const ADMIN_EMAIL = 'jacobbittner834@icloud.com';
-        let allProjects = [];
 
         function showLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
         function hideLogin() { document.getElementById('login-modal').classList.add('hidden'); }
@@ -199,49 +222,25 @@
         async function signIn(provider) { await _supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } }); }
         async function signOut() { await _supabase.auth.signOut(); window.location.reload(); }
 
-        async function updateMaintenance(val) { await _supabase.from('site_settings').update({ maintenance_mode: val }).eq('id', 1); }
-
-        async function deleteProject(id, e) {
-            e.preventDefault(); e.stopPropagation();
-            if(confirm("Delete this card?")) {
-                await _supabase.from('projects').delete().eq('id', id);
-                loadProjects();
-            }
-        }
-
         async function saveProject() {
             const project = {
                 title: document.getElementById('p-title').value,
                 description: document.getElementById('p-desc').value,
                 link_url: document.getElementById('p-url').value,
-                image_url: document.getElementById('p-img').value,
-                icon_name: document.getElementById('p-icon').value,
-                accent_color: document.getElementById('p-color').value
+                icon_name: document.getElementById('p-icon').value
             };
             const { error } = await _supabase.from('projects').insert([project]);
             if (error) alert(error.message); else { closeModal(); loadProjects(); }
         }
 
-        function filterProjects(term) {
-            const filtered = allProjects.filter(p => p.title.toLowerCase().includes(term.toLowerCase()) || p.description.toLowerCase().includes(term.toLowerCase()));
-            renderGrid(filtered);
-        }
-
         async function loadProjects() {
             const { data } = await _supabase.from('projects').select('*').order('created_at', { ascending: false });
-            allProjects = data || [];
-            renderGrid(allProjects);
-        }
-
-        function renderGrid(list) {
             const grid = document.getElementById('project-grid');
-            grid.innerHTML = list.map(p => `
-                <a href="${p.link_url}" target="_blank" class="card" style="--card-color: ${p.accent_color}">
-                    <button class="delete-btn" onclick="deleteProject('${p.id}', event)">✕</button>
-                    ${p.image_url ? `<img src="${p.image_url}" class="card-img">` : ''}
-                    <div class="card-icon"><i data-lucide="${p.icon_name || 'layers'}"></i></div>
-                    <h3 style="margin:0;">${p.title}</h3>
-                    <p style="margin-top:10px; font-size:0.9rem; color:var(--text-dim); flex-grow:1;">${p.description}</p>
+            grid.innerHTML = (data || []).map(p => `
+                <a href="${p.link_url}" target="_blank" class="card">
+                    <i data-lucide="${p.icon_name || 'layers'}" style="color:var(--accent); margin-bottom:10px;"></i>
+                    <h3 style="margin:0; font-size:1.1rem;">${p.title}</h3>
+                    <p style="font-size:0.9rem; margin:5px 0 0 0; opacity:0.6;">${p.description}</p>
                 </a>
             `).join('');
             lucide.createIcons();
@@ -252,15 +251,12 @@
             const { data: settings } = await _supabase.from('site_settings').select('maintenance_mode').single();
             const is_admin = session?.user?.email === ADMIN_EMAIL;
             
-            if (settings?.maintenance_mode && !session) {
-                document.getElementById('construction-view').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
-            } else {
-                if (is_admin) {
-                    document.getElementById('admin-bar').classList.remove('hidden');
-                    document.getElementById('m-toggle').checked = settings.maintenance_mode;
-                }
+            // If maintenance is OFF, OR you are logged in
+            if (!settings?.maintenance_mode || is_admin) {
+                document.getElementById('construction-view').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
                 loadProjects();
+                if (is_admin) document.getElementById('admin-bar').classList.remove('hidden');
             }
             lucide.createIcons();
         }
