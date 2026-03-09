@@ -21,18 +21,28 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        .container { text-align: center; padding: 4rem 2rem; width: 100%; max-width: 900px; }
+        .container { text-align: center; padding: 4rem 2rem; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
 
+        /* THE RESTORED GRADIENT LOGO */
         .logo {
-            font-size: 3rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 0.5rem;
+            font-size: 3.5rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 0.5rem;
             background: linear-gradient(to right, #38bdf8, #818cf8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
+        .subtitle { font-size: 1.2rem; opacity: 0.7; margin-bottom: 2rem; }
+
+        /* THE RESTORED BADGE & HOVER ANIMATION */
         .status-badge {
-            display: inline-block; padding: 0.5rem 1rem; background: rgba(56, 189, 248, 0.1);
-            border: 1px solid var(--accent); border-radius: 2rem; font-size: 0.8rem;
-            font-weight: 600; color: var(--accent); text-transform: uppercase; cursor: pointer;
+            display: inline-block; padding: 0.6rem 1.2rem; background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent); border-radius: 2rem; font-size: 0.85rem;
+            font-weight: 600; color: var(--accent); text-transform: uppercase; 
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .status-badge:hover {
+            background: rgba(56, 189, 248, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
 
         .pulse {
@@ -46,12 +56,12 @@
             100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
         }
 
+        /* GRID & CARDS */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; width: 100%; }
-
         .card {
             background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: 0.3s; text-align: left; position: relative; cursor: pointer;
+            transition: 0.3s; text-align: left; position: relative;
         }
         .card:hover { border-color: var(--accent); transform: translateY(-5px); background: rgba(56, 189, 248, 0.08); }
         .card.is-hidden { opacity: 0.4; border-style: dashed; }
@@ -99,14 +109,14 @@
         <div class="logo">jakebitt</div>
         
         <div id="construction-view">
-            <p style="font-size: 1.2rem; opacity: 0.7; margin-bottom: 2rem;">Something interesting is brewing.</p>
+            <p class="subtitle">Something interesting is brewing.</p>
             <div class="status-badge" onclick="showLogin()">
                 <span class="pulse"></span> Under Construction
             </div>
         </div>
 
         <div id="main-content" class="hidden">
-            <p style="font-size: 1.2rem; opacity: 0.7; margin-bottom: 2rem;">The Vault</p>
+            <p class="subtitle">The Vault</p>
             <div class="grid" id="project-grid"></div>
         </div>
     </div>
@@ -121,19 +131,19 @@
 
     <div id="login-modal" class="modal-overlay hidden">
         <div class="modal-content" style="text-align:center;">
-            <div style="background: var(--accent); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+            <div style="background: var(--accent); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
                 <i data-lucide="github" style="color: var(--bg)"></i>
             </div>
-            <h2 style="margin-bottom: 0.5rem;">Admin</h2>
-            <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 1.5rem;">Login with GitHub to manage jakebitt.com</p>
-            <button class="btn" onclick="signIn('github')" style="width:100%; margin-bottom:10px;">Continue with GitHub</button>
+            <h2 style="margin-bottom: 0.5rem;">Admin Login</h2>
+            <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 1.5rem;">Continue to manage jakebitt.com</p>
+            <button class="btn" onclick="signIn('github')" style="width:100%; margin-bottom:10px;">Login with GitHub</button>
             <button class="btn" onclick="hideLogin()" style="background:transparent; color:white;">Cancel</button>
         </div>
     </div>
 
     <div id="p-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 id="modal-title" style="margin:0 0 1rem 0;">New Project</h3>
+            <h3 id="modal-title" style="margin:0 0 1rem 0;">Card Details</h3>
             <input type="hidden" id="p-id">
             <input type="text" id="p-title" placeholder="Title">
             <textarea id="p-desc" placeholder="Description"></textarea>
@@ -145,16 +155,13 @@
                     <option value="cpu">Hardware</option>
                     <option value="globe">Web</option>
                     <option value="zap">Fast</option>
-                    <option value="music">Music</option>
-                    <option value="camera">Photo</option>
-                    <option value="gamepad-2">Gaming</option>
                 </select>
                 <label style="font-size:0.8rem; display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" id="p-visible" checked style="width:auto;"> Publicly Visible
+                    <input type="checkbox" id="p-visible" checked style="width:auto; margin:0;"> Public
                 </label>
             </div>
             <div style="display:flex; gap:10px; margin-top:1.5rem;">
-                <button class="btn" onclick="saveProject()" style="flex:1;">Save Card</button>
+                <button class="btn" onclick="saveProject()" style="flex:1;">Save</button>
                 <button class="btn" onclick="closeModal()" style="flex:1; background:transparent; color:white;">Cancel</button>
             </div>
         </div>
@@ -165,7 +172,7 @@
         const SUPABASE_KEY = 'sb_publishable_8wx1wqn0uRWKw1WamOWCbw_aL0lVIjv';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // --- PASTE YOUR UID HERE AFTER YOUR FIRST LOGIN ---
+        // PASTE YOUR UID HERE LATER
         const ADMIN_UID = 'PASTE_YOUR_UID_HERE'; 
 
         let isMaintenanceOn = true;
@@ -184,7 +191,7 @@
                 document.getElementById('p-icon').value = editData.icon_name;
                 document.getElementById('p-visible').checked = editData.is_visible;
             } else {
-                document.getElementById('modal-title').innerText = "New Project";
+                document.getElementById('modal-title').innerText = "New Card";
                 document.getElementById('p-id').value = "";
                 document.getElementById('p-title').value = "";
                 document.getElementById('p-desc').value = "";
@@ -213,18 +220,14 @@
                 icon_name: document.getElementById('p-icon').value,
                 is_visible: document.getElementById('p-visible').checked
             };
-
-            if (id) {
-                await _supabase.from('projects').update(project).eq('id', id);
-            } else {
-                await _supabase.from('projects').insert([project]);
-            }
+            if (id) { await _supabase.from('projects').update(project).eq('id', id); } 
+            else { await _supabase.from('projects').insert([project]); }
             closeModal(); loadProjects();
         }
 
         async function deleteProject(id, e) {
             e.preventDefault(); e.stopPropagation();
-            if(confirm("Delete card?")) {
+            if(confirm("Delete permanently?")) {
                 await _supabase.from('projects').delete().eq('id', id);
                 loadProjects();
             }
