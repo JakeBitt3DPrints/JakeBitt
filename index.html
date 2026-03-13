@@ -38,7 +38,7 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; width: 100%; }
         .card {
-            background: var(--card-bg); padding: 48px 1.8rem 1.8rem; border-radius: 1.2rem; /* extra top padding */
+            background: var(--card-bg); padding: 48px 1.8rem 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
             transition: all 0.3s ease; text-align: left; position: relative; display: block; cursor: pointer;
         }
@@ -131,7 +131,6 @@
 
         .hidden { display: none !important; }
 
-        /* Persistent admin button */
         #persistent-admin-btn {
             position: fixed; top: 25px; right: 25px; z-index: 150;
             background: rgba(15,23,42,0.95); color: var(--accent);
@@ -165,13 +164,11 @@
         </div>
     </div>
 
-    <!-- Persistent Admin Button -->
     <div id="persistent-admin-btn" class="hidden" onclick="showLogin()">
         <i data-lucide="key" size="18"></i>
         <span>Admin Login</span>
     </div>
 
-    <!-- Admin Bar -->
     <div id="admin-bar" class="admin-bar hidden">
         <button class="icon-btn" onclick="toggleMaintenance()" title="Toggle Maintenance"><i data-lucide="shield-check" size="16"></i></button>
         <button class="icon-btn" onclick="loadProjects()" title="Refresh Projects"><i data-lucide="refresh-cw" size="16"></i></button>
@@ -179,7 +176,6 @@
         <button class="btn" style="background:transparent;color:white;border:1px solid #334155;" onclick="signOut()">Logout</button>
     </div>
 
-    <!-- Login Modal -->
     <div id="login-modal" class="modal-overlay hidden">
         <div class="modal-content" style="text-align:center;">
             <div style="background:var(--accent);width:48px;height:48px;border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;">
@@ -192,13 +188,11 @@
         </div>
     </div>
 
-    <!-- Project Modal -->
     <div id="p-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 id="modal-title">New Card</h3>
             <input type="hidden" id="p-id">
 
-            <!-- Live Preview -->
             <div id="live-preview" class="card" style="margin:15px 0;padding:1rem;pointer-events:none;background:rgba(30,41,59,0.8);border:1px solid #334155;">
                 <i id="preview-icon" data-lucide="layers" style="color:#38bdf8;margin-bottom:8px;font-size:1.8rem;"></i>
                 <h3 id="preview-title" style="margin:0;font-size:1.1rem;">Title</h3>
@@ -207,7 +201,7 @@
 
             <input type="text" id="p-title" placeholder="Title" required oninput="debouncedPreview()">
             <textarea id="p-desc" placeholder="Description" rows="3" oninput="debouncedPreview()"></textarea>
-            <input type="url" id="p-url" placeholder="https://youtube.com/..." required>
+            <input type="text" id="p-url" placeholder="jakebitt3dprints.com (https:// will be added automatically)" required>
 
             <div class="color-wrapper">
                 <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
@@ -236,7 +230,6 @@
         </div>
     </div>
 
-    <!-- Icon Picker Modal -->
     <div id="icon-picker" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 style="margin-bottom:1rem;">Choose Icon (120+ options)</h3>
@@ -248,7 +241,6 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast-container"></div>
 
     <script>
@@ -378,10 +370,17 @@
 
         async function saveProject() {
             if (!(await isAdmin())) return showToast('Not authorized', 'error');
+
+            let link_url = document.getElementById('p-url').value.trim();
+            // 🔥 AUTO-FIX: add https:// if missing
+            if (link_url && !link_url.startsWith('http://') && !link_url.startsWith('https://')) {
+                link_url = 'https://' + link_url;
+            }
+
             const project = {
                 title: document.getElementById('p-title').value.trim(),
                 description: document.getElementById('p-desc').value.trim(),
-                link_url: document.getElementById('p-url').value.trim(),
+                link_url: link_url,
                 icon_name: document.getElementById('p-icon').value,
                 icon_color: document.getElementById('p-color').value,
                 open_in_new_tab: document.getElementById('p-new-tab').checked,
@@ -423,7 +422,7 @@
         function handleCardClick(e) {
             if (e.target.closest('.card-actions')) return;
             const card = e.currentTarget;
-            const url = card.dataset.url;
+            let url = card.dataset.url;
             const newTab = card.dataset.newTab === 'true';
             if (!url || url === '#') return;
             if (newTab) {
@@ -449,7 +448,6 @@
             `).join('');
             lucide.createIcons();
 
-            // Attach click handlers AFTER render (this fixes everything)
             document.querySelectorAll('#project-grid .card').forEach(card => {
                 card.addEventListener('click', handleCardClick);
             });
