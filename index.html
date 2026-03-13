@@ -38,7 +38,7 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; width: 100%; }
         .card {
-            background: var(--card-bg); padding: 72px 1.8rem 1.8rem; border-radius: 1.2rem;
+            background: var(--card-bg); padding: 90px 1.8rem 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
             transition: all 0.3s ease; text-align: left; position: relative; display: block; cursor: pointer;
         }
@@ -111,16 +111,16 @@
         }
         .color-wrapper { display: flex; align-items: center; gap: 10px; }
 
-        .toggle-group, .size-group, .placement-group {
+        .toggle-group, .size-group, .placement-group, .icon-size-group {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0;
         }
-        .toggle-label, .size-btn, .placement-btn {
+        .toggle-label, .size-btn, .placement-btn, .icon-size-btn {
             display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; cursor: pointer;
             background: #1e293b; padding: 12px; border-radius: 12px; transition: all 0.2s;
         }
-        .toggle-label:hover, .size-btn:hover, .placement-btn:hover { background: rgba(56,189,248,0.1); }
+        .toggle-label:hover, .size-btn:hover, .placement-btn:hover, .icon-size-btn:hover { background: rgba(56,189,248,0.1); }
         .toggle-label input[type="checkbox"] { accent-color: var(--accent); }
-        .size-btn.active, .placement-btn.active { background: var(--accent); color: var(--bg); }
+        .size-btn.active, .placement-btn.active, .icon-size-btn.active { background: var(--accent); color: var(--bg); }
 
         /* Toast */
         #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; }
@@ -220,7 +220,7 @@
             <input type="text" id="p-custom-icon" placeholder="https://imgbb.com/...png (optional - overrides everything)" style="margin-top:8px;">
 
             <!-- Icon Placement -->
-            <label style="font-size:0.9rem; display:block; margin:15px 0 8px;">Icon Placement</label>
+            <label style="font-size:0.9rem; display:block; margin:15px 0 8px;">Icon Placement (only moves icon)</label>
             <div class="placement-group" id="placement-group">
                 <div class="placement-btn active" data-placement="top" onclick="selectPlacement(this)">Top</div>
                 <div class="placement-btn" data-placement="left" onclick="selectPlacement(this)">Left</div>
@@ -229,10 +229,10 @@
 
             <!-- Icon Size -->
             <label style="font-size:0.9rem; display:block; margin:15px 0 8px;">Icon Size</label>
-            <div class="size-group" id="icon-size-group">
-                <div class="size-btn" data-size="32" onclick="selectIconSize(this)">32px</div>
-                <div class="size-btn active" data-size="48" onclick="selectIconSize(this)">48px</div>
-                <div class="size-btn" data-size="64" onclick="selectIconSize(this)">64px</div>
+            <div class="icon-size-group" id="icon-size-group">
+                <div class="icon-size-btn" data-size="32" onclick="selectIconSize(this)">32px</div>
+                <div class="icon-size-btn active" data-size="48" onclick="selectIconSize(this)">48px</div>
+                <div class="icon-size-btn" data-size="64" onclick="selectIconSize(this)">64px</div>
             </div>
 
             <!-- Text Colors -->
@@ -305,6 +305,22 @@
 
         const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera','facebook','twitter','instagram','linkedin','youtube','twitch','discord','slack','figma','git','git-branch','git-merge','terminal','command','package','box','truck','shopping-cart','credit-card','dollar-sign','percent','award','trophy','medal','flag','map','compass','sun','moon','cloud-rain','thermometer','droplet','wind','leaf','flower','tree','mountain','umbrella','anchor','boat','plane','car','bike','train','bus','subway','zap','battery','plug','wifi-off','signal','volume','volume-2','mic','mic-off','headphones','speaker','radio','tv','monitor','laptop','smartphone','watch','glasses','hat','shirt','shoe','bag','backpack','briefcase','wallet','key','lock','unlock','eye','eye-off','bell','bell-off','bell-ring','alert-triangle','check-circle','x-circle','info','help-circle','question','plus-circle','minus-circle','trash-2','edit-3','save','download-cloud','upload-cloud','refresh-ccw','rotate-cw','arrow-left','arrow-right','arrow-up','arrow-down','chevron-left','chevron-right','chevron-up','chevron-down','corner-up-left','corner-up-right','move','maximize','minimize'];
 
+        function hexToHue(hex) {
+            hex = hex.replace('#', '');
+            let r = parseInt(hex.substr(0,2),16) / 255;
+            let g = parseInt(hex.substr(2,2),16) / 255;
+            let b = parseInt(hex.substr(4,2),16) / 255;
+            let max = Math.max(r,g,b);
+            let min = Math.min(r,g,b);
+            let h = 0;
+            if (max === min) h = 0;
+            else if (max === r) h = ((g - b) / (max - min)) * 60;
+            else if (max === g) h = ((b - r) / (max - min)) * 60 + 120;
+            else h = ((r - g) / (max - min)) * 60 + 240;
+            if (h < 0) h += 360;
+            return Math.round(h);
+        }
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -339,24 +355,22 @@
             document.getElementById('preview-desc').style.color = descColor;
 
             const wrapper = document.getElementById('preview-icon-wrapper');
-            wrapper.innerHTML = customUrl 
-                ? `<img src="${customUrl}" style="width:48px;height:48px;object-fit:contain;">` 
-                : `<i data-lucide="${icon}" style="color:${color};font-size:1.8rem;"></i>`;
+            if (customUrl) {
+                const hue = hexToHue(color);
+                wrapper.innerHTML = `<img src="${customUrl}" style="width:48px;height:48px;object-fit:contain;filter:brightness(0) saturate(100%) hue-rotate(${hue}deg);">`;
+            } else {
+                wrapper.innerHTML = `<i data-lucide="${icon}" style="color:${color};font-size:1.8rem;"></i>`;
+            }
             lucide.createIcons();
-        }
-
-        function selectSize(el) {
-            document.querySelectorAll('#card-size-group .size-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function selectIconSize(el) {
-            document.querySelectorAll('#icon-size-group .size-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
         }
 
         function selectPlacement(el) {
             document.querySelectorAll('#placement-group .placement-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectIconSize(el) {
+            document.querySelectorAll('#icon-size-group .icon-size-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
         }
 
@@ -385,11 +399,8 @@
                 document.getElementById('p-title-color').value = editData.title_color || '#f8fafc';
                 document.getElementById('p-desc-color').value = editData.description_color || '#94a3b8';
 
-                // Icon size
-                document.querySelectorAll('#icon-size-group .size-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.size) === (editData.icon_size || 48)));
-                // Placement
+                document.querySelectorAll('#icon-size-group .icon-size-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.size) === (editData.icon_size || 48)));
                 document.querySelectorAll('#placement-group .placement-btn').forEach(b => b.classList.toggle('active', b.dataset.placement === (editData.icon_placement || 'top')));
-                // Card size
                 document.querySelectorAll('#card-size-group .size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === (editData.size || 'medium')));
             } else {
                 document.getElementById('p-title').value = '';
@@ -404,7 +415,7 @@
                 document.getElementById('p-title-color').value = '#f8fafc';
                 document.getElementById('p-desc-color').value = '#94a3b8';
 
-                document.querySelectorAll('#icon-size-group .size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === '48'));
+                document.querySelectorAll('#icon-size-group .icon-size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === '48'));
                 document.querySelectorAll('#placement-group .placement-btn').forEach(b => b.classList.toggle('active', b.dataset.placement === 'top'));
                 document.querySelectorAll('#card-size-group .size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === 'medium'));
             }
@@ -476,7 +487,7 @@
                 icon_color: document.getElementById('p-color').value,
                 custom_icon_url: document.getElementById('p-custom-icon').value.trim(),
                 icon_placement: document.querySelector('#placement-group .placement-btn.active').dataset.placement,
-                icon_size: parseInt(document.querySelector('#icon-size-group .size-btn.active').dataset.size),
+                icon_size: parseInt(document.querySelector('#icon-size-group .icon-size-btn.active').dataset.size),
                 title_color: document.getElementById('p-title-color').value,
                 description_color: document.getElementById('p-desc-color').value,
                 open_in_new_tab: document.getElementById('p-new-tab').checked,
@@ -557,16 +568,40 @@
         function renderProjectCards(data) {
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => {
-                const iconHtml = p.custom_icon_url 
-                    ? `<img src="${p.custom_icon_url}" style="width:${p.icon_size || 48}px;height:${p.icon_size || 48}px;object-fit:contain;margin-bottom:12px;">`
-                    : `<i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:${p.icon_size || 48}px;display:block;"></i>`;
+                let iconHtml = '';
+                const iconSize = p.icon_size || 48;
+                if (p.custom_icon_url) {
+                    const hue = hexToHue(p.icon_color || '#38bdf8');
+                    iconHtml = `<img src="${p.custom_icon_url}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:brightness(0) saturate(100%) hue-rotate(${hue}deg);">`;
+                } else {
+                    iconHtml = `<i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:${iconSize}px;display:block;"></i>`;
+                }
 
                 let placementClass = '';
-                if (p.icon_placement === 'left') placementClass = 'icon-left';
-                if (p.icon_placement === 'right') placementClass = 'icon-right';
+                let contentHtml = '';
+                if (p.icon_placement === 'left' || p.icon_placement === 'right') {
+                    placementClass = p.icon_placement === 'left' ? 'icon-left' : 'icon-right';
+                    contentHtml = `
+                        <div class="card ${placementClass}">
+                            <div style="display:flex;${p.icon_placement === 'right' ? 'flex-direction:row-reverse' : ''};gap:16px;align-items:flex-start;">
+                                <div style="flex-shrink:0;">${iconHtml}</div>
+                                <div style="flex:1;">
+                                    <h3 style="margin:0;font-size:1.15rem;color:${p.title_color || '#f8fafc'};">${p.title}</h3>
+                                    <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;color:${p.description_color || '#94a3b8'};">${p.description || ''}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    contentHtml = `
+                        <div class="card">
+                            ${iconHtml}
+                            <h3 style="margin:0;font-size:1.15rem;color:${p.title_color || '#f8fafc'};">${p.title}</h3>
+                            <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;color:${p.description_color || '#94a3b8'};">${p.description || ''}</p>
+                        </div>`;
+                }
 
                 return `
-                <div class="card card-${p.size || 'medium'} ${placementClass} ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
+                <div class="card card-${p.size || 'medium'} ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''} ${placementClass}"
                      data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab ? 'true' : 'false'}">
                     <div class="card-actions">
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); moveUp('${p.id}')"><i data-lucide="arrow-up" size="14"></i></button>
@@ -574,9 +609,7 @@
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
-                    ${iconHtml}
-                    <h3 style="margin:0;font-size:1.15rem;color:${p.title_color || '#f8fafc'};">${p.title}</h3>
-                    <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;color:${p.description_color || '#94a3b8'};">${p.description || ''}</p>
+                    ${contentHtml}
                 </div>`;
             }).join('');
             lucide.createIcons();
