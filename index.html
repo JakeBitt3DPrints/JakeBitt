@@ -47,12 +47,9 @@
         .card-large { padding: 2.6rem; }
         .card-wide { grid-column: span 2; padding: 1.8rem; }
         .card.icon-left, .card.icon-right {
-            padding-top: 1.8rem;
+            display: flex; align-items: flex-start; gap: 16px; padding-top: 1.8rem;
         }
-        .card .icon-wrapper { position: absolute; top: 20px; }
-        .card.icon-left .icon-wrapper { left: 20px; }
-        .card.icon-right .icon-wrapper { right: 20px; }
-        .card .content { margin-top: 70px; }
+        .card.icon-right { flex-direction: row-reverse; }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
         .card.is-featured::after {
@@ -216,7 +213,7 @@
 
             <div class="color-wrapper">
                 <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
-                <input type="color" id="p-color" value="#38bdf8" title="Icon Tint Color" oninput="debouncedPreview()">
+                <input type="color" id="p-color" value="#38bdf8" title="Icon Tint Color (works on custom icons too)" oninput="debouncedPreview()">
             </div>
 
             <!-- Custom Icon URL -->
@@ -582,8 +579,6 @@
                 if (p.icon_placement === 'left') placementClass = 'icon-left';
                 if (p.icon_placement === 'right') placementClass = 'icon-right';
 
-                const featuredMargin = p.is_featured ? 'margin-top:28px;' : '';
-
                 return `
                 <div class="card card-${p.size || 'medium'} ${placementClass} ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
                      data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab ? 'true' : 'false'}">
@@ -593,11 +588,9 @@
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
-                    <div class="icon-wrapper" style="${featuredMargin}">${iconHtml}</div>
-                    <div class="content">
-                        <h3 style="margin:0;font-size:1.15rem;color:${p.title_color || '#f8fafc'};">${p.title}</h3>
-                        <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;color:${p.description_color || '#94a3b8'};">${p.description || ''}</p>
-                    </div>
+                    ${iconHtml}
+                    <h3 style="margin:0;font-size:1.15rem;color:${p.title_color || '#f8fafc'};">${p.title}</h3>
+                    <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;color:${p.description_color || '#94a3b8'};">${p.description || ''}</p>
                 </div>`;
             }).join('');
             lucide.createIcons();
