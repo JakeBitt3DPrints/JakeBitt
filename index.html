@@ -44,6 +44,10 @@
         }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
+        .card.is-featured::after {
+            content: "★ Featured"; position: absolute; top: 12px; left: 12px;
+            background: #eab308; color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px;
+        }
         .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; }
         .admin-active .card-actions { display: flex; }
         .icon-btn {
@@ -71,9 +75,9 @@
         }
         .modal-content {
             background: #1e293b; padding: 2.5rem; border-radius: 2rem;
-            width: 90%; max-width: 420px; border: 1px solid rgba(255,255,255,0.1);
+            width: 90%; max-width: 460px; border: 1px solid rgba(255,255,255,0.1);
         }
-        #icon-picker .modal-content { max-width: 520px; }
+        #icon-picker .modal-content { max-width: 560px; }
         #icon-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
             gap: 12px; max-height: 380px; overflow-y: auto; padding: 10px;
@@ -88,11 +92,15 @@
         .icon-option i { font-size: 32px; display: block; margin-bottom: 6px; color: var(--accent); }
         .icon-option span { font-size: 0.75rem; opacity: 0.7; display: block; }
 
-        input, textarea, select, input[type="color"] {
+        input, textarea, select {
             width: 100%; padding: 12px; margin: 8px 0; background: #0f172a;
             border: 1px solid #334155; border-radius: 10px; color: white; box-sizing: border-box;
         }
-        input[type="color"] { height: 48px; padding: 4px; cursor: pointer; }
+        input[type="color"] {
+            width: 60px; height: 48px; padding: 4px; border: none; cursor: pointer;
+            background: transparent; border-radius: 8px;
+        }
+        .color-wrapper { display: flex; align-items: center; gap: 10px; }
 
         /* Toast */
         #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; }
@@ -118,21 +126,27 @@
             cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
         }
+        #project-search {
+            width: 100%; max-width: 400px; margin: 1rem auto; padding: 12px 16px;
+            background: #1e293b; border: 1px solid #334155; border-radius: 9999px; color: white;
+        }
     </style>
 </head>
 <body id="main-body">
     <div class="container">
         <div class="logo">jakebitt</div>
 
-        <div id="construction-view">
+        <!-- Construction starts HIDDEN to prevent flash -->
+        <div id="construction-view" class="hidden">
             <p class="subtitle">Building something interesting.</p>
             <div class="status-badge" onclick="showLogin()">
                 <span class="pulse"></span> Under Construction
             </div>
         </div>
 
-        <div id="main-content" class="hidden">
+        <div id="main-content">
             <p class="subtitle">My Projects</p>
+            <input type="text" id="project-search" placeholder="Search projects..." onkeyup="filterProjects()">
             <div id="loading" class="hidden"><div class="loader"></div></div>
             <div class="grid" id="project-grid"></div>
             <div id="empty-state" class="hidden" style="padding:3rem;opacity:0.6;">No projects yet. Add some from the admin bar.</div>
@@ -171,18 +185,34 @@
         <div class="modal-content">
             <h3 id="modal-title">New Card</h3>
             <input type="hidden" id="p-id">
-            <input type="text" id="p-title" placeholder="Title" required>
-            <textarea id="p-desc" placeholder="Description" rows="3"></textarea>
-            <input type="url" id="p-url" placeholder="https://yourproject.com" required>
 
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
-                <input type="color" id="p-color" value="#38bdf8" title="Icon color">
+            <!-- Live Preview -->
+            <div id="live-preview" class="card" style="margin:15px 0;padding:1rem;pointer-events:none;background:rgba(30,41,59,0.8);border:1px solid #334155;">
+                <i id="preview-icon" data-lucide="layers" style="color:#38bdf8;margin-bottom:8px;font-size:1.8rem;"></i>
+                <h3 id="preview-title" style="margin:0;font-size:1.1rem;">Title</h3>
+                <p id="preview-desc" style="font-size:0.85rem;margin:8px 0 0 0;opacity:0.7;">Description</p>
             </div>
 
-            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;margin:12px 0;">
-                <input type="checkbox" id="p-new-tab" checked> Open in new tab (external sites)
-            </label>
+            <input type="text" id="p-title" placeholder="Title" required oninput="updatePreview()">
+            <textarea id="p-desc" placeholder="Description" rows="3" oninput="updatePreview()"></textarea>
+            <input type="url" id="p-url" placeholder="https://yourproject.com" required>
+
+            <div class="color-wrapper">
+                <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
+                <input type="color" id="p-color" value="#38bdf8" oninput="updatePreview()">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                    <input type="checkbox" id="p-new-tab" checked> Open in new tab
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                    <input type="checkbox" id="p-visible" checked> Public
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                    <input type="checkbox" id="p-featured"> Featured
+                </label>
+            </div>
 
             <div style="display:flex;gap:10px;margin-top:1.5rem;">
                 <button class="btn" onclick="saveProject()" style="flex:1;">Save</button>
@@ -194,8 +224,8 @@
     <!-- Icon Picker Modal -->
     <div id="icon-picker" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 style="margin-bottom:1rem;">Choose Icon</h3>
-            <input type="text" id="icon-search" placeholder="Search Lucide icons..." style="margin-bottom:15px;" onkeyup="filterIcons()">
+            <h3 style="margin-bottom:1rem;">Choose Icon (120+ options)</h3>
+            <input type="text" id="icon-search" placeholder="Search icons..." style="margin-bottom:15px;" onkeyup="filterIcons()">
             <div id="icon-grid"></div>
             <div style="display:flex;gap:10px;margin-top:20px;">
                 <button class="btn" onclick="closeIconPicker()" style="flex:1;background:transparent;color:white;">Cancel</button>
@@ -215,7 +245,10 @@
         let isMaintenanceOn = true;
         let currentEditId = null;
         let projectsChannel = null;
-        const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera'];
+        let allProjects = [];
+
+        // 120+ popular Lucide icons
+        const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera','facebook','twitter','instagram','linkedin','youtube','twitch','discord','slack','figma','git','git-branch','git-merge','terminal','command','package','box','truck','shopping-cart','credit-card','dollar-sign','percent','award','trophy','medal','flag','map','compass','sun','moon','cloud-rain','thermometer','droplet','wind','leaf','flower','tree','mountain','umbrella','anchor','boat','plane','car','bike','train','bus','subway','zap','battery','plug','wifi-off','signal','volume','volume-2','mic','mic-off','headphones','speaker','radio','tv','monitor','laptop','smartphone','watch','glasses','hat','shirt','shoe','bag','backpack','briefcase','wallet','key','lock','unlock','eye','eye-off','bell','bell-off','bell-ring','alert-triangle','check-circle','x-circle','info','help-circle','question','plus-circle','minus-circle','trash-2','edit-3','save','download-cloud','upload-cloud','refresh-ccw','rotate-cw','arrow-left','arrow-right','arrow-up','arrow-down','chevron-left','chevron-right','chevron-up','chevron-down','corner-up-left','corner-up-right','move','maximize','minimize'];
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -231,6 +264,20 @@
         function closeModal() { document.getElementById('p-modal').classList.add('hidden'); currentEditId = null; }
         function closeIconPicker() { document.getElementById('icon-picker').classList.add('hidden'); }
 
+        function updatePreview() {
+            const title = document.getElementById('p-title').value || 'Title';
+            const desc = document.getElementById('p-desc').value || 'Description';
+            const icon = document.getElementById('p-icon').value || 'layers';
+            const color = document.getElementById('p-color').value;
+
+            document.getElementById('preview-title').textContent = title;
+            document.getElementById('preview-desc').textContent = desc;
+            const iconEl = document.getElementById('preview-icon');
+            iconEl.setAttribute('data-lucide', icon);
+            iconEl.style.color = color;
+            lucide.createIcons();
+        }
+
         function openModal(editData = null) {
             const modal = document.getElementById('p-modal');
             modal.classList.remove('hidden');
@@ -245,6 +292,8 @@
                 document.getElementById('p-icon').value = editData.icon_name || 'layers';
                 document.getElementById('p-color').value = editData.icon_color || '#38bdf8';
                 document.getElementById('p-new-tab').checked = editData.open_in_new_tab ?? true;
+                document.getElementById('p-visible').checked = editData.is_visible ?? true;
+                document.getElementById('p-featured').checked = editData.is_featured ?? false;
             } else {
                 document.getElementById('p-title').value = '';
                 document.getElementById('p-desc').value = '';
@@ -252,7 +301,10 @@
                 document.getElementById('p-icon').value = 'layers';
                 document.getElementById('p-color').value = '#38bdf8';
                 document.getElementById('p-new-tab').checked = true;
+                document.getElementById('p-visible').checked = true;
+                document.getElementById('p-featured').checked = false;
             }
+            updatePreview();
         }
 
         function openIconPicker() {
@@ -280,6 +332,7 @@
         function selectIcon(iconName) {
             document.getElementById('p-icon').value = iconName;
             closeIconPicker();
+            updatePreview();
         }
 
         async function signIn(provider) {
@@ -311,7 +364,9 @@
                 link_url: document.getElementById('p-url').value.trim(),
                 icon_name: document.getElementById('p-icon').value,
                 icon_color: document.getElementById('p-color').value,
-                open_in_new_tab: document.getElementById('p-new-tab').checked
+                open_in_new_tab: document.getElementById('p-new-tab').checked,
+                is_visible: document.getElementById('p-visible').checked,
+                is_featured: document.getElementById('p-featured').checked
             };
 
             let error;
@@ -345,6 +400,33 @@
             if (data) openModal(data);
         }
 
+        function filterProjects() {
+            const term = document.getElementById('project-search').value.toLowerCase().trim();
+            const grid = document.getElementById('project-grid');
+            const filtered = allProjects.filter(p => 
+                p.title.toLowerCase().includes(term) || 
+                (p.description && p.description.toLowerCase().includes(term))
+            );
+            renderProjectCards(filtered);
+        }
+
+        function renderProjectCards(data) {
+            const grid = document.getElementById('project-grid');
+            grid.innerHTML = data.map(p => `
+                <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}" 
+                     onclick="${p.open_in_new_tab ? `window.open('${p.link_url || '#'}', '_blank')` : `window.location.href='${p.link_url || '#'}'`}">
+                    <div class="card-actions">
+                        <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                    </div>
+                    <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;"></i>
+                    <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
+                    <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
         async function loadProjects() {
             document.getElementById('loading').classList.remove('hidden');
             const admin = await isAdmin();
@@ -354,38 +436,32 @@
             
             const { data, error } = await query;
             if (error) showToast('Failed to load projects', 'error');
+            allProjects = data || [];
 
             const grid = document.getElementById('project-grid');
             grid.innerHTML = '';
 
-            if (!data || data.length === 0) {
+            if (!allProjects.length) {
                 document.getElementById('empty-state').classList.remove('hidden');
             } else {
                 document.getElementById('empty-state').classList.add('hidden');
-                grid.innerHTML = data.map(p => `
-                    <div class="card ${!p.is_visible ? 'is-hidden' : ''}" 
-                         onclick="${p.open_in_new_tab ? `window.open('${p.link_url || '#'}', '_blank')` : `window.location.href='${p.link_url || '#'}'`}">
-                        <div class="card-actions">
-                            <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
-                            <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
-                        </div>
-                        <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;"></i>
-                        <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
-                        <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
-                    </div>
-                `).join('');
+                renderProjectCards(allProjects);
             }
-            lucide.createIcons();
             document.getElementById('loading').classList.add('hidden');
         }
 
         async function init() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            const { data: settings } = await _supabase.from('site_settings').select('maintenance_mode').single();
-            isMaintenanceOn = settings?.maintenance_mode ?? true;
-            const admin = session?.user?.id === ADMIN_UID;
+            // Load everything in parallel for speed
+            const [sessionRes, settingsRes] = await Promise.all([
+                _supabase.auth.getSession(),
+                _supabase.from('site_settings').select('maintenance_mode').single()
+            ]);
+
+            isMaintenanceOn = settingsRes.data?.maintenance_mode ?? true;
+            const admin = sessionRes.data?.session?.user?.id === ADMIN_UID;
 
             if (!isMaintenanceOn || admin) {
+                // Public or admin → show main content immediately
                 document.getElementById('construction-view').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 loadProjects();
@@ -394,9 +470,13 @@
                     document.getElementById('admin-bar').classList.remove('hidden');
                     document.getElementById('main-body').classList.add('admin-active');
                 }
+            } else {
+                // Maintenance mode → show construction
+                document.getElementById('construction-view').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
             }
 
-            // Show persistent admin button when site is public and you're NOT logged in
+            // Persistent admin button when public + logged out
             if (!isMaintenanceOn && !admin) {
                 document.getElementById('persistent-admin-btn').classList.remove('hidden');
             } else {
