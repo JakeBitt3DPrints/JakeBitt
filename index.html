@@ -57,6 +57,7 @@
             background: #eab308; color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px;
             z-index: 20;
         }
+        .card.is-featured .icon-wrapper { margin-top: 35px; }
         .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; z-index: 30; }
         .admin-active .card-actions { display: flex; }
         .icon-btn {
@@ -141,10 +142,11 @@
         #persistent-admin-btn {
             position: fixed; top: 25px; right: 25px; z-index: 150;
             background: rgba(15,23,42,0.95); color: var(--accent);
-            padding: 10px 18px; border-radius: 9999px; border: 1px solid var(--accent);
+            padding: 8px; border-radius: 9999px; border: 1px solid var(--accent);
             cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3); opacity: 0.3;
         }
+        #persistent-admin-btn:hover { opacity: 1; }
         #project-search {
             width: 100%; max-width: 400px; margin: 1rem auto; padding: 12px 16px;
             background: #1e293b; border: 1px solid #334155; border-radius: 9999px; color: white;
@@ -173,7 +175,6 @@
 
     <div id="persistent-admin-btn" class="hidden" onclick="showLogin()">
         <i data-lucide="key" size="18"></i>
-        <span>Admin Login</span>
     </div>
 
     <div id="admin-bar" class="admin-bar hidden">
@@ -213,11 +214,16 @@
 
             <div class="color-wrapper">
                 <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
-                <input type="color" id="p-color" value="#38bdf8" title="Icon Tint Color (works on custom icons too)" oninput="debouncedPreview()">
+                <input type="color" id="p-color" value="#38bdf8" title="Icon Tint Color" oninput="debouncedPreview()">
             </div>
 
             <!-- Custom Icon URL -->
-            <input type="text" id="p-custom-icon" placeholder="https://imgbb.com/...png (optional - overrides Lucide)" style="margin-top:8px;">
+            <input type="text" id="p-custom-icon" placeholder="https://imgbb.com/...png (optional)" style="margin-top:8px;">
+
+            <!-- Invert toggle -->
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;margin:12px 0;">
+                <input type="checkbox" id="p-invert-icon"> Invert Custom Icon (black → white)
+            </label>
 
             <!-- Icon Placement -->
             <label style="font-size:0.9rem; display:block; margin:15px 0 8px;">Icon Placement (only moves icon)</label>
@@ -303,22 +309,6 @@
 
         const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera','facebook','twitter','instagram','linkedin','youtube','twitch','discord','slack','figma','git','git-branch','git-merge','terminal','command','package','box','truck','shopping-cart','credit-card','dollar-sign','percent','award','trophy','medal','flag','map','compass','sun','moon','cloud-rain','thermometer','droplet','wind','leaf','flower','tree','mountain','umbrella','anchor','boat','plane','car','bike','train','bus','subway','zap','battery','plug','wifi-off','signal','volume','volume-2','mic','mic-off','headphones','speaker','radio','tv','monitor','laptop','smartphone','watch','glasses','hat','shirt','shoe','bag','backpack','briefcase','wallet','key','lock','unlock','eye','eye-off','bell','bell-off','bell-ring','alert-triangle','check-circle','x-circle','info','help-circle','question','plus-circle','minus-circle','trash-2','edit-3','save','download-cloud','upload-cloud','refresh-ccw','rotate-cw','arrow-left','arrow-right','arrow-up','arrow-down','chevron-left','chevron-right','chevron-up','chevron-down','corner-up-left','corner-up-right','move','maximize','minimize'];
 
-        function hexToHue(hex) {
-            hex = hex.replace('#', '');
-            let r = parseInt(hex.substr(0,2),16)/255;
-            let g = parseInt(hex.substr(2,2),16)/255;
-            let b = parseInt(hex.substr(4,2),16)/255;
-            let max = Math.max(r,g,b);
-            let min = Math.min(r,g,b);
-            let h = 0;
-            if (max === min) h = 0;
-            else if (max === r) h = ((g - b) / (max - min)) * 60;
-            else if (max === g) h = ((b - r) / (max - min)) * 60 + 120;
-            else h = ((r - g) / (max - min)) * 60 + 240;
-            if (h < 0) h += 360;
-            return Math.round(h);
-        }
-
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -342,6 +332,7 @@
             const title = document.getElementById('p-title').value || 'Title';
             const desc = document.getElementById('p-desc').value || 'Description';
             const customUrl = document.getElementById('p-custom-icon').value.trim();
+            const invert = document.getElementById('p-invert-icon').checked;
             const icon = document.getElementById('p-icon').value || 'layers';
             const color = document.getElementById('p-color').value;
             const titleColor = document.getElementById('p-title-color').value;
@@ -354,8 +345,7 @@
 
             const wrapper = document.getElementById('preview-icon-wrapper');
             if (customUrl) {
-                const hue = hexToHue(color);
-                wrapper.innerHTML = `<img src="${customUrl}" style="width:48px;height:48px;object-fit:contain;filter:brightness(0) saturate(100%) hue-rotate(${hue}deg);">`;
+                wrapper.innerHTML = `<img src="${customUrl}" style="width:48px;height:48px;object-fit:contain;filter:${invert ? 'invert(1)' : 'none'};">`;
             } else {
                 wrapper.innerHTML = `<i data-lucide="${icon}" style="color:${color};font-size:1.8rem;"></i>`;
             }
@@ -391,6 +381,7 @@
                 document.getElementById('p-icon').value = editData.icon_name || 'layers';
                 document.getElementById('p-color').value = editData.icon_color || '#38bdf8';
                 document.getElementById('p-custom-icon').value = editData.custom_icon_url || '';
+                document.getElementById('p-invert-icon').checked = editData.invert_custom_icon || false;
                 document.getElementById('p-new-tab').checked = editData.open_in_new_tab ?? true;
                 document.getElementById('p-visible').checked = editData.is_visible ?? true;
                 document.getElementById('p-featured').checked = editData.is_featured ?? false;
@@ -407,6 +398,7 @@
                 document.getElementById('p-icon').value = 'layers';
                 document.getElementById('p-color').value = '#38bdf8';
                 document.getElementById('p-custom-icon').value = '';
+                document.getElementById('p-invert-icon').checked = false;
                 document.getElementById('p-new-tab').checked = true;
                 document.getElementById('p-visible').checked = true;
                 document.getElementById('p-featured').checked = false;
@@ -484,6 +476,7 @@
                 icon_name: document.getElementById('p-icon').value,
                 icon_color: document.getElementById('p-color').value,
                 custom_icon_url: document.getElementById('p-custom-icon').value.trim(),
+                invert_custom_icon: document.getElementById('p-invert-icon').checked,
                 icon_placement: document.querySelector('#placement-group .placement-btn.active').dataset.placement,
                 icon_size: parseInt(document.querySelector('#icon-size-group .icon-size-btn.active').dataset.size),
                 title_color: document.getElementById('p-title-color').value,
@@ -569,8 +562,7 @@
                 let iconHtml = '';
                 const iconSize = p.icon_size || 48;
                 if (p.custom_icon_url) {
-                    const hue = hexToHue(p.icon_color || '#38bdf8');
-                    iconHtml = `<img src="${p.custom_icon_url}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:brightness(0) saturate(100%) hue-rotate(${hue}deg);">`;
+                    iconHtml = `<img src="${p.custom_icon_url}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:${p.invert_custom_icon ? 'invert(1)' : 'none'};">`;
                 } else {
                     iconHtml = `<i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:${iconSize}px;display:block;"></i>`;
                 }
@@ -681,6 +673,7 @@
         });
 
         document.addEventListener('keydown', e => { 
+            if (e.key.toLowerCase() === 'l' && e.shiftKey) showLogin();
             if (e.key === 'Escape') { 
                 closeModal(); 
                 closeIconPicker(); 
