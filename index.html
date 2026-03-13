@@ -14,85 +14,64 @@
             --card-bg: rgba(30, 41, 59, 0.5);
             --danger: #f87171;
         }
-
         body {
             margin: 0; display: flex; align-items: center; justify-content: center;
             min-height: 100vh; background-color: var(--bg); color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-
-        .container { text-align: center; padding: 4rem 2rem; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-
-        /* THE RESTORED GRADIENT LOGO */
+        .container { text-align: center; padding: 4rem 2rem; width: 100%; max-width: 900px; }
         .logo {
             font-size: 3.5rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 0.5rem;
             background: linear-gradient(to right, #38bdf8, #818cf8);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
         .subtitle { font-size: 1.2rem; opacity: 0.7; margin-bottom: 2rem; }
-
-        /* THE RESTORED BADGE & HOVER ANIMATION */
         .status-badge {
             display: inline-block; padding: 0.6rem 1.2rem; background: rgba(56, 189, 248, 0.1);
             border: 1px solid var(--accent); border-radius: 2rem; font-size: 0.85rem;
-            font-weight: 600; color: var(--accent); text-transform: uppercase; 
+            font-weight: 600; color: var(--accent); text-transform: uppercase;
             cursor: pointer; transition: all 0.3s ease;
         }
-        .status-badge:hover {
-            background: rgba(56, 189, 248, 0.2);
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-        }
+        .status-badge:hover { background: rgba(56, 189, 248, 0.2); transform: scale(1.05); box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+        .pulse { display: inline-block; width: 8px; height: 8px; background-color: var(--accent); border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.7); } 70% { box-shadow: 0 0 0 10px rgba(56,189,248,0); } 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); } }
 
-        .pulse {
-            display: inline-block; width: 8px; height: 8px; background-color: var(--accent);
-            border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-        }
-
-        /* GRID & CARDS */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; width: 100%; }
         .card {
             background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: 0.3s; text-align: left; position: relative;
+            transition: all 0.3s ease; text-align: left; position: relative; cursor: pointer;
         }
-        .card:hover { border-color: var(--accent); transform: translateY(-5px); background: rgba(56, 189, 248, 0.08); }
-        .card.is-hidden { opacity: 0.4; border-style: dashed; }
-
+        .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .card.is-hidden { opacity: 0.5; border-style: dashed; }
         .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; }
         .admin-active .card-actions { display: flex; }
-
-        .icon-btn { 
-            background: #1e293b; border: 1px solid rgba(255,255,255,0.1); 
-            color: white; padding: 6px; border-radius: 8px; cursor: pointer; 
+        .icon-btn {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
         }
+        .icon-btn:hover { background: #334155; transform: scale(1.1); }
 
         .admin-bar {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
             padding: 0.6rem 1.2rem; border-radius: 3rem; border: 1px solid var(--accent);
             display: flex; gap: 10px; align-items: center; z-index: 100;
         }
-
         .btn {
             background: var(--accent); color: var(--bg); border: none;
-            padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 700; cursor: pointer; font-size: 0.75rem;
+            padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 700; cursor: pointer; font-size: 0.8rem;
+            transition: all 0.2s;
         }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(56 189 248 / 0.3); }
 
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 200;
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 200;
         }
         .modal-content {
             background: #1e293b; padding: 2.5rem; border-radius: 2rem;
-            width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
+            width: 90%; max-width: 420px; border: 1px solid rgba(255,255,255,0.1);
         }
 
         input, textarea, select {
@@ -100,14 +79,28 @@
             border: 1px solid #334155; border-radius: 10px; color: white; box-sizing: border-box;
         }
 
+        /* Toast */
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            background: #1e293b; color: white; padding: 12px 20px; border-radius: 9999px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3); display: flex; align-items: center; gap: 12px;
+            animation: toast-in 0.3s ease;
+        }
+        .toast.success { border-left: 4px solid #38bdf8; }
+        .toast.error { border-left: 4px solid var(--danger); }
+        @keyframes toast-in { from { opacity: 0; transform: translateY(20px); } }
+
+        .loader { border: 3px solid #334155; border-top: 3px solid var(--accent); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .hidden { display: none !important; }
+        footer { margin-top: 4rem; opacity: 0.5; font-size: 0.8rem; }
     </style>
 </head>
 <body id="main-body">
-
     <div class="container">
         <div class="logo">jakebitt</div>
-        
+
         <div id="construction-view">
             <p class="subtitle">Building something interesting.</p>
             <div class="status-badge" onclick="showLogin()">
@@ -117,38 +110,41 @@
 
         <div id="main-content" class="hidden">
             <p class="subtitle">The Vault</p>
+            <div id="loading" class="hidden"><div class="loader"></div></div>
             <div class="grid" id="project-grid"></div>
+            <div id="empty-state" class="hidden" style="padding:3rem;opacity:0.6;">No projects yet. Add some from the admin bar.</div>
         </div>
     </div>
 
+    <!-- Admin Bar -->
     <div id="admin-bar" class="admin-bar hidden">
-        <button class="icon-btn" onclick="toggleMaintenance()" title="Toggle Maintenance">
-            <i data-lucide="shield-check" size="16"></i>
-        </button>
+        <button class="icon-btn" onclick="toggleMaintenance()" title="Toggle Maintenance"><i data-lucide="shield-check" size="16"></i></button>
         <button class="btn" onclick="openModal()">+ Add Card</button>
-        <button class="btn" style="background:transparent; color:white; border:1px solid #334155;" onclick="signOut()">Exit</button>
+        <button class="btn" style="background:transparent;color:white;border:1px solid #334155;" onclick="signOut()">Exit</button>
     </div>
 
+    <!-- Login Modal -->
     <div id="login-modal" class="modal-overlay hidden">
         <div class="modal-content" style="text-align:center;">
-            <div style="background: var(--accent); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                <i data-lucide="github" style="color: var(--bg)"></i>
+            <div style="background:var(--accent);width:48px;height:48px;border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;">
+                <i data-lucide="github" style="color:var(--bg)"></i>
             </div>
-            <h2 style="margin-bottom: 0.5rem;">Admin Login</h2>
-            <p style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 1.5rem;">Continue to manage jakebitt.com</p>
-            <button class="btn" onclick="signIn('github')" style="width:100%; margin-bottom:10px;">Login with GitHub</button>
-            <button class="btn" onclick="hideLogin()" style="background:transparent; color:white;">Cancel</button>
+            <h2>Admin Login</h2>
+            <p style="opacity:0.6;margin:1rem 0;">Continue to manage jakebitt.com</p>
+            <button class="btn" onclick="signIn('github')" style="width:100%;margin-bottom:10px;">Login with GitHub</button>
+            <button class="btn" onclick="hideLogin()" style="background:transparent;color:white;width:100%;">Cancel</button>
         </div>
     </div>
 
+    <!-- Project Modal -->
     <div id="p-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 id="modal-title" style="margin:0 0 1rem 0;">Card Details</h3>
+            <h3 id="modal-title">New Card</h3>
             <input type="hidden" id="p-id">
-            <input type="text" id="p-title" placeholder="Title">
-            <textarea id="p-desc" placeholder="Description"></textarea>
-            <input type="text" id="p-url" placeholder="URL">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center;">
+            <input type="text" id="p-title" placeholder="Title" required>
+            <textarea id="p-desc" placeholder="Description" rows="3"></textarea>
+            <input type="url" id="p-url" placeholder="https://yourproject.com" required>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <select id="p-icon">
                     <option value="layers">Layers</option>
                     <option value="code">Code</option>
@@ -156,126 +152,206 @@
                     <option value="globe">Web</option>
                     <option value="zap">Fast</option>
                 </select>
-                <label style="font-size:0.8rem; display:flex; align-items:center; gap:5px;">
-                    <input type="checkbox" id="p-visible" checked style="width:auto; margin:0;"> Public
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                    <input type="checkbox" id="p-visible" checked> Public
                 </label>
             </div>
-            <div style="display:flex; gap:10px; margin-top:1.5rem;">
+            <div style="display:flex;gap:10px;margin-top:2rem;">
                 <button class="btn" onclick="saveProject()" style="flex:1;">Save</button>
-                <button class="btn" onclick="closeModal()" style="flex:1; background:transparent; color:white;">Cancel</button>
+                <button class="btn" onclick="closeModal()" style="flex:1;background:transparent;color:white;">Cancel</button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <footer>Built with Supabase • Real-time Vault</footer>
 
     <script>
         const SUPABASE_URL = 'https://ygukacsyrpoginyledza.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8wx1wqn0uRWKw1WamOWCbw_aL0lVIjv';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // PASTE YOUR UID HERE LATER
-        const ADMIN_UID = '11edec92-4080-4d70-8913-39c1b743ab0d'; 
+        const ADMIN_UID = '11edec92-4080-4d70-8913-39c1b743ab0d'; // ← your UID (keep it)
 
         let isMaintenanceOn = true;
+        let currentEditId = null;
+        let projectsChannel = null;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${type === 'success' ? '✓' : '⚠'} ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
         function showLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
         function hideLogin() { document.getElementById('login-modal').classList.add('hidden'); }
-        
+        function closeModal() { 
+            document.getElementById('p-modal').classList.add('hidden');
+            currentEditId = null;
+        }
+
         function openModal(editData = null) {
-            document.getElementById('p-modal').classList.remove('hidden');
+            const modal = document.getElementById('p-modal');
+            modal.classList.remove('hidden');
+            currentEditId = editData ? editData.id : null;
+            document.getElementById('modal-title').textContent = editData ? 'Edit Card' : 'New Card';
+            
             if (editData) {
-                document.getElementById('modal-title').innerText = "Edit Card";
                 document.getElementById('p-id').value = editData.id;
-                document.getElementById('p-title').value = editData.title;
-                document.getElementById('p-desc').value = editData.description;
-                document.getElementById('p-url').value = editData.link_url;
-                document.getElementById('p-icon').value = editData.icon_name;
+                document.getElementById('p-title').value = editData.title || '';
+                document.getElementById('p-desc').value = editData.description || '';
+                document.getElementById('p-url').value = editData.link_url || '';
+                document.getElementById('p-icon').value = editData.icon_name || 'layers';
                 document.getElementById('p-visible').checked = editData.is_visible;
             } else {
-                document.getElementById('modal-title').innerText = "New Card";
-                document.getElementById('p-id').value = "";
-                document.getElementById('p-title').value = "";
-                document.getElementById('p-desc').value = "";
-                document.getElementById('p-url').value = "";
+                document.getElementById('p-title').value = '';
+                document.getElementById('p-desc').value = '';
+                document.getElementById('p-url').value = '';
+                document.getElementById('p-icon').value = 'layers';
                 document.getElementById('p-visible').checked = true;
             }
         }
 
-        function closeModal() { document.getElementById('p-modal').classList.add('hidden'); }
-
-        async function signIn(provider) { await _supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } }); }
-        async function signOut() { await _supabase.auth.signOut(); window.location.reload(); }
-
-        async function toggleMaintenance() {
-            const newVal = !isMaintenanceOn;
-            await _supabase.from('site_settings').update({ maintenance_mode: newVal }).eq('id', 1);
+        async function signIn(provider) {
+            await _supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+        }
+        async function signOut() {
+            await _supabase.auth.signOut();
             location.reload();
         }
 
+        async function isAdmin() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            return session?.user?.id === ADMIN_UID;
+        }
+
+        async function toggleMaintenance() {
+            if (!(await isAdmin())) return showToast('Not authorized', 'error');
+            const newVal = !isMaintenanceOn;
+            const { error } = await _supabase.from('site_settings').update({ maintenance_mode: newVal }).eq('id', 1);
+            if (error) showToast('Failed to update', 'error');
+            else location.reload();
+        }
+
         async function saveProject() {
-            const id = document.getElementById('p-id').value;
+            if (!(await isAdmin())) return showToast('Not authorized', 'error');
             const project = {
-                title: document.getElementById('p-title').value,
-                description: document.getElementById('p-desc').value,
-                link_url: document.getElementById('p-url').value,
+                title: document.getElementById('p-title').value.trim(),
+                description: document.getElementById('p-desc').value.trim(),
+                link_url: document.getElementById('p-url').value.trim(),
                 icon_name: document.getElementById('p-icon').value,
                 is_visible: document.getElementById('p-visible').checked
             };
-            if (id) { await _supabase.from('projects').update(project).eq('id', id); } 
-            else { await _supabase.from('projects').insert([project]); }
-            closeModal(); loadProjects();
-        }
 
-        async function deleteProject(id, e) {
-            e.preventDefault(); e.stopPropagation();
-            if(confirm("Delete permanently?")) {
-                await _supabase.from('projects').delete().eq('id', id);
+            let error;
+            if (currentEditId) {
+                ({ error } = await _supabase.from('projects').update(project).eq('id', currentEditId));
+            } else {
+                ({ error } = await _supabase.from('projects').insert([project]));
+            }
+
+            if (error) showToast(error.message, 'error');
+            else {
+                showToast(currentEditId ? 'Project updated' : 'Project added');
+                closeModal();
                 loadProjects();
             }
         }
 
-        async function loadProjects() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            const is_admin = session?.user?.id === ADMIN_UID;
-            const { data } = await _supabase.from('projects').select('*').order('created_at', { ascending: false });
-            
-            const grid = document.getElementById('project-grid');
-            const displayList = is_admin ? data : (data || []).filter(p => p.is_visible);
+        async function deleteProject(id) {
+            if (!(await isAdmin())) return showToast('Not authorized', 'error');
+            if (!confirm('Delete permanently?')) return;
+            const { error } = await _supabase.from('projects').delete().eq('id', id);
+            if (error) showToast('Delete failed', 'error');
+            else {
+                showToast('Project deleted');
+                loadProjects();
+            }
+        }
 
-            grid.innerHTML = displayList.map(p => `
-                <div class="card ${!p.is_visible ? 'is-hidden' : ''}" onclick="window.open('${p.link_url}', '_blank')">
-                    <div class="card-actions">
-                        <button class="icon-btn" onclick="event.stopPropagation(); openModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">
-                            <i data-lucide="edit-3" size="14"></i>
-                        </button>
-                        <button class="icon-btn" style="color:var(--danger)" onclick="deleteProject('${p.id}', event)">
-                            <i data-lucide="trash-2" size="14"></i>
-                        </button>
+        async function editProject(id) {
+            const { data } = await _supabase.from('projects').select('*').eq('id', id).single();
+            if (data) openModal(data);
+        }
+
+        async function loadProjects() {
+            document.getElementById('loading').classList.remove('hidden');
+            const admin = await isAdmin();
+            
+            let query = _supabase.from('projects').select('*').order('created_at', { ascending: false });
+            if (!admin) query = query.eq('is_visible', true);
+            
+            const { data, error } = await query;
+            if (error) {
+                showToast('Failed to load projects', 'error');
+                console.error(error);
+            }
+
+            const grid = document.getElementById('project-grid');
+            grid.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+                grid.innerHTML = data.map(p => `
+                    <div class="card ${!p.is_visible ? 'is-hidden' : ''}" onclick="window.open('${p.link_url || '#'}', '_blank')">
+                        <div class="card-actions">
+                            <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                            <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                        </div>
+                        <i data-lucide="${p.icon_name || 'layers'}" style="color:var(--accent);margin-bottom:12px;font-size:1.8rem;"></i>
+                        <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
+                        <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
                     </div>
-                    <i data-lucide="${p.icon_name || 'layers'}" style="color:var(--accent); margin-bottom:12px;"></i>
-                    <h3 style="margin:0; font-size:1.1rem;">${p.title}</h3>
-                    <p style="font-size:0.85rem; margin:8px 0 0 0; opacity:0.6; line-height:1.5;">${p.description}</p>
-                </div>
-            `).join('');
+                `).join('');
+            }
             lucide.createIcons();
+            document.getElementById('loading').classList.add('hidden');
         }
 
         async function init() {
             const { data: { session } } = await _supabase.auth.getSession();
             const { data: settings } = await _supabase.from('site_settings').select('maintenance_mode').single();
-            isMaintenanceOn = settings?.maintenance_mode;
-            const is_admin = session?.user?.id === ADMIN_UID;
-            
-            if (!isMaintenanceOn || is_admin) {
+            isMaintenanceOn = settings?.maintenance_mode ?? true;
+            const admin = session?.user?.id === ADMIN_UID;
+
+            // Show/hide views
+            if (!isMaintenanceOn || admin) {
                 document.getElementById('construction-view').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 loadProjects();
-                if (is_admin) {
+
+                if (admin) {
                     document.getElementById('admin-bar').classList.remove('hidden');
                     document.getElementById('main-body').classList.add('admin-active');
                 }
             }
+
+            // Real-time updates
+            if (projectsChannel) projectsChannel.unsubscribe();
+            projectsChannel = _supabase.channel('projects-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, loadProjects)
+                .subscribe();
+
             lucide.createIcons();
         }
+
+        // Auth listener (critical for OAuth redirect)
+        _supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') init();
+        });
+
+        // Close modals with ESC or click outside
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.getElementById('p-modal').addEventListener('click', e => { if (e.target.id === 'p-modal') closeModal(); });
+        document.getElementById('login-modal').addEventListener('click', e => { if (e.target.id === 'login-modal') hideLogin(); });
+
+        // Start
         init();
     </script>
 </body>
