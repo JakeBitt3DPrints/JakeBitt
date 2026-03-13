@@ -372,7 +372,6 @@
             if (!(await isAdmin())) return showToast('Not authorized', 'error');
 
             let link_url = document.getElementById('p-url').value.trim();
-            // 🔥 AUTO-FIX: add https:// if missing
             if (link_url && !link_url.startsWith('http://') && !link_url.startsWith('https://')) {
                 link_url = 'https://' + link_url;
             }
@@ -419,14 +418,18 @@
             if (data) openModal(data);
         }
 
+        // FIXED CLICK HANDLER — no more current-tab navigation when new tab is checked
         function handleCardClick(e) {
-            if (e.target.closest('.card-actions')) return;
+            if (e.target.closest('.card-actions')) return;   // ignore clicks on edit/delete
             const card = e.currentTarget;
-            let url = card.dataset.url;
+            const url = card.dataset.url;
             const newTab = card.dataset.newTab === 'true';
+
             if (!url || url === '#') return;
+
             if (newTab) {
-                window.open(url, '_blank');
+                window.open(url, '_blank', 'noopener,noreferrer');
+                return;   // ← THIS STOPS EVERYTHING — current tab NEVER changes
             } else {
                 window.location.href = url;
             }
@@ -436,7 +439,8 @@
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
                 <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
-                     data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab || false}">
+                     data-url="${p.link_url || '#'}" 
+                     data-new-tab="${p.open_in_new_tab ? 'true' : 'false'}">
                     <div class="card-actions">
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
@@ -448,6 +452,7 @@
             `).join('');
             lucide.createIcons();
 
+            // Re-attach the super-strict click handler
             document.querySelectorAll('#project-grid .card').forEach(card => {
                 card.addEventListener('click', handleCardClick);
             });
