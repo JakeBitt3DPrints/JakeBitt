@@ -38,9 +38,9 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; width: 100%; }
         .card {
-            background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
+            background: var(--card-bg); padding: 48px 1.8rem 1.8rem; border-radius: 1.2rem; /* extra top padding */
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: all 0.3s ease; text-align: left; position: relative; display: block;
+            transition: all 0.3s ease; text-align: left; position: relative; display: block; cursor: pointer;
         }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
@@ -420,12 +420,24 @@
             if (data) openModal(data);
         }
 
+        function handleCardClick(e) {
+            if (e.target.closest('.card-actions')) return;
+            const card = e.currentTarget;
+            const url = card.dataset.url;
+            const newTab = card.dataset.newTab === 'true';
+            if (!url || url === '#') return;
+            if (newTab) {
+                window.open(url, '_blank');
+            } else {
+                window.location.href = url;
+            }
+        }
+
         function renderProjectCards(data) {
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
-                <a href="${p.link_url || '#'}" 
-                   target="${p.open_in_new_tab ? '_blank' : '_self'}" 
-                   class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}">
+                <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
+                     data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab || false}">
                     <div class="card-actions">
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
@@ -433,9 +445,14 @@
                     <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;display:block;"></i>
                     <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
                     <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
-                </a>
+                </div>
             `).join('');
             lucide.createIcons();
+
+            // Attach click handlers AFTER render (this fixes everything)
+            document.querySelectorAll('#project-grid .card').forEach(card => {
+                card.addEventListener('click', handleCardClick);
+            });
         }
 
         function filterProjects() {
