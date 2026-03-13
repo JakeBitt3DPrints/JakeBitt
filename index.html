@@ -384,7 +384,8 @@
                 icon_color: document.getElementById('p-color').value,
                 open_in_new_tab: document.getElementById('p-new-tab').checked,
                 is_visible: document.getElementById('p-visible').checked,
-                is_featured: document.getElementById('p-featured').checked
+                is_featured: document.getElementById('p-featured').checked,
+                position: allProjects.length * 10   // new cards go to the end
             };
 
             let error;
@@ -418,18 +419,47 @@
             if (data) openModal(data);
         }
 
-        // FIXED CLICK HANDLER — no more current-tab navigation when new tab is checked
+        // New: Move Up / Down
+        async function moveUp(id) {
+            if (!(await isAdmin())) return;
+            const currentIndex = allProjects.findIndex(p => p.id === id);
+            if (currentIndex <= 0) return;
+            const targetIndex = currentIndex - 1;
+
+            const temp = allProjects[currentIndex].position;
+            allProjects[currentIndex].position = allProjects[targetIndex].position;
+            allProjects[targetIndex].position = temp;
+
+            await _supabase.from('projects').update({ position: allProjects[currentIndex].position }).eq('id', allProjects[currentIndex].id);
+            await _supabase.from('projects').update({ position: allProjects[targetIndex].position }).eq('id', allProjects[targetIndex].id);
+
+            loadProjects();
+        }
+
+        async function moveDown(id) {
+            if (!(await isAdmin())) return;
+            const currentIndex = allProjects.findIndex(p => p.id === id);
+            if (currentIndex >= allProjects.length - 1) return;
+            const targetIndex = currentIndex + 1;
+
+            const temp = allProjects[currentIndex].position;
+            allProjects[currentIndex].position = allProjects[targetIndex].position;
+            allProjects[targetIndex].position = temp;
+
+            await _supabase.from('projects').update({ position: allProjects[currentIndex].position }).eq('id', allProjects[currentIndex].id);
+            await _supabase.from('projects').update({ position: allProjects[targetIndex].position }).eq('id', allProjects[targetIndex].id);
+
+            loadProjects();
+        }
+
         function handleCardClick(e) {
-            if (e.target.closest('.card-actions')) return;   // ignore clicks on edit/delete
+            if (e.target.closest('.card-actions')) return;
             const card = e.currentTarget;
             const url = card.dataset.url;
             const newTab = card.dataset.newTab === 'true';
-
             if (!url || url === '#') return;
-
             if (newTab) {
                 window.open(url, '_blank', 'noopener,noreferrer');
-                return;   // ← THIS STOPS EVERYTHING — current tab NEVER changes
             } else {
                 window.location.href = url;
             }
@@ -439,9 +469,10 @@
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
                 <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
-                     data-url="${p.link_url || '#'}" 
-                     data-new-tab="${p.open_in_new_tab ? 'true' : 'false'}">
+                     data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab ? 'true' : 'false'}">
                     <div class="card-actions">
+                        <button class="icon-btn" onclick="event.stopImmediatePropagation(); moveUp('${p.id}')"><i data-lucide="arrow-up" size="14"></i></button>
+                        <button class="icon-btn" onclick="event.stopImmediatePropagation(); moveDown('${p.id}')"><i data-lucide="arrow-down" size="14"></i></button>
                         <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
@@ -452,7 +483,6 @@
             `).join('');
             lucide.createIcons();
 
-            // Re-attach the super-strict click handler
             document.querySelectorAll('#project-grid .card').forEach(card => {
                 card.addEventListener('click', handleCardClick);
             });
@@ -471,7 +501,13 @@
             document.getElementById('loading').classList.remove('hidden');
             const admin = await isAdmin();
             
-            let query = _supabase.from('projects').select('*').order('created_at', { ascending: false });
+            let query = _supabase
+                .from('projects')
+                .select('*')
+                .order('is_featured', { ascending: false })   // ← FEATURED ALWAYS FIRST
+                .order('position', { ascending: true })
+                .order('created_at', { ascending: false });
+            
             if (!admin) query = query.eq('is_visible', true);
             
             const { data, error } = await query;
