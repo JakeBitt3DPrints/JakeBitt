@@ -47,12 +47,9 @@
         .card-large { padding: 2.6rem; }
         .card-wide { grid-column: span 2; padding: 1.8rem; }
         .card.icon-left, .card.icon-right {
-            padding-top: 1.8rem;
+            display: flex; align-items: flex-start; gap: 16px; padding-top: 1.8rem;
         }
-        .card .icon-wrapper { position: absolute; top: 20px; }
-        .card.icon-left .icon-wrapper { left: 20px; }
-        .card.icon-right .icon-wrapper { right: 20px; }
-        .card .content { margin-top: 70px; }
+        .card.icon-right { flex-direction: row-reverse; }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
         .card.is-featured::after {
@@ -60,7 +57,6 @@
             background: #eab308; color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px;
             z-index: 20;
         }
-        .card.is-featured .icon-wrapper { margin-top: 35px; } /* pushes icon down when featured */
         .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; z-index: 30; }
         .admin-active .card-actions { display: flex; }
         .icon-btn {
