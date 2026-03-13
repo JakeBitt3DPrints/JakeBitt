@@ -40,7 +40,7 @@
         .card {
             background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: all 0.3s ease; text-align: left; position: relative; cursor: pointer;
+            transition: all 0.3s ease; text-align: left; position: relative; display: block;
         }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
@@ -136,7 +136,6 @@
     <div class="container">
         <div class="logo">jakebitt</div>
 
-        <!-- Construction starts HIDDEN to prevent flash -->
         <div id="construction-view" class="hidden">
             <p class="subtitle">Building something interesting.</p>
             <div class="status-badge" onclick="showLogin()">
@@ -195,7 +194,7 @@
 
             <input type="text" id="p-title" placeholder="Title" required oninput="updatePreview()">
             <textarea id="p-desc" placeholder="Description" rows="3" oninput="updatePreview()"></textarea>
-            <input type="url" id="p-url" placeholder="https://yourproject.com" required>
+            <input type="url" id="p-url" placeholder="https://youtube.com/..." required>
 
             <div class="color-wrapper">
                 <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
@@ -204,7 +203,7 @@
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
                 <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
-                    <input type="checkbox" id="p-new-tab" checked> Open in new tab
+                    <input type="checkbox" id="p-new-tab" checked> Open in new tab (for external links like YouTube)
                 </label>
                 <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
                     <input type="checkbox" id="p-visible" checked> Public
@@ -247,7 +246,6 @@
         let projectsChannel = null;
         let allProjects = [];
 
-        // 120+ popular Lucide icons
         const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera','facebook','twitter','instagram','linkedin','youtube','twitch','discord','slack','figma','git','git-branch','git-merge','terminal','command','package','box','truck','shopping-cart','credit-card','dollar-sign','percent','award','trophy','medal','flag','map','compass','sun','moon','cloud-rain','thermometer','droplet','wind','leaf','flower','tree','mountain','umbrella','anchor','boat','plane','car','bike','train','bus','subway','zap','battery','plug','wifi-off','signal','volume','volume-2','mic','mic-off','headphones','speaker','radio','tv','monitor','laptop','smartphone','watch','glasses','hat','shirt','shoe','bag','backpack','briefcase','wallet','key','lock','unlock','eye','eye-off','bell','bell-off','bell-ring','alert-triangle','check-circle','x-circle','info','help-circle','question','plus-circle','minus-circle','trash-2','edit-3','save','download-cloud','upload-cloud','refresh-ccw','rotate-cw','arrow-left','arrow-right','arrow-up','arrow-down','chevron-left','chevron-right','chevron-up','chevron-down','corner-up-left','corner-up-right','move','maximize','minimize'];
 
         function showToast(message, type = 'success') {
@@ -400,31 +398,49 @@
             if (data) openModal(data);
         }
 
-        function filterProjects() {
-            const term = document.getElementById('project-search').value.toLowerCase().trim();
-            const grid = document.getElementById('project-grid');
-            const filtered = allProjects.filter(p => 
-                p.title.toLowerCase().includes(term) || 
-                (p.description && p.description.toLowerCase().includes(term))
-            );
-            renderProjectCards(filtered);
+        function handleCardClick(e) {
+            const card = e.currentTarget;
+            const url = card.dataset.url;
+            const newTab = card.dataset.newTab === 'true';
+            if (!url) return;
+            if (newTab) {
+                window.open(url, '_blank');
+            } else {
+                window.location.href = url;
+            }
         }
 
         function renderProjectCards(data) {
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
-                <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}" 
-                     onclick="${p.open_in_new_tab ? `window.open('${p.link_url || '#'}', '_blank')` : `window.location.href='${p.link_url || '#'}'`}">
+                <a href="${p.link_url || '#'}" 
+                   data-url="${p.link_url || '#'}" 
+                   data-new-tab="${p.open_in_new_tab || false}"
+                   class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}">
                     <div class="card-actions">
-                        <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
-                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                        <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
                     <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;"></i>
                     <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
                     <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
-                </div>
+                </a>
             `).join('');
             lucide.createIcons();
+
+            // Attach click handlers (this is the bulletproof part)
+            document.querySelectorAll('#project-grid .card').forEach(card => {
+                card.addEventListener('click', handleCardClick);
+            });
+        }
+
+        function filterProjects() {
+            const term = document.getElementById('project-search').value.toLowerCase().trim();
+            const filtered = allProjects.filter(p => 
+                p.title.toLowerCase().includes(term) || 
+                (p.description && p.description.toLowerCase().includes(term))
+            );
+            renderProjectCards(filtered);
         }
 
         async function loadProjects() {
@@ -451,7 +467,6 @@
         }
 
         async function init() {
-            // Load everything in parallel for speed
             const [sessionRes, settingsRes] = await Promise.all([
                 _supabase.auth.getSession(),
                 _supabase.from('site_settings').select('maintenance_mode').single()
@@ -461,7 +476,6 @@
             const admin = sessionRes.data?.session?.user?.id === ADMIN_UID;
 
             if (!isMaintenanceOn || admin) {
-                // Public or admin → show main content immediately
                 document.getElementById('construction-view').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 loadProjects();
@@ -471,12 +485,10 @@
                     document.getElementById('main-body').classList.add('admin-active');
                 }
             } else {
-                // Maintenance mode → show construction
                 document.getElementById('construction-view').classList.remove('hidden');
                 document.getElementById('main-content').classList.add('hidden');
             }
 
-            // Persistent admin button when public + logged out
             if (!isMaintenanceOn && !admin) {
                 document.getElementById('persistent-admin-btn').classList.remove('hidden');
             } else {
