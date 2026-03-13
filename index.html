@@ -67,7 +67,7 @@
 
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 200;
+            backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 200;
         }
         .modal-content {
             background: #1e293b; padding: 2.5rem; border-radius: 2rem;
@@ -94,7 +94,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .hidden { display: none !important; }
-        footer { margin-top: 4rem; opacity: 0.5; font-size: 0.8rem; }
     </style>
 </head>
 <body id="main-body">
@@ -109,7 +108,7 @@
         </div>
 
         <div id="main-content" class="hidden">
-            <p class="subtitle">The Vault</p>
+            <p class="subtitle">My Projects</p>
             <div id="loading" class="hidden"><div class="loader"></div></div>
             <div class="grid" id="project-grid"></div>
             <div id="empty-state" class="hidden" style="padding:3rem;opacity:0.6;">No projects yet. Add some from the admin bar.</div>
@@ -166,13 +165,11 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <footer>Built with Supabase • Real-time Vault</footer>
-
     <script>
         const SUPABASE_URL = 'https://ygukacsyrpoginyledza.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8wx1wqn0uRWKw1WamOWCbw_aL0lVIjv';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const ADMIN_UID = '11edec92-4080-4d70-8913-39c1b743ab0d'; // ← your UID (keep it)
+        const ADMIN_UID = '11edec92-4080-4d70-8913-39c1b743ab0d';
 
         let isMaintenanceOn = true;
         let currentEditId = null;
@@ -320,7 +317,6 @@
             isMaintenanceOn = settings?.maintenance_mode ?? true;
             const admin = session?.user?.id === ADMIN_UID;
 
-            // Show/hide views
             if (!isMaintenanceOn || admin) {
                 document.getElementById('construction-view').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
@@ -332,7 +328,6 @@
                 }
             }
 
-            // Real-time updates
             if (projectsChannel) projectsChannel.unsubscribe();
             projectsChannel = _supabase.channel('projects-changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, loadProjects)
@@ -341,17 +336,14 @@
             lucide.createIcons();
         }
 
-        // Auth listener (critical for OAuth redirect)
         _supabase.auth.onAuthStateChange((event) => {
             if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') init();
         });
 
-        // Close modals with ESC or click outside
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); hideLogin(); } });
         document.getElementById('p-modal').addEventListener('click', e => { if (e.target.id === 'p-modal') closeModal(); });
         document.getElementById('login-modal').addEventListener('click', e => { if (e.target.id === 'login-modal') hideLogin(); });
 
-        // Start
         init();
     </script>
 </body>
