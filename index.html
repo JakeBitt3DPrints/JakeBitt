@@ -40,16 +40,16 @@
         .card {
             background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: all 0.3s ease; text-align: left; position: relative; cursor: pointer; display: block;
+            transition: all 0.3s ease; text-align: left; position: relative; display: block;
         }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
         .card.is-featured::after {
-            content: "★ Featured"; position: absolute; top: 12px; right: 12px;
+            content: "★ Featured"; position: absolute; top: 12px; left: 12px;
             background: #eab308; color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px;
             z-index: 10;
         }
-        .card-actions { position: absolute; top: 12px; left: 12px; display: none; gap: 6px; z-index: 20; }
+        .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; z-index: 20; }
         .admin-active .card-actions { display: flex; }
         .icon-btn {
             background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
@@ -103,7 +103,6 @@
         }
         .color-wrapper { display: flex; align-items: center; gap: 10px; }
 
-        /* Nice toggles */
         .toggle-group {
             display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0;
         }
@@ -215,7 +214,6 @@
                 <input type="color" id="p-color" value="#38bdf8" oninput="debouncedPreview()">
             </div>
 
-            <!-- Nicer toggles -->
             <div class="toggle-group">
                 <label class="toggle-label">
                     <input type="checkbox" id="p-new-tab" checked>
@@ -422,38 +420,22 @@
             if (data) openModal(data);
         }
 
-        function handleCardClick(e) {
-            const card = e.currentTarget;
-            const url = card.dataset.url;
-            const newTab = card.dataset.newTab === 'true';
-            if (!url || url === '#') return;
-            if (newTab) {
-                window.open(url, '_blank');
-            } else {
-                window.location.href = url;
-            }
-        }
-
         function renderProjectCards(data) {
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
-                <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
-                     data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab || false}">
+                <a href="${p.link_url || '#'}" 
+                   target="${p.open_in_new_tab ? '_blank' : '_self'}" 
+                   class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}">
                     <div class="card-actions">
-                        <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
-                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                        <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
-                    <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;"></i>
+                    <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;display:block;"></i>
                     <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
                     <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
-                </div>
+                </a>
             `).join('');
             lucide.createIcons();
-
-            // Clean click handlers (fixes edit + link issues)
-            document.querySelectorAll('#project-grid .card').forEach(card => {
-                card.addEventListener('click', handleCardClick);
-            });
         }
 
         function filterProjects() {
