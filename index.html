@@ -40,15 +40,16 @@
         .card {
             background: var(--card-bg); padding: 1.8rem; border-radius: 1.2rem;
             border: 1px solid rgba(56, 189, 248, 0.2); text-decoration: none; color: inherit;
-            transition: all 0.3s ease; text-align: left; position: relative; display: block;
+            transition: all 0.3s ease; text-align: left; position: relative; cursor: pointer; display: block;
         }
         .card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
         .card.is-hidden { opacity: 0.5; border-style: dashed; }
         .card.is-featured::after {
-            content: "★ Featured"; position: absolute; top: 12px; left: 12px;
+            content: "★ Featured"; position: absolute; top: 12px; right: 12px;
             background: #eab308; color: #000; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px;
+            z-index: 10;
         }
-        .card-actions { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; }
+        .card-actions { position: absolute; top: 12px; left: 12px; display: none; gap: 6px; z-index: 20; }
         .admin-active .card-actions { display: flex; }
         .icon-btn {
             background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
@@ -101,6 +102,19 @@
             background: transparent; border-radius: 8px;
         }
         .color-wrapper { display: flex; align-items: center; gap: 10px; }
+
+        /* Nice toggles */
+        .toggle-group {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0;
+        }
+        .toggle-label {
+            display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer;
+            background: #1e293b; padding: 12px 16px; border-radius: 12px; transition: all 0.2s;
+        }
+        .toggle-label:hover { background: rgba(56,189,248,0.1); }
+        .toggle-label input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+        }
 
         /* Toast */
         #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; }
@@ -192,24 +206,28 @@
                 <p id="preview-desc" style="font-size:0.85rem;margin:8px 0 0 0;opacity:0.7;">Description</p>
             </div>
 
-            <input type="text" id="p-title" placeholder="Title" required oninput="updatePreview()">
-            <textarea id="p-desc" placeholder="Description" rows="3" oninput="updatePreview()"></textarea>
+            <input type="text" id="p-title" placeholder="Title" required oninput="debouncedPreview()">
+            <textarea id="p-desc" placeholder="Description" rows="3" oninput="debouncedPreview()"></textarea>
             <input type="url" id="p-url" placeholder="https://youtube.com/..." required>
 
             <div class="color-wrapper">
                 <input type="text" id="p-icon" readonly placeholder="Click to pick icon" style="flex:1;cursor:pointer;" onclick="openIconPicker()">
-                <input type="color" id="p-color" value="#38bdf8" oninput="updatePreview()">
+                <input type="color" id="p-color" value="#38bdf8" oninput="debouncedPreview()">
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
-                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
-                    <input type="checkbox" id="p-new-tab" checked> Open in new tab (for external links like YouTube)
+            <!-- Nicer toggles -->
+            <div class="toggle-group">
+                <label class="toggle-label">
+                    <input type="checkbox" id="p-new-tab" checked>
+                    <span>Open in new tab (YouTube, external sites)</span>
                 </label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
-                    <input type="checkbox" id="p-visible" checked> Public
+                <label class="toggle-label">
+                    <input type="checkbox" id="p-visible" checked>
+                    <span>Public (visible to everyone)</span>
                 </label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
-                    <input type="checkbox" id="p-featured"> Featured
+                <label class="toggle-label">
+                    <input type="checkbox" id="p-featured">
+                    <span>Featured (★ badge)</span>
                 </label>
             </div>
 
@@ -245,6 +263,7 @@
         let currentEditId = null;
         let projectsChannel = null;
         let allProjects = [];
+        let previewTimeout = null;
 
         const availableIcons = ['layers','code','cpu','globe','zap','github','link','external-link','home','briefcase','book','award','star','heart','play-circle','music','image','video','file-text','folder','settings','user','users','mail','phone','map-pin','calendar','clock','trending-up','shield','key','lock','eye','thumbs-up','message-circle','share-2','download','upload','refresh-cw','edit','trash','plus','minus','x','check','arrow-right','activity','bar-chart','pie-chart','database','server','cloud','wifi','smartphone','monitor','tablet','target','rocket','lightbulb','eye-off','bluetooth','camera','facebook','twitter','instagram','linkedin','youtube','twitch','discord','slack','figma','git','git-branch','git-merge','terminal','command','package','box','truck','shopping-cart','credit-card','dollar-sign','percent','award','trophy','medal','flag','map','compass','sun','moon','cloud-rain','thermometer','droplet','wind','leaf','flower','tree','mountain','umbrella','anchor','boat','plane','car','bike','train','bus','subway','zap','battery','plug','wifi-off','signal','volume','volume-2','mic','mic-off','headphones','speaker','radio','tv','monitor','laptop','smartphone','watch','glasses','hat','shirt','shoe','bag','backpack','briefcase','wallet','key','lock','unlock','eye','eye-off','bell','bell-off','bell-ring','alert-triangle','check-circle','x-circle','info','help-circle','question','plus-circle','minus-circle','trash-2','edit-3','save','download-cloud','upload-cloud','refresh-ccw','rotate-cw','arrow-left','arrow-right','arrow-up','arrow-down','chevron-left','chevron-right','chevron-up','chevron-down','corner-up-left','corner-up-right','move','maximize','minimize'];
 
@@ -261,6 +280,11 @@
         function hideLogin() { document.getElementById('login-modal').classList.add('hidden'); }
         function closeModal() { document.getElementById('p-modal').classList.add('hidden'); currentEditId = null; }
         function closeIconPicker() { document.getElementById('icon-picker').classList.add('hidden'); }
+
+        function debouncedPreview() {
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(updatePreview, 80);
+        }
 
         function updatePreview() {
             const title = document.getElementById('p-title').value || 'Title';
@@ -330,7 +354,7 @@
         function selectIcon(iconName) {
             document.getElementById('p-icon').value = iconName;
             closeIconPicker();
-            updatePreview();
+            debouncedPreview();
         }
 
         async function signIn(provider) {
@@ -402,7 +426,7 @@
             const card = e.currentTarget;
             const url = card.dataset.url;
             const newTab = card.dataset.newTab === 'true';
-            if (!url) return;
+            if (!url || url === '#') return;
             if (newTab) {
                 window.open(url, '_blank');
             } else {
@@ -413,22 +437,20 @@
         function renderProjectCards(data) {
             const grid = document.getElementById('project-grid');
             grid.innerHTML = data.map(p => `
-                <a href="${p.link_url || '#'}" 
-                   data-url="${p.link_url || '#'}" 
-                   data-new-tab="${p.open_in_new_tab || false}"
-                   class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}">
+                <div class="card ${!p.is_visible ? 'is-hidden' : ''} ${p.is_featured ? 'is-featured' : ''}"
+                     data-url="${p.link_url || '#'}" data-new-tab="${p.open_in_new_tab || false}">
                     <div class="card-actions">
-                        <button class="icon-btn" onclick="event.stopImmediatePropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
-                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopImmediatePropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
+                        <button class="icon-btn" onclick="event.stopPropagation(); editProject('${p.id}')"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="icon-btn" style="color:var(--danger)" onclick="event.stopPropagation(); deleteProject('${p.id}')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
                     <i data-lucide="${p.icon_name || 'layers'}" style="color:${p.icon_color || 'var(--accent)'};margin-bottom:12px;font-size:1.8rem;"></i>
                     <h3 style="margin:0;font-size:1.15rem;">${p.title}</h3>
                     <p style="font-size:0.85rem;margin:10px 0 0 0;opacity:0.7;line-height:1.5;">${p.description || ''}</p>
-                </a>
+                </div>
             `).join('');
             lucide.createIcons();
 
-            // Attach click handlers (this is the bulletproof part)
+            // Clean click handlers (fixes edit + link issues)
             document.querySelectorAll('#project-grid .card').forEach(card => {
                 card.addEventListener('click', handleCardClick);
             });
@@ -453,9 +475,6 @@
             const { data, error } = await query;
             if (error) showToast('Failed to load projects', 'error');
             allProjects = data || [];
-
-            const grid = document.getElementById('project-grid');
-            grid.innerHTML = '';
 
             if (!allProjects.length) {
                 document.getElementById('empty-state').classList.remove('hidden');
