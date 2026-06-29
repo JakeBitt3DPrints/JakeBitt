@@ -186,7 +186,7 @@ window.addEventListener("hashchange", render);
 function header(title="BittnerHome Parties"){
   const u = me();
   return `<header class="bar noprint"><div class="wrap">
-    <a class="brand" href="#/">🎉 ${esc(title)}</a>
+    <a class="brand" href="#/"> ${esc(title)}</a>
     <nav class="row" aria-label="Account" style="gap:8px">
       ${isHost() ? `<a class="btn ghost small" href="#/admin">Host panel</a>` : ``}
       ${u ? `<a class="btn ghost small" href="#/profile">${esc(u.name)}</a>
