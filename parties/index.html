@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1B3A6B" />
+<title>BittnerHome Parties</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --red:#C8364A; --blue:#1B3A6B; --green:#2E7D52;
+    --cream:#FBFAF6; --ink:#1A1A24; --muted:#5B5B66; --line:rgba(26,26,36,.12);
+    --shadow:0 2px 16px rgba(26,26,36,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--cream); color:var(--ink); font-family:"DM Sans",system-ui,sans-serif; font-size:18px; line-height:1.6;-webkit-text-size-adjust:100%;}
+  h1,h2,h3{font-family:"DM Serif Display",Georgia,serif; font-weight:400; line-height:1.15; margin:0 0 .4em}
+  h1{font-size:clamp(2rem,7vw,2.75rem)} h2{font-size:1.7rem} h3{font-size:1.3rem}
+  a{color:var(--blue)} p{margin:0 0 .8em}
+  :focus-visible{outline:3px solid var(--blue); outline-offset:2px; border-radius:6px}
+  .wrap{max-width:760px; margin:0 auto; padding:20px 16px 64px}
+  .center{text-align:center}
+  .muted{color:var(--muted)}
+
+  /* buttons */
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    min-height:56px; padding:12px 22px; border-radius:14px; font-size:1.1rem; font-weight:500;
+    border:none; cursor:pointer; text-decoration:none; transition:.12s; -webkit-tap-highlight-color:transparent}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .btn.block{width:100%}
+  .primary{background:var(--blue); color:#fff; box-shadow:var(--shadow)}
+  .red{background:var(--red); color:#fff; box-shadow:var(--shadow)}
+  .green{background:var(--green); color:#fff; box-shadow:var(--shadow)}
+  .ghost{background:#fff; color:var(--ink); border:2px solid var(--line)}
+  .ghost:hover{border-color:rgba(26,26,36,.35)}
+  .small{min-height:44px; padding:8px 16px; font-size:1rem}
+
+  .card{background:#fff; border:1px solid rgba(26,26,36,.06); border-radius:20px; box-shadow:var(--shadow); padding:22px; margin-bottom:18px}
+  .field{width:100%; min-height:56px; padding:12px 16px; font-size:1.1rem; border:2px solid var(--line); border-radius:14px; background:#fff; font-family:inherit; margin-bottom:14px}
+  .field:focus{outline:none; border-color:var(--blue)}
+  label{display:block; font-weight:500; color:var(--muted); margin-bottom:6px}
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:.95rem; font-weight:500}
+  .b-red{background:rgba(200,54,74,.12); color:var(--red)}
+  .b-green{background:rgba(46,125,82,.15); color:var(--green)}
+  .b-blue{background:rgba(27,58,107,.1); color:var(--blue)}
+  .b-grey{background:rgba(26,26,36,.06); color:var(--muted)}
+  .row{display:flex; gap:12px; flex-wrap:wrap}
+  .between{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .grid2{display:grid; grid-template-columns:1fr; gap:16px}
+  @media(min-width:560px){.grid2{grid-template-columns:1fr 1fr}}
+  .hide{display:none !important}
+
+  /* header */
+  header.bar{position:sticky; top:0; z-index:20; background:rgba(255,255,255,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  .bar .wrap{padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .brand{font-family:"DM Serif Display",serif; font-size:1.3rem; color:var(--blue); text-decoration:none}
+
+  /* bingo card */
+  .bingo{background:#fff; border-radius:20px; padding:12px; box-shadow:var(--shadow)}
+  .bhead,.bgrid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px}
+  .bhead div{text-align:center; font-family:"DM Serif Display",serif; font-size:clamp(1.5rem,6vw,2.2rem); color:var(--blue)}
+  .bhead div:nth-child(2){color:var(--red)} .bhead div:nth-child(4){color:var(--green)}
+  .bgrid{margin-top:8px}
+  .cell{aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:clamp(1.2rem,5.5vw,2rem); font-weight:700; font-variant-numeric:tabular-nums;
+    border:2px solid var(--line); border-radius:14px; background:var(--cream); color:var(--ink); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:.1s}
+  .cell:active{transform:scale(.93)}
+  .cell.called{border-color:var(--red); box-shadow:inset 0 0 0 2px rgba(200,54,74,.25)}
+  .cell.marked{background:var(--blue); color:#fff; border-color:var(--blue)}
+  .cell.free{background:linear-gradient(135deg,var(--red),var(--blue)); color:#fff; border:none; flex-direction:column; cursor:default; font-size:1.6rem}
+  .cell.free small{font-size:.65rem; letter-spacing:.1em}
+  .serial{text-align:right; color:var(--muted); font-size:.9rem; margin:8px 4px 0}
+
+  /* called board on tv / banner */
+  .banner{background:var(--blue); color:#fff; border-radius:20px; padding:18px; text-align:center; margin-bottom:18px}
+  .big-num{font-family:"DM Serif Display",serif; font-size:clamp(2.5rem,12vw,4rem); line-height:1}
+  ol.lead{list-style:none; margin:0; padding:0}
+  ol.lead li{display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 16px; margin-bottom:8px}
+  ol.lead .pts{font-family:"DM Serif Display",serif; font-size:1.6rem; color:var(--blue)}
+
+  /* mini call board */
+  .miniboard{display:grid; grid-template-columns:auto 1fr; gap:8px; margin-top:12px}
+  .miniboard .lt{font-family:"DM Serif Display",serif; font-size:1.4rem; color:var(--blue); display:flex; align-items:center}
+  .miniboard .nums{display:grid; grid-template-columns:repeat(15,1fr); gap:4px}
+  .miniboard button{aspect-ratio:1; font-size:.7rem; border:1px solid var(--line); border-radius:6px; background:var(--cream); cursor:pointer; padding:0}
+  .miniboard button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
+
+  /* toast */
+  #toast{position:fixed; left:50%; bottom:20px; transform:translateX(-50%); z-index:60; color:#fff; padding:12px 20px; border-radius:14px; box-shadow:var(--shadow); font-weight:500; opacity:0; pointer-events:none; transition:opacity .2s}
+  #toast.show{opacity:1}
+
+  /* tv */
+  .tv{min-height:100vh; background:linear-gradient(135deg,var(--blue),#0f2347); color:#fff; padding:24px}
+  .tv .panel{background:rgba(255,255,255,.1); border-radius:20px; padding:22px; backdrop-filter:blur(8px)}
+  .tv .panel.light{background:rgba(255,255,255,.95); color:var(--ink)}
+  .tv .tvgrid{display:grid; grid-template-columns:1fr; gap:20px; max-width:1100px; margin:0 auto}
+  @media(min-width:900px){.tv .tvgrid{grid-template-columns:1fr 1fr}}
+  .pill{display:inline-block; background:#fff; color:var(--blue); font-family:"DM Serif Display",serif; font-size:1.4rem; border-radius:12px; padding:6px 14px; margin:4px}
+
+  .skip{position:absolute; left:-999px}
+  .skip:focus{left:12px; top:12px; background:var(--blue); color:#fff; padding:8px 14px; border-radius:10px; z-index:99}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+  @media print{.noprint{display:none !important} .cell.marked,.cell.called{background:#fff !important; color:#000 !important; box-shadow:none !important}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<div id="root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.5/dist/pocketbase.umd.js"></script>
+<script>
+/* ====================================================================== *
+ *  BittnerHome Parties — single-file app
+ *  Backend: PocketBase. Change PB_URL if your address ever changes.
+ * ====================================================================== */
+const PB_URL = "https://pb.jakebitt3dprints.com";
+const pb = new PocketBase(PB_URL);
+pb.autoCancellation(false);
+
+const $ = (id) => document.getElementById(id);
+const root = $("root");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+let toastTimer;
+function toast(msg, kind="info"){
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.background = kind==="error" ? "var(--red)" : kind==="success" ? "var(--green)" : "var(--blue)";
+  t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 3000);
+}
+const me = () => pb.authStore.record;
+const isHost = () => !!me()?.is_host;
+
+/* ---------- bingo logic (pure) ---------- */
+const RANGES = [[1,15],[16,30],[31,45],[46,60],[61,75]];
+const LETTERS = ["B","I","N","G","O"];
+function letterFor(n){ for(let i=0;i<RANGES.length;i++){const[a,b]=RANGES[i]; if(n>=a&&n<=b) return LETTERS[i];} return ""; }
+function genCard(){
+  const cols = RANGES.map(([a,b])=>{
+    const pool=[]; for(let n=a;n<=b;n++) pool.push(n);
+    for(let i=pool.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [pool[i],pool[j]]=[pool[j],pool[i]];}
+    return pool.slice(0,5);
+  });
+  const grid=[]; for(let r=0;r<5;r++) grid.push(cols.map(c=>c[r]));
+  grid[2][2]=0; return grid;
+}
+const mk=(v,set)=> v===0 || set.has(v);
+function detectWin(grid, marked){
+  const m=new Set(marked||[]);
+  for(let r=0;r<5;r++) if(grid[r].every(v=>mk(v,m))) return "row";
+  for(let c=0;c<5;c++) if(grid.every(row=>mk(row[c],m))) return "column";
+  if([0,1,2,3,4].every(i=>mk(grid[i][i],m))) return "diagonal";
+  if([0,1,2,3,4].every(i=>mk(grid[i][4-i],m))) return "diagonal";
+  if(grid.every(row=>row.every(v=>mk(v,m)))) return "blackout";
+  return null;
+}
+function verifyClaim(grid, marked, called){
+  const c=new Set(called);
+  if(!(marked||[]).every(n=>c.has(n))) return {valid:false, reason:"A marked number was never called."};
+  const p=detectWin(grid, marked);
+  return p ? {valid:true, pattern:p} : {valid:false, reason:"No full row, column, or diagonal yet."};
+}
+const serial = () => "B-"+(1000+(Math.random()*9000|0));
+
+/* ---------- tiny hash router ---------- */
+const routes = [];
+const route = (re, fn) => routes.push([re, fn]);
+function go(hash){ location.hash = hash; }
+let cleanup = null;
+async function render(){
+  if(cleanup){ try{ cleanup(); }catch(e){} cleanup=null; }
+  const path = (location.hash || "#/").slice(1);
+  for(const [re, fn] of routes){
+    const m = path.match(re);
+    if(m){ root.innerHTML = '<main id="main" class="wrap"><p class="muted center" style="padding:40px">Loading…</p></main>'; cleanup = await fn(...m.slice(1)); return; }
+  }
+  root.innerHTML = '<main id="main" class="wrap"><h1>Not found</h1><a class="btn ghost" href="#/">Go home</a></main>';
+}
+window.addEventListener("hashchange", render);
+
+/* ---------- shared header ---------- */
+function header(title="BittnerHome Parties"){
+  const u = me();
+  return `<header class="bar noprint"><div class="wrap">
+    <a class="brand" href="#/">🎉 ${esc(title)}</a>
+    <nav class="row" aria-label="Account" style="gap:8px">
+      ${isHost() ? `<a class="btn ghost small" href="#/admin">Host panel</a>` : ``}
+      ${u ? `<a class="btn ghost small" href="#/profile">${esc(u.name)}</a>
+             <button class="btn ghost small" id="signout">Sign out</button>`
+           : `<a class="btn primary small" href="#/login">Sign in</a>`}
+    </nav></div></header>`;
+}
+function wireHeader(){
+  const b = $("signout");
+  if(b) b.onclick = () => { pb.authStore.clear(); go("#/login"); };
+}
+const requireUser = () => { if(!me()){ go("#/login"); return false; } return true; };
+
+/* ====================================================================== *
+ *  ROUTES
+ * ====================================================================== */
+
+/* ---- Home: list of parties ---- */
+route(/^\/$/, async () => {
+  let parties = [];
+  try{ parties = await pb.collection("bhp_parties").getFullList({ sort:"-event_date" }); }
+  catch(e){ root.innerHTML = header()+`<main id="main" class="wrap"><div class="card center">Could not reach the party server. Check your connection.</div></main>`; wireHeader(); return; }
+  const dl = d => d ? new Date(d).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}) : "";
+  const cards = parties.map(p=>{
+    const banner = p.banner
+      ? `<img src="${pb.files.getUrl(p,p.banner,{thumb:'600x0'})}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:14px;margin-bottom:14px">`
+      : `<div style="height:150px;border-radius:14px;margin-bottom:14px;background:linear-gradient(135deg,var(--blue),var(--red));display:flex;align-items:center;justify-content:center;font-size:3rem">🎊</div>`;
+    return `<a class="card" style="display:block;text-decoration:none;color:inherit" href="#/party/${p.id}">
+      ${banner}
+      ${p.is_active?`<span class="badge b-green" style="margin-bottom:6px">Happening now</span><br>`:""}
+      <h2 style="margin-bottom:2px">${esc(p.name)}</h2>
+      ${p.theme?`<p class="muted" style="margin:0">${esc(p.theme)}</p>`:""}
+      <p class="muted" style="margin:2px 0 0">${dl(p.event_date)}</p></a>`;
+  }).join("");
+  root.innerHTML = header()+`<main id="main" class="wrap">
+    <section class="center" style="margin-bottom:28px">
+      <span class="badge b-red" style="margin-bottom:10px">Family fun, all in one place</span>
+      <h1>Welcome to the party 🎉</h1>
+      <p class="muted" style="max-width:30rem;margin:0 auto">Pick a party to play bingo, vote on best dressed, and watch the live scoreboard.</p>
+      ${ me() ? "" : `<div style="margin-top:18px"><a class="btn primary" href="#/login">Get started — 10 seconds</a></div>`}
+    </section>
+    ${ parties.length ? `<div class="grid2">${cards}</div>`
+        : `<div class="card center"><h2>No parties yet</h2><p class="muted">Ask the host to set one up.</p></div>`}
+  </main>`;
+  wireHeader();
+});
+
+/* ---- Login / guest / signup ---- */
+route(/^\/login$/, async () => {
+  let mode = "guest";
+  function paint(){
+    root.innerHTML = `<main id="main" class="wrap" style="max-width:440px;padding-top:40px">
+      <div class="center" style="margin-bottom:18px"><a class="brand" href="#/">🎉 BittnerHome Parties</a></div>
+      <div class="card">
+        <div class="row" style="gap:4px;background:var(--cream);border-radius:14px;padding:4px;margin-bottom:20px" role="tablist">
+          ${[["guest","Quick join"],["signup","New account"],["signin","Sign in"]].map(([m,l])=>
+            `<button role="tab" aria-selected="${mode===m}" data-m="${m}" class="btn small" style="flex:1;${mode===m?'background:#fff;box-shadow:var(--shadow);color:var(--blue)':'background:transparent;color:var(--muted)'}">${l}</button>`).join("")}
+        </div>
+        <div id="form"></div>
+        <button class="btn primary block" id="submit"></button>
+      </div></main>`;
+    const f = $("form"), btn = $("submit");
+    if(mode==="guest"){
+      f.innerHTML = `<p class="muted">No password needed — just your name.</p>
+        <label for="n">Your name</label><input id="n" class="field" placeholder="Grandma Sue" autocomplete="name">`;
+      btn.textContent = "Join the party";
+    } else if(mode==="signup"){
+      f.innerHTML = `<label for="n">Your name</label><input id="n" class="field" autocomplete="name">
+        <label for="e">Email</label><input id="e" class="field" type="email" autocomplete="email">
+        <label for="p">Password</label><input id="p" class="field" type="password" autocomplete="new-password">`;
+      btn.textContent = "Create account";
+    } else {
+      f.innerHTML = `<label for="e">Email</label><input id="e" class="field" type="email" autocomplete="email">
+        <label for="p">Password</label><input id="p" class="field" type="password" autocomplete="current-password">`;
+      btn.textContent = "Sign in";
+    }
+    root.querySelectorAll("[data-m]").forEach(b=> b.onclick = ()=>{ mode=b.dataset.m; paint(); });
+    btn.onclick = submit;
+    const last = f.querySelector("input:last-of-type");
+    if(last) last.addEventListener("keydown", e=>{ if(e.key==="Enter") submit(); });
+  }
+  async function submit(){
+    const name=$("n")?.value.trim(), email=$("e")?.value.trim(), pass=$("p")?.value;
+    try{
+      if(mode==="guest"){
+        if(!name) return toast("Please type your name.", "error");
+        const em = `guest_${Date.now()}@bittnerhome.party`, pw = crypto.randomUUID().slice(0,12);
+        await pb.collection("bhp_users").create({ name, email:em, password:pw, passwordConfirm:pw, is_host:false });
+        await pb.collection("bhp_users").authWithPassword(em, pw);
+      } else if(mode==="signup"){
+        if(!name||!email||(pass||"").length<6) return toast("Add name, email, and a 6+ char password.", "error");
+        await pb.collection("bhp_users").create({ name, email, password:pass, passwordConfirm:pass, is_host:false });
+        await pb.collection("bhp_users").authWithPassword(email, pass);
+      } else {
+        await pb.collection("bhp_users").authWithPassword(email, pass);
+      }
+      go("#/");
+    }catch(e){ toast(mode==="signin" ? "Email or password not recognized." : "Something went wrong. Try again.", "error"); }
+  }
+  paint();
+});
+
+/* ---- Party hub ---- */
+route(/^\/party\/([^/]+)$/, async (id) => {
+  if(!requireUser()) return;
+  let party, teams=[], games=[], membership=null;
+  try{
+    party = await pb.collection("bhp_parties").getOne(id);
+    teams = await pb.collection("bhp_teams").getFullList({ filter:`party="${id}"`, sort:"name" });
+    games = await pb.collection("bhp_games").getFullList({ filter:`party="${id}"`, sort:"created" });
+    membership = await pb.collection("bhp_memberships").getFirstListItem(`user="${me().id}" && party="${id}"`).catch(()=>null);
+  }catch(e){ root.innerHTML = header()+`<main id="main" class="wrap"><div class="card">Party not found.</div></main>`; wireHeader(); return; }
+
+  const icon = {bingo:"🔢",best_dressed:"👗",trivia:"❓",jeopardy:"🎯",custom:"🎲"};
+  const joinBlock = membership ? `<p class="badge b-green" style="margin-bottom:18px">✓ You’ve joined this party</p>` :
+    `<div class="card" style="border-color:rgba(46,125,82,.3)">
+      <h2>Join this party</h2><p class="muted">Pick a team, or hop in on your own.</p>
+      <div class="row"><button class="btn green" data-team="">Join on my own</button>
+      ${teams.map(t=>`<button class="btn ghost" data-team="${t.id}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${esc(t.color||'#1B3A6B')};margin-right:4px"></span>${esc(t.name)}</button>`).join("")}</div></div>`;
+
+  const gameCards = games.length ? games.map(g=>
+    `<button class="card" data-game="${g.id}" data-type="${g.type}" style="text-align:left;display:flex;gap:16px;align-items:center;cursor:pointer">
+       <span style="font-size:2.4rem">${icon[g.type]||"🎲"}</span>
+       <span><span style="font-size:1.25rem;font-weight:500;display:block">${esc(g.title)}</span>
+       <span class="badge ${g.status==='active'?'b-green':'b-grey'}" style="margin-top:4px">${g.status==='active'?'Playing now':esc(g.status||'')}</span></span>
+     </button>`).join("") : `<div class="card center muted">No games set up yet.</div>`;
+
+  root.innerHTML = header()+`<main id="main" class="wrap">
+    <a href="#/" style="display:inline-block;margin-bottom:8px">← All parties</a>
+    <h1 style="margin-bottom:4px">${esc(party.name)}</h1>
+    ${party.theme?`<span class="badge b-red" style="margin-bottom:14px">${esc(party.theme)}</span>`:""}
+    ${party.description?`<p class="muted">${esc(party.description)}</p>`:""}
+    ${joinBlock}
+    <h2 style="margin-top:8px">Games</h2>
+    <div class="grid2">${gameCards}</div>
+    <div class="row" style="margin-top:20px"><a class="btn ghost" href="#/tv/${id}">📺 Open TV scoreboard</a></div>
+  </main>`;
+  wireHeader();
+
+  root.querySelectorAll("[data-team]").forEach(b=> b.onclick = async ()=>{
+    const team = b.dataset.team || null;
+    try{
+      if(membership) await pb.collection("bhp_memberships").update(membership.id,{team});
+      else await pb.collection("bhp_memberships").create({ user:me().id, party:id, team, display_name:me().name });
+      toast("You’re in! Have fun.", "success"); render();
+    }catch(e){ toast("Could not join. Try again.", "error"); }
+  });
+  root.querySelectorAll("[data-game]").forEach(b=> b.onclick = ()=>{
+    if(b.dataset.type==="bingo") go(`#/bingo/${id}`);
+    else toast("That game opens on the night — hang tight!");
+  });
+});
+
+/* ---- Bingo player ---- */
+route(/^\/bingo\/([^/]+)$/, async (partyId) => {
+  if(!requireUser()) return;
+  let game, cards=[], calls=[], active=0, unsub=null;
+  try{
+    game = await pb.collection("bhp_games").getFirstListItem(`party="${partyId}" && type="bingo"`, { sort:"-is_active,-created" }).catch(()=>null);
+  }catch(e){}
+  if(!game){
+    root.innerHTML = header("Bingo")+`<main id="main" class="wrap"><div class="card center"><h2>No bingo game yet</h2><p class="muted">The host hasn’t started bingo.</p><a class="btn ghost" href="#/party/${partyId}">← Back</a></div></main>`;
+    wireHeader(); return;
+  }
+  cards = await pb.collection("bhp_bingo_cards").getFullList({ filter:`game="${game.id}" && user="${me().id}"`, sort:"created" });
+  calls = await pb.collection("bhp_bingo_calls").getFullList({ filter:`game="${game.id}"`, sort:"created" });
+  if(cards.length===0) cards.push(await pb.collection("bhp_bingo_cards").create({ user:me().id, party:partyId, game:game.id, grid:genCard(), marked:[], serial:serial() }));
+
+  unsub = await pb.collection("bhp_bingo_calls").subscribe("*", e=>{
+    if(e.record.game!==game.id) return;
+    if(e.action==="create"){ calls.push(e.record); toast(`${e.record.letter||letterFor(e.record.number)}-${e.record.number} called!`); paint(); }
+    if(e.action==="delete"){ calls = calls.filter(c=>c.id!==e.record.id); paint(); }
+  });
+
+  function calledNums(){ return calls.map(c=>c.number); }
+  function cardHTML(card){
+    const m=new Set(card.marked||[]), c=new Set(calledNums());
+    let cells="";
+    card.grid.forEach((row,r)=> row.forEach((v,ci)=>{
+      if(v===0){ cells+=`<div class="cell free" aria-label="Free space, marked">★<small>FREE</small></div>`; return; }
+      const isM=m.has(v), isC=c.has(v)&&!isM;
+      cells+=`<button class="cell${isM?' marked':''}${isC?' called':''}" data-n="${v}" aria-pressed="${isM}" aria-label="${LETTERS[ci]} ${v}${isM?', marked':''}">${v}</button>`;
+    }));
+    return `<div class="bingo"><div class="bhead" aria-hidden="true">${LETTERS.map(l=>`<div>${l}</div>`).join("")}</div>
+      <div class="bgrid">${cells}</div>${card.serial?`<p class="serial">${esc(card.serial)}</p>`:""}</div>`;
+  }
+  function paint(){
+    const last = calls.length ? calls[calls.length-1] : null;
+    const tabs = cards.length>1 ? `<div class="row noprint" style="overflow:auto;gap:8px;margin-bottom:12px">${cards.map((c,i)=>`<button class="btn ghost small" data-tab="${i}" style="${active===i?'border-color:var(--blue);color:var(--blue)':''}">Card ${i+1}</button>`).join("")}</div>` : "";
+    const card = cards[active];
+    const won = detectWin(card.grid, card.marked||[]);
+    root.innerHTML = header("Bingo")+`<main id="main" class="wrap">
+      <div class="banner noprint">
+        <p style="margin:0;opacity:.9">Last number called</p>
+        ${last?`<p class="big-num" style="margin:4px 0">${last.letter||letterFor(last.number)}-${last.number}</p>`:`<p class="big-num" style="opacity:.8;font-size:2rem">Waiting…</p>`}
+        <p style="margin:0;opacity:.9">${calls.length} called so far</p>
+      </div>
+      ${tabs}
+      ${cardHTML(card)}
+      <div class="row noprint" style="margin-top:16px">
+        <button class="btn red" id="claim" style="flex:1" ${won?'':'disabled'}>${won?'🎉 I have Bingo!':'Mark a full line to claim'}</button>
+      </div>
+      <div class="row noprint" style="margin-top:18px">
+        <button class="btn ghost" id="newcard">＋ New card</button>
+        <button class="btn ghost" id="print">🖨 Print cards</button>
+        <a class="btn ghost" href="#/tv/${partyId}">📺 Scoreboard</a>
+      </div></main>`;
+    wireHeader();
+    root.querySelectorAll("[data-tab]").forEach(b=> b.onclick=()=>{ active=+b.dataset.tab; paint(); });
+    root.querySelectorAll("[data-n]").forEach(b=> b.onclick=()=>toggle(card, +b.dataset.n));
+    $("newcard").onclick = async ()=>{ const rec=await pb.collection("bhp_bingo_cards").create({user:me().id,party:partyId,game:game.id,grid:genCard(),marked:[],serial:serial()}); cards.push(rec); active=cards.length-1; paint(); };
+    $("print").onclick = ()=>window.print();
+    $("claim").onclick = ()=>claim(card);
+  }
+  async function toggle(card, n){
+    const set=new Set(card.marked||[]); set.has(n)?set.delete(n):set.add(n);
+    card.marked=[...set]; paint();
+    try{ await pb.collection("bhp_bingo_cards").update(card.id,{marked:card.marked}); }catch(e){}
+  }
+  async function claim(card){
+    const r=verifyClaim(card.grid, card.marked||[], calledNums());
+    if(!r.valid) return toast(r.reason, "error");
+    await pb.collection("bhp_bingo_claims").create({ game:game.id, card:card.id, user:me().id, status:"pending", pattern:r.pattern });
+    toast("Bingo claimed! The host will confirm it. 🎉", "success");
+  }
+  paint();
+  return () => { if(unsub) unsub(); };
+});
+
+/* ---- Admin home ---- */
+route(/^\/admin$/, async () => {
+  if(!requireUser()) return;
+  if(!isHost()){ root.innerHTML = header("Host panel")+`<main id="main" class="wrap"><div class="card center"><h2>Host access only</h2><p class="muted">Ask Jake to set <code>is_host</code> on your account.</p></div></main>`; wireHeader(); return; }
+  let parties = await pb.collection("bhp_parties").getFullList({ sort:"-event_date" });
+  function paint(){
+    root.innerHTML = header("Host panel")+`<main id="main" class="wrap">
+      <h1>Host panel</h1>
+      <div class="card"><h2>Create a party</h2>
+        <label for="pn">Party name</label><input id="pn" class="field" placeholder="4th of July Bash">
+        <div class="grid2"><div><label for="pt">Theme</label><input id="pt" class="field" placeholder="4th of July"></div>
+        <div><label for="pd">Date</label><input id="pd" class="field" type="date"></div></div>
+        <label for="pdesc">Description</label><textarea id="pdesc" class="field" rows="2"></textarea>
+        <button class="btn primary" id="mk">Create party</button></div>
+      <h2>Manage parties</h2>
+      ${parties.map(p=>`<div class="card between"><span><b style="font-size:1.2rem">${esc(p.name)}</b>${p.theme?`<span class="muted" style="display:block">${esc(p.theme)}</span>`:""}</span><a class="btn primary small" href="#/admin/${p.id}">Open controls</a></div>`).join("")}
+    </main>`;
+    wireHeader();
+    $("mk").onclick = async ()=>{
+      const name=$("pn").value.trim(); if(!name) return toast("Give the party a name.", "error");
+      const rec = await pb.collection("bhp_parties").create({ name, theme:$("pt").value, event_date:$("pd").value||null, description:$("pdesc").value, is_active:true, host:me().id });
+      parties.unshift(rec); toast("Party created!", "success"); paint();
+    };
+  }
+  paint();
+});
+
+/* ---- Admin party controls (bingo caller + claims) ---- */
+route(/^\/admin\/([^/]+)$/, async (partyId) => {
+  if(!requireUser()) return;
+  if(!isHost()){ root.innerHTML = header("Controls")+`<main id="main" class="wrap"><div class="card center">Host access only.</div></main>`; wireHeader(); return; }
+  let party = await pb.collection("bhp_parties").getOne(partyId).catch(()=>null);
+  if(!party){ root.innerHTML = header("Controls")+`<main id="main" class="wrap"><div class="card">Party not found.</div></main>`; wireHeader(); return; }
+  let game = await pb.collection("bhp_games").getFirstListItem(`party="${partyId}" && type="bingo"`).catch(()=>null);
+  let calls=[], claims=[], unsub=null;
+
+  async function loadBingo(){
+    calls = await pb.collection("bhp_bingo_calls").getFullList({ filter:`game="${game.id}"`, sort:"created" });
+    claims = await pb.collection("bhp_bingo_claims").getFullList({ filter:`game="${game.id}"`, sort:"-created", expand:"user,card" });
+    if(unsub) unsub();
+    unsub = await pb.collection("bhp_bingo_claims").subscribe("*", async e=>{
+      if(e.record.game!==game.id) return;
+      if(e.action==="create"){ const full=await pb.collection("bhp_bingo_claims").getOne(e.record.id,{expand:"user,card"}); claims.unshift(full); toast("New Bingo claim to review!", "success"); paint(); }
+      else { claims = claims.map(c=>c.id===e.record.id?{...c,...e.record}:c); paint(); }
+    });
+  }
+  const calledSet = () => new Set(calls.map(c=>c.number));
+  const remaining = () => { const s=calledSet(); return Array.from({length:75},(_,i)=>i+1).filter(n=>!s.has(n)); };
+
+  async function callNumber(n){ if(calledSet().has(n)) return; const rec=await pb.collection("bhp_bingo_calls").create({game:game.id,number:n,letter:letterFor(n)}); calls.push(rec); paint(); }
+  async function decide(c, status){
+    await pb.collection("bhp_bingo_claims").update(c.id,{status});
+    if(status==="approved") await pb.collection("bhp_scores").create({ party:partyId, game:game.id, user:c.user, points:1, label:`Bingo (${c.pattern})` });
+    c.status=status; toast(status==="approved"?"Winner confirmed! 🎉":"Claim dismissed."); paint();
+  }
+
+  function paint(){
+    if(!game){
+      root.innerHTML = header("Controls")+`<main id="main" class="wrap"><a href="#/admin">← All parties</a><h1>${esc(party.name)}</h1>
+        <div class="card center"><h2>Start Bingo</h2><button class="btn green" id="start">🔢 Start a bingo game</button></div></main>`;
+      wireHeader(); $("start").onclick = async ()=>{ game=await pb.collection("bhp_games").create({party:partyId,type:"bingo",title:"Bingo",status:"active",is_active:true,config:{}}); await loadBingo(); toast("Bingo started!","success"); paint(); };
+      return;
+    }
+    const s = calledSet(), last = calls.length?calls[calls.length-1]:null;
+    const board = LETTERS.map((L,li)=>`<div class="lt">${L}</div><div class="nums">${
+      Array.from({length:15},(_,k)=>li*15+k+1).map(n=>`<button class="${s.has(n)?'on':''}" data-call="${n}" aria-pressed="${s.has(n)}">${n}</button>`).join("")}</div>`).join("");
+    const claimRows = claims.length ? claims.map(c=>`<li>
+        <span><b style="font-size:1.15rem">${esc(c.expand?.user?.name||"Guest")}</b><span class="muted" style="display:block">${esc(c.pattern||"")} · card ${esc(c.expand?.card?.serial||"")}</span></span>
+        ${c.status==="pending"
+          ? `<span class="row" style="gap:8px"><button class="btn green small" data-ok="${c.id}">Confirm</button><button class="btn ghost small" data-no="${c.id}">Dismiss</button></span>`
+          : `<span class="badge ${c.status==='approved'?'b-green':'b-grey'}">${c.status}</span>`}
+      </li>`).join("") : `<p class="muted">No claims yet.</p>`;
+
+    root.innerHTML = header("Controls")+`<main id="main" class="wrap">
+      <a href="#/admin">← All parties</a>
+      <h1 style="margin-bottom:4px">${esc(party.name)}</h1>
+      <a class="badge b-blue" href="#/tv/${partyId}" style="margin-bottom:18px">📺 Open TV view</a>
+      <div class="card"><div class="between"><h2 style="margin:0">Call numbers</h2><span class="badge b-grey">${calls.length}/75</span></div>
+        <div class="row" style="margin:14px 0">
+          <button class="btn red" id="rand" style="font-size:1.2rem;padding:12px 28px">🎲 Call random number</button>
+          <button class="btn ghost" id="undo" ${calls.length?'':'disabled'}>↩ Undo last</button>
+          <button class="btn ghost" id="reset" ${calls.length?'':'disabled'}>Reset round</button>
+        </div>
+        ${last?`<p class="muted" style="margin:0">Most recent</p><p class="big-num" style="color:var(--blue);margin:0 0 8px">${last.letter}-${last.number}</p>`:""}
+        <details><summary style="cursor:pointer;color:var(--blue)">Show full board / call by hand</summary><div class="miniboard">${board}</div></details>
+      </div>
+      <div class="card"><h2>Bingo claims</h2><ol class="lead">${claimRows}</ol></div>
+    </main>`;
+    wireHeader();
+    $("rand").onclick = ()=>{ const r=remaining(); if(!r.length) return toast("Every number called!", "error"); callNumber(r[Math.random()*r.length|0]); };
+    $("undo").onclick = async ()=>{ const l=calls[calls.length-1]; if(!l) return; await pb.collection("bhp_bingo_calls").delete(l.id); calls.pop(); paint(); };
+    $("reset").onclick = async ()=>{ if(!confirm("Clear every called number?")) return; for(const c of calls) await pb.collection("bhp_bingo_calls").delete(c.id); calls=[]; toast("Round reset."); paint(); };
+    root.querySelectorAll("[data-call]").forEach(b=> b.onclick=()=>callNumber(+b.dataset.call));
+    root.querySelectorAll("[data-ok]").forEach(b=> b.onclick=()=>decide(claims.find(c=>c.id===b.dataset.ok),"approved"));
+    root.querySelectorAll("[data-no]").forEach(b=> b.onclick=()=>decide(claims.find(c=>c.id===b.dataset.no),"rejected"));
+  }
+  if(game) await loadBingo();
+  paint();
+  return () => { if(unsub) unsub(); };
+});
+
+/* ---- TV dashboard ---- */
+route(/^\/tv\/([^/]+)$/, async (partyId) => {
+  let party = await pb.collection("bhp_parties").getOne(partyId).catch(()=>null);
+  let game = await pb.collection("bhp_games").getFirstListItem(`party="${partyId}" && type="bingo"`, { sort:"-is_active,-created" }).catch(()=>null);
+  let calls=[], rows=[], subs=[];
+  if(game){
+    calls = await pb.collection("bhp_bingo_calls").getFullList({ filter:`game="${game.id}"`, sort:"created" });
+    subs.push(await pb.collection("bhp_bingo_calls").subscribe("*", e=>{
+      if(e.record.game!==game.id) return;
+      if(e.action==="create") calls.push(e.record);
+      if(e.action==="delete") calls = calls.filter(c=>c.id!==e.record.id);
+      paint();
+    }));
+  }
+  async function leaderboard(){
+    const scores = await pb.collection("bhp_scores").getFullList({ filter:`party="${partyId}"`, expand:"user,team" });
+    const map = new Map();
+    scores.forEach(s=>{ const name=s.expand?.user?.name||s.expand?.team?.name||s.label||"Guest"; const cur=map.get(name)||{name,points:0,color:s.expand?.team?.color}; cur.points+=s.points||0; map.set(name,cur); });
+    rows = [...map.values()].sort((a,b)=>b.points-a.points);
+  }
+  await leaderboard();
+  subs.push(await pb.collection("bhp_scores").subscribe("*", e=>{ if(e.record.party===partyId){ leaderboard().then(paint); } }));
+
+  function paint(){
+    const last = calls.length?calls[calls.length-1]:null;
+    const recent = calls.slice(-12).reverse().map(c=>`<span class="pill">${c.letter||letterFor(c.number)}-${c.number}</span>`).join("");
+    const medals=["🥇","🥈","🥉"];
+    const lead = rows.length ? rows.map((r,i)=>`<li><span style="display:flex;align-items:center;gap:12px;font-size:1.6rem;font-weight:500"><span style="width:32px;text-align:center">${medals[i]||(i+1)}</span>${r.color?`<span style="width:12px;height:12px;border-radius:50%;background:${esc(r.color)};display:inline-block"></span>`:""}${esc(r.name)}</span><span class="pts" style="font-size:2rem">${r.points}</span></li>`).join("") : `<li class="muted" style="justify-content:center">No scores yet.</li>`;
+    root.innerHTML = `<main id="main" class="tv">
+      <div style="max-width:1100px;margin:0 auto" class="between">
+        <div><h1 style="font-size:clamp(2rem,5vw,3rem);color:#fff;margin:0">${esc(party?.name||"Party")}</h1>${party?.theme?`<p style="opacity:.8;font-size:1.4rem;margin:0">${esc(party.theme)}</p>`:""}</div>
+        <button class="btn ghost small" id="fs">⛶ Fullscreen</button>
+      </div>
+      <div class="tvgrid" style="margin-top:20px">
+        <section class="panel">
+          <h2 style="color:#fff">Bingo</h2>
+          ${!game?`<p style="opacity:.7;font-size:1.5rem">No bingo game running.</p>`:
+            last?`<div style="text-align:center;margin:12px 0">
+                <p style="opacity:.8;font-size:1.4rem;margin:0">Latest number</p>
+                <p style="font-family:'DM Serif Display',serif;font-size:clamp(4rem,12vw,7rem);line-height:1;margin:4px 0">${last.letter||letterFor(last.number)}-${last.number}</p>
+                <p style="opacity:.8;font-size:1.3rem;margin:0">${calls.length} of 75 called</p></div>
+                <div style="text-align:center">${recent}</div>`
+              :`<p style="opacity:.8;font-size:1.5rem;text-align:center;padding:30px 0">Waiting for the first number…</p>`}
+        </section>
+        <section class="panel light">
+          <h2 style="color:var(--blue)">Leaderboard</h2>
+          <ol class="lead">${lead}</ol>
+        </section>
+      </div></main>`;
+    $("fs").onclick = ()=> document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+  }
+  paint();
+  return () => subs.forEach(u=>u&&u());
+});
+
+/* ---- Profile ---- */
+route(/^\/profile$/, async () => {
+  if(!requireUser()) return;
+  const mems = await pb.collection("bhp_memberships").getFullList({ filter:`user="${me().id}"`, expand:"party,team", sort:"-created" });
+  const teamsByParty = {};
+  for(const m of mems){ if(!teamsByParty[m.party]) teamsByParty[m.party] = await pb.collection("bhp_teams").getFullList({ filter:`party="${m.party}"`, sort:"name" }); }
+  const guest = me().email?.includes("@bittnerhome");
+  root.innerHTML = header("My profile")+`<main id="main" class="wrap">
+    <h1 style="margin-bottom:2px">${esc(me().name)}</h1>
+    <p class="muted">${guest?"Guest account":esc(me().email)}</p>
+    <h2>My parties & teams</h2>
+    ${mems.length ? mems.map(m=>`<div class="card">
+        <div class="between" style="margin-bottom:10px"><a href="#/party/${m.party}" style="font-size:1.2rem;font-weight:500">${esc(m.expand?.party?.name||"Party")}</a><a class="btn ghost small" href="#/bingo/${m.party}">Play</a></div>
+        <label for="t-${m.id}">My team</label>
+        <select id="t-${m.id}" class="field" data-mem="${m.id}">
+          <option value="">No team — just me</option>
+          ${(teamsByParty[m.party]||[]).map(t=>`<option value="${t.id}" ${m.team===t.id?'selected':''}>${esc(t.name)}</option>`).join("")}
+        </select></div>`).join("")
+      : `<div class="card center muted">You haven’t joined a party yet.<br><a class="btn primary" style="margin-top:12px" href="#/">Find a party</a></div>`}
+  </main>`;
+  wireHeader();
+  root.querySelectorAll("[data-mem]").forEach(sel=> sel.onchange = async ()=>{ try{ await pb.collection("bhp_memberships").update(sel.dataset.mem,{team:sel.value||null}); toast("Team updated!","success"); }catch(e){ toast("Could not update team.","error"); } });
+});
+
+/* boot */
+render();
+</script>
+</body>
+</html>
