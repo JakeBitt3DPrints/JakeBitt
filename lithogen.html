@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lithophane Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#111a2e; --panel2:#0e1626; --edge:#1e2c48;
+    --text:#e6ecf7; --muted:#8fa3c4; --sky:#38bdf8; --sky2:#0ea5e9; --purple:#a78bfa;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(1200px 800px at 80% -10%, #14213d 0%, var(--bg) 55%);
+    color:var(--text); overflow:hidden;
+  }
+  .app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border-right:1px solid var(--edge); overflow-y:auto; padding:20px;
+  }
+  h1{font-size:20px;margin:0 0 2px;font-weight:800;
+     background:linear-gradient(90deg,var(--sky),var(--purple));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);font-size:12px;margin:0 0 18px}
+  .group{margin-bottom:18px}
+  .group h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px}
+  .row{display:flex;gap:10px}
+  .field{flex:1}
+  input[type=number],select{
+    width:100%;background:var(--panel2);border:1px solid var(--edge);color:var(--text);
+    border-radius:9px;padding:9px 10px;font-size:14px;font-family:inherit;outline:none;
+  }
+  input[type=number]:focus,select:focus{border-color:var(--sky)}
+  .drop{
+    border:1.5px dashed var(--edge);border-radius:12px;padding:22px 14px;text-align:center;
+    color:var(--muted);font-size:13px;cursor:pointer;transition:.15s;background:var(--panel2)
+  }
+  .drop:hover,.drop.hover{border-color:var(--sky);color:var(--text);background:#0c1830}
+  .drop b{color:var(--sky)}
+  .check{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;color:var(--text);margin:8px 0}
+  .check input{width:16px;height:16px;accent-color:var(--sky)}
+  .btn{
+    width:100%;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;color:#04121f;
+    background:linear-gradient(90deg,var(--sky),var(--sky2));transition:.15s
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  .btn.ghost{background:transparent;border:1px solid var(--edge);color:var(--text);margin-top:9px}
+  .stage{position:relative}
+  #canvas{display:block;width:100%;height:100%}
+  .hint{position:absolute;left:16px;bottom:14px;color:var(--muted);font-size:12px;
+        background:rgba(11,18,32,.6);padding:6px 11px;border-radius:8px;border:1px solid var(--edge)}
+  .status{position:absolute;top:16px;left:50%;transform:translateX(-50%);
+          background:rgba(11,18,32,.85);border:1px solid var(--edge);color:var(--text);
+          padding:8px 16px;border-radius:20px;font-size:13px;display:none}
+  .status.show{display:block}
+  .dims{font-size:11px;color:var(--muted);margin-top:6px}
+  .swatch{display:flex;gap:6px;margin-top:6px}
+  .swatch button{flex:1;background:var(--panel2);border:1px solid var(--edge);color:var(--muted);
+    border-radius:7px;padding:6px;font-size:11px;cursor:pointer;font-family:inherit}
+  .swatch button:hover{border-color:var(--sky);color:var(--text)}
+  @media (max-width:760px){.app{grid-template-columns:1fr;grid-template-rows:auto 1fr}.panel{max-height:52vh}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <h1>Lithophane Generator</h1>
+    <p class="sub">Image → 3D-printable STL. Width &amp; height stay independent.</p>
+
+    <div class="group">
+      <div class="drop" id="drop">Drop an image or <b>click to browse</b><br><span style="font-size:11px">PNG · JPG · WEBP</span></div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+
+    <div class="group">
+      <h2>Size (mm)</h2>
+      <div class="row">
+        <div class="field"><label>Width</label><input type="number" id="w" value="54" min="5" step="0.5"></div>
+        <div class="field"><label>Height</label><input type="number" id="h" value="65" min="5" step="0.5"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="lock" checked> Lock to image aspect ratio</label>
+      <div class="dims" id="dims">Load an image to begin.</div>
+      <div class="swatch">
+        <button data-w="54" data-h="65">54×65</button>
+        <button data-w="100" data-h="150">100×150</button>
+        <button data-w="88" data-h="88">88×88 coaster</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Thickness (mm)</h2>
+      <div class="row">
+        <div class="field"><label>Min (bright areas)</label><input type="number" id="minz" value="0.9" min="0.6" step="0.1"></div>
+        <div class="field"><label>Max (dark areas)</label><input type="number" id="maxz" value="3.2" min="1.5" step="0.1"></div>
+      </div>
+      <div class="field" style="margin-top:10px"><label>Border / margin width (0 = none)</label><input type="number" id="border" value="2" min="0" step="0.5"></div>
+      <div class="dims">Border prints at full max thickness (like Bambu's margin) so the frame is solid, not thin.</div>
+      <div class="field" style="margin-top:10px"><label>Extra solid backing (0 = normal backlit lithophane)</label><input type="number" id="basez" value="0" min="0" step="0.5"></div>
+    </div>
+
+    <div class="group">
+      <h2>Options</h2>
+      <label>Detail</label>
+      <select id="detail">
+        <option value="0.4">Draft (fast)</option>
+        <option value="0.25" selected>Standard</option>
+        <option value="0.18">High</option>
+        <option value="0.12">Ultra (slow, big file)</option>
+      </select>
+      <label style="margin-top:10px">Contrast (<span id="cval">1.2</span>)</label>
+      <input type="range" id="contrast" min="0.6" max="2.6" step="0.1" value="1.2" style="width:100%;accent-color:var(--sky)">
+      <label class="check"><input type="checkbox" id="invert"> Invert (negative lithophane)</label>
+    </div>
+
+    <button class="btn" id="gen" disabled>Generate &amp; Update Preview</button>
+    <button class="btn ghost" id="dl" disabled>Download STL</button>
+  </div>
+
+  <div class="stage">
+    <canvas id="canvas"></canvas>
+    <div class="status" id="status"></div>
+    <div class="hint">Drag to rotate · scroll to zoom · right-drag to pan</div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let img=null, imgAspect=1, lastGrid=null;
+
+/* ---------- image loading ---------- */
+$('drop').onclick=()=>$('file').click();
+$('file').onchange=e=>{ if(e.target.files[0]) loadImg(e.target.files[0]); };
+['dragover','dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{
+  e.preventDefault();
+  $('drop').classList.toggle('hover', ev==='dragover');
+  if(ev==='drop' && e.dataTransfer.files[0]) loadImg(e.dataTransfer.files[0]);
+}));
+function loadImg(file){
+  const r=new FileReader();
+  r.onload=()=>{ const i=new Image(); i.onload=()=>{
+    img=i; imgAspect=i.width/i.height;
+    $('drop').innerHTML='✓ '+file.name+'<br><span style="font-size:11px">'+i.width+'×'+i.height+' px</span>';
+    if($('lock').checked) syncFromWidth();
+    $('gen').disabled=false;
+    updateDims();
+    generate();
+  }; i.src=r.result; };
+  r.readAsDataURL(file);
+}
+
+/* ---------- aspect lock ---------- */
+function syncFromWidth(){ if(img) $('h').value=(+$('w').value/imgAspect).toFixed(1); }
+function syncFromHeight(){ if(img) $('w').value=(+$('h').value*imgAspect).toFixed(1); }
+$('w').addEventListener('input',()=>{ if($('lock').checked) syncFromWidth(); updateDims(); });
+$('h').addEventListener('input',()=>{ if($('lock').checked) syncFromHeight(); updateDims(); });
+$('lock').addEventListener('change',()=>{ if($('lock').checked) syncFromWidth(); updateDims(); });
+document.querySelectorAll('.swatch button').forEach(b=>b.onclick=()=>{
+  $('lock').checked=false; $('w').value=b.dataset.w; $('h').value=b.dataset.h; updateDims();
+});
+function updateDims(){
+  const w=+$('w').value,h=+$('h').value;
+  let msg=w.toFixed(1)+' × '+h.toFixed(1)+' mm';
+  if(img && $('lock').checked) msg+=' · matches photo ratio';
+  else if(img) msg+=' · free ratio (photo will fit exactly)';
+  $('dims').textContent=msg;
+}
+
+/* ---------- build heightmap grid ---------- */
+function buildGrid(){
+  const width=+$('w').value, height=+$('h').value;
+  const px=+$('detail').value;
+  const minZ=+$('minz').value, maxZ=+$('maxz').value;
+  const border=+$('border').value, baseZ=+$('basez').value, invert=$('invert').checked;
+  const borderZ=maxZ; // border/margin always prints at full max thickness (Bambu-style)
+  const contrast=+$('contrast').value;
+
+  const cols=Math.max(20,Math.min(800,Math.round(width/px)));
+  const rows=Math.max(20,Math.min(800,Math.round(height/px)));
+
+  // high-quality smoothed source: downscale with area averaging, then sample bilinearly
+  const innerW=Math.max(1,width-2*border), innerH=Math.max(1,height-2*border);
+  const srcMax=1400;
+  let sCols,sRows;
+  if(imgAspect>=1){ sCols=Math.min(srcMax,img.width); sRows=Math.max(1,Math.round(sCols/imgAspect)); }
+  else { sRows=Math.min(srcMax,img.height); sCols=Math.max(1,Math.round(sRows*imgAspect)); }
+  const sc=document.createElement('canvas');
+  sc.width=sCols; sc.height=sRows;
+  const ctx=sc.getContext('2d');
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  ctx.drawImage(img,0,0,sCols,sRows);
+  const data=ctx.getImageData(0,0,sCols,sRows).data;
+
+  // bilinear grayscale sample, u,v in [0,1]
+  function sample(u,v){
+    const fx=Math.min(sCols-1,Math.max(0,u*(sCols-1)));
+    const fy=Math.min(sRows-1,Math.max(0,v*(sRows-1)));
+    const x0=Math.floor(fx),y0=Math.floor(fy);
+    const x1=Math.min(sCols-1,x0+1),y1=Math.min(sRows-1,y0+1);
+    const dx=fx-x0,dy=fy-y0;
+    const g=(x,y)=>{const o=(y*sCols+x)*4;return (0.299*data[o]+0.587*data[o+1]+0.114*data[o+2])/255;};
+    const top=g(x0,y0)*(1-dx)+g(x1,y0)*dx;
+    const bot=g(x0,y1)*(1-dx)+g(x1,y1)*dx;
+    return top*(1-dy)+bot*dy;
+  }
+
+  const heights=new Float32Array(cols*rows);
+  for(let j=0;j<rows;j++){
+    const py=(j/(rows-1))*height;
+    for(let i=0;i<cols;i++){
+      const px_=(i/(cols-1))*width;
+      let z;
+      if(border>0 && (px_<border||px_>width-border||py<border||py>height-border)){
+        z=borderZ; // solid frame at chosen thickness
+      }else{
+        const ux=(px_-border)/innerW, uy=(py-border)/innerH;
+        let b=sample(ux,uy);
+        b=Math.min(1,Math.max(0,(b-0.5)*contrast+0.5)); // contrast around mid-grey
+        if(invert) b=1-b;
+        z=minZ+(1-b)*(maxZ-minZ); // dark = thick
+      }
+      heights[j*cols+i]=z+baseZ;
+    }
+  }
+  return {cols,rows,width,height,heights};
+}
+
+/* ---------- STL export ---------- */
+function buildSTL(g){
+  const {cols,rows,width,height,heights}=g;
+  const tris=[];
+  const X=i=>(i/(cols-1))*width, Y=j=>(j/(rows-1))*height, H=(i,j)=>heights[j*cols+i];
+  const T=(a,b,c)=>tris.push(a,b,c);
+  // top (front)
+  for(let j=0;j<rows-1;j++)for(let i=0;i<cols-1;i++){
+    const A=[X(i),Y(j),H(i,j)],B=[X(i+1),Y(j),H(i+1,j)],C=[X(i+1),Y(j+1),H(i+1,j+1)],D=[X(i),Y(j+1),H(i,j+1)];
+    T(A,B,C);T(A,C,D);
+  }
+  // bottom (flat, reversed)
+  for(let j=0;j<rows-1;j++)for(let i=0;i<cols-1;i++){
+    const A=[X(i),Y(j),0],B=[X(i+1),Y(j),0],C=[X(i+1),Y(j+1),0],D=[X(i),Y(j+1),0];
+    T(A,C,B);T(A,D,C);
+  }
+  // walls
+  for(let i=0;i<cols-1;i++){ // top & bottom rows (y edges)
+    let j=0;
+    T([X(i),Y(j),0],[X(i+1),Y(j),0],[X(i+1),Y(j),H(i+1,j)]);
+    T([X(i),Y(j),0],[X(i+1),Y(j),H(i+1,j)],[X(i),Y(j),H(i,j)]);
+    j=rows-1;
+    T([X(i),Y(j),0],[X(i+1),Y(j),H(i+1,j)],[X(i+1),Y(j),0]);
+    T([X(i),Y(j),0],[X(i),Y(j),H(i,j)],[X(i+1),Y(j),H(i+1,j)]);
+  }
+  for(let j=0;j<rows-1;j++){ // left & right cols (x edges)
+    let i=0;
+    T([X(i),Y(j),0],[X(i),Y(j),H(i,j)],[X(i),Y(j+1),H(i,j+1)]);
+    T([X(i),Y(j),0],[X(i),Y(j+1),H(i,j+1)],[X(i),Y(j+1),0]);
+    i=cols-1;
+    T([X(i),Y(j),0],[X(i),Y(j+1),H(i,j+1)],[X(i),Y(j),H(i,j)]);
+    T([X(i),Y(j),0],[X(i),Y(j+1),0],[X(i),Y(j+1),H(i,j+1)]);
+  }
+  const n=tris.length/3;
+  const buf=new ArrayBuffer(84+n*50);
+  const dv=new DataView(buf);
+  dv.setUint32(80,n,true);
+  let off=84;
+  for(let t=0;t<n;t++){
+    off+=12; // zero normal
+    for(let k=0;k<3;k++){const v=tris[t*3+k];dv.setFloat32(off,v[0],true);dv.setFloat32(off+4,v[1],true);dv.setFloat32(off+8,v[2],true);off+=12;}
+    off+=2;
+  }
+  return buf;
+}
+
+/* ---------- Three.js preview ---------- */
+let scene,cam,renderer,mesh;
+function initGL(){
+  const c=$('canvas');
+  renderer=new THREE.WebGLRenderer({canvas:c,antialias:true});
+  scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b1220);
+  cam=new THREE.PerspectiveCamera(45,1,0.1,2000);
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));
+  const d1=new THREE.DirectionalLight(0xffffff,0.9);d1.position.set(1,1,2);scene.add(d1);
+  const d2=new THREE.DirectionalLight(0x9ecbff,0.4);d2.position.set(-1,-1,1);scene.add(d2);
+  resize(); window.addEventListener('resize',resize);
+  orbit(c); animate();
+}
+function resize(){
+  const c=$('canvas'), r=c.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width,r.height,false); cam.aspect=r.width/r.height; cam.updateProjectionMatrix();
+}
+let rot={x:-0.5,y:0.5},dist=140,drag=null,pan={x:0,y:0};
+function orbit(c){
+  c.addEventListener('mousedown',e=>drag={x:e.clientX,y:e.clientY,b:e.button});
+  window.addEventListener('mouseup',()=>drag=null);
+  window.addEventListener('mousemove',e=>{
+    if(!drag)return; const dx=e.clientX-drag.x,dy=e.clientY-drag.y; drag.x=e.clientX;drag.y=e.clientY;
+    if(drag.b===2){pan.x-=dx*0.1;pan.y+=dy*0.1;}else{rot.y+=dx*0.008;rot.x+=dy*0.008;}
+  });
+  c.addEventListener('contextmenu',e=>e.preventDefault());
+  c.addEventListener('wheel',e=>{e.preventDefault();dist*=(1+e.deltaY*0.001);dist=Math.max(20,Math.min(600,dist));},{passive:false});
+}
+function animate(){
+  requestAnimationFrame(animate);
+  cam.position.set(pan.x+dist*Math.sin(rot.y)*Math.cos(rot.x), pan.y+dist*Math.sin(rot.x), dist*Math.cos(rot.y)*Math.cos(rot.x));
+  cam.lookAt(pan.x,pan.y,0);
+  renderer.render(scene,cam);
+}
+function showMesh(g){
+  if(mesh){scene.remove(mesh);mesh.geometry.dispose();}
+  const {cols,rows,width,height,heights}=g;
+  const pos=[],idx=[];
+  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+    pos.push((i/(cols-1))*width-width/2,(j/(rows-1))*height-height/2,heights[j*cols+i]);
+  }
+  for(let j=0;j<rows-1;j++)for(let i=0;i<cols-1;i++){
+    const a=j*cols+i,b=a+1,c=a+cols,d=c+1;
+    idx.push(a,b,d,a,d,c);
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xdfe8f5,roughness:0.85,metalness:0.05,side:THREE.DoubleSide}));
+  scene.add(mesh);
+  dist=Math.max(width,height)*1.6; pan={x:0,y:0};
+}
+
+/* ---------- actions ---------- */
+function status(t){const s=$('status');if(!t){s.classList.remove('show');return;}s.textContent=t;s.classList.add('show');}
+function generate(){
+  if(!img)return;
+  status('Building mesh…');
+  setTimeout(()=>{ lastGrid=buildGrid(); showMesh(lastGrid);
+    const n=(lastGrid.cols-1)*(lastGrid.rows-1)*4;
+    status('Ready · ~'+n.toLocaleString()+' triangles'); setTimeout(()=>status(''),1600);
+    $('dl').disabled=false;
+  },30);
+}
+$('gen').onclick=generate;
+$('dl').onclick=()=>{
+  if(!lastGrid)return; status('Writing STL…');
+  setTimeout(()=>{
+    const buf=buildSTL(lastGrid);
+    const blob=new Blob([buf],{type:'application/octet-stream'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='lithophane_'+$('w').value+'x'+$('h').value+'mm.stl'; a.click();
+    status('Downloaded'); setTimeout(()=>status(''),1400);
+  },30);
+};
+$('contrast').addEventListener('input',()=>$('cval').textContent=(+$('contrast').value).toFixed(1));
+initGL(); updateDims();
+</script>
+</body>
+</html>
