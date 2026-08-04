@@ -23,6 +23,13 @@
     background:linear-gradient(180deg,var(--panel),var(--panel2));
     border-right:1px solid var(--edge); overflow-y:auto; padding:20px;
   }
+  .back-link{
+    display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);
+    text-decoration:none;font-size:12px;font-weight:600;padding:7px 11px;
+    border:1px solid var(--edge);border-radius:9px;background:var(--panel2);
+    transition:color .15s,border-color .15s;margin-bottom:16px;
+  }
+  .back-link:hover{color:var(--sky);border-color:var(--sky)}
   h1{font-size:20px;margin:0 0 2px;font-weight:800;
      background:linear-gradient(90deg,var(--sky),var(--purple));
      -webkit-background-clip:text;background-clip:text;color:transparent}
@@ -72,6 +79,7 @@
 <body>
 <div class="app">
   <div class="panel">
+    <a class="back-link" href="/">&#8592; jakebitt.com</a>
     <h1>Lithophane Generator</h1>
     <p class="sub">Image → 3D-printable STL. Width &amp; height stay independent.</p>
 
