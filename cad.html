@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JakeCAD — 3D model studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#0d1426; --panel:#111a30; --panel2:#0f1729;
+  --line:rgba(148,163,184,.14); --line2:rgba(148,163,184,.28);
+  --ink:#e7edf7; --muted:#93a3bd; --faint:#64748b;
+  --sky:#38bdf8; --sky-d:#0ea5e9; --purple:#a78bfa; --purple-d:#8b5cf6;
+  --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  --grad:linear-gradient(100deg,var(--sky),var(--purple));
+  --r:12px; --r-sm:8px; --shadow:0 12px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{
+  font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  font-size:13.5px;-webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* ---------- layout ---------- */
+#app{display:grid;grid-template-columns:236px 1fr 288px;grid-template-rows:52px 1fr;height:100%;}
+#top{grid-column:1/4;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--line);z-index:20}
+#left{grid-row:2;background:var(--panel2);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden}
+#stage{grid-row:2;position:relative;background:radial-gradient(120% 120% at 50% 0%,#0e1730,#080d19 70%);min-width:0}
+#right{grid-row:2;background:var(--panel2);border-left:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
+
+/* ---------- top bar ---------- */
+.logo{font-family:"DM Serif Display",serif;font-size:20px;letter-spacing:.2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+.logo small{font-family:"DM Sans";font-size:10px;color:var(--faint);letter-spacing:2px;text-transform:uppercase;-webkit-text-fill-color:var(--faint);margin-left:6px;vertical-align:middle}
+.topsep{width:1px;height:24px;background:var(--line)}
+.tbtn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:var(--r-sm);color:var(--muted);font-weight:500;font-size:12.5px;border:1px solid transparent;transition:.15s}
+.tbtn:hover{background:var(--panel);color:var(--ink)}
+.tbtn.primary{background:var(--grad);color:#06101f;font-weight:700}
+.tbtn.primary:hover{filter:brightness(1.08)}
+.tbtn svg{width:15px;height:15px}
+.grow{flex:1}
+.proj-name{background:transparent;border:1px solid transparent;color:var(--ink);font-weight:700;font-size:14px;padding:5px 8px;border-radius:6px;max-width:220px}
+.proj-name:hover,.proj-name:focus{border-color:var(--line2);outline:none;background:var(--bg)}
+
+/* ---------- left rail ---------- */
+.section{padding:14px 12px;border-bottom:1px solid var(--line)}
+.section h3{margin:0 0 10px;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint);font-weight:700;display:flex;align-items:center;gap:6px}
+.shapes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shape{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--muted);transition:.15s;padding:4px}
+.shape:hover{border-color:var(--sky);color:var(--ink);transform:translateY(-1px);background:#132140}
+.shape svg{width:26px;height:26px}
+.shape span{font-size:9.5px;font-weight:500}
+.shape.hole{border-style:dashed;color:var(--purple)}
+.shape.hole:hover{border-color:var(--purple)}
+.railbtn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--muted);font-weight:500;margin-top:8px;transition:.15s;font-size:12.5px}
+.railbtn:hover{border-color:var(--line2);color:var(--ink);background:#132140}
+.railbtn svg{width:16px;height:16px;flex-shrink:0}
+
+/* plates */
+.plate-tabs{display:flex;flex-direction:column;gap:6px}
+.plate-tab{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer;transition:.12s}
+.plate-tab:hover{border-color:var(--line2)}
+.plate-tab.active{border-color:var(--sky);background:linear-gradient(90deg,rgba(56,189,248,.12),transparent)}
+.plate-tab .nm{flex:1;font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plate-tab .dim{font-size:10px;color:var(--faint)}
+.plate-tab .x{opacity:.5;padding:2px}
+.plate-tab .x:hover{opacity:1;color:var(--bad)}
+
+/* ---------- stage ---------- */
+#view{position:absolute;inset:0}
+#view canvas{display:block}
+.overlay{position:absolute;pointer-events:none;z-index:5}
+.tools{top:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(13,20,38,.86);
+  backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:5px;pointer-events:auto;box-shadow:var(--shadow)}
+.tool{width:38px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--muted);transition:.12s;position:relative}
+.tool:hover{background:var(--panel);color:var(--ink)}
+.tool.active{background:var(--grad);color:#06101f}
+.tool svg{width:17px;height:17px}
+.tool[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:#060a14;border:1px solid var(--line2);padding:4px 8px;border-radius:6px;font-size:10.5px;white-space:nowrap;color:var(--ink);pointer-events:none}
+.viewcube{top:14px;right:14px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.vc-btn{width:34px;height:30px;display:flex;align-items:center;justify-content:center;background:rgba(13,20,38,.86);border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:10.5px;font-weight:700;transition:.12s}
+.vc-btn:hover{border-color:var(--sky);color:var(--ink)}
+.hint{bottom:12px;left:14px;font-size:11px;color:var(--faint);background:rgba(8,13,25,.7);padding:6px 10px;border-radius:8px;pointer-events:none}
+.status{bottom:12px;right:14px;font-size:11px;color:var(--muted);background:rgba(8,13,25,.7);padding:6px 10px;border-radius:8px;pointer-events:none}
+.palette{bottom:12px;left:50%;transform:translateX(-50%);display:none;gap:6px;background:rgba(13,20,38,.9);
+  border:1px solid var(--line);border-radius:12px;padding:8px 10px;pointer-events:auto;align-items:center;box-shadow:var(--shadow)}
+.palette.show{display:flex}
+.swatch{width:24px;height:24px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:.1s}
+.swatch:hover{transform:scale(1.12)}
+.swatch.sel{border-color:#fff}
+.palette .pmode{display:flex;background:var(--panel);border-radius:7px;padding:2px;margin-right:4px}
+.palette .pmode button{font-size:10.5px;padding:4px 9px;border-radius:5px;color:var(--muted);font-weight:600}
+.palette .pmode button.on{background:var(--grad);color:#06101f}
+
+/* ---------- right inspector ---------- */
+.rtabs{display:flex;border-bottom:1px solid var(--line)}
+.rtab{flex:1;padding:11px;text-align:center;font-size:11px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;color:var(--faint);border-bottom:2px solid transparent;transition:.12s}
+.rtab:hover{color:var(--muted)}
+.rtab.active{color:var(--sky);border-bottom-color:var(--sky)}
+.rpane{display:none;flex:1;overflow-y:auto}
+.rpane.active{display:block}
+
+/* outliner */
+.olist{padding:8px}
+.oitem{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;border:1px solid transparent;cursor:pointer;margin-bottom:3px;transition:.1s}
+.oitem:hover{background:var(--panel)}
+.oitem.sel{background:linear-gradient(90deg,rgba(56,189,248,.14),transparent);border-color:rgba(56,189,248,.4)}
+.oitem .dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+.oitem .nm{flex:1;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oitem.holeobj .nm{color:var(--purple);font-style:italic}
+.oitem .ic{opacity:.4;width:14px;height:14px}
+.oitem .vis{opacity:.5;padding:2px}
+.oitem .vis:hover{opacity:1}
+.empty{padding:30px 16px;text-align:center;color:var(--faint);font-size:12px;line-height:1.6}
+
+/* props */
+.props{padding:14px}
+.pgroup{margin-bottom:16px}
+.pgroup>label{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field .lab{font-size:9.5px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.inp{background:var(--bg);border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:7px 8px;font-size:12px;width:100%;transition:.12s}
+.inp:focus{outline:none;border-color:var(--sky)}
+.inp.mono{font-family:"JetBrains Mono",monospace;font-size:11.5px}
+select.inp{cursor:pointer}
+.pchk{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:.12s}
+.pchk:hover{border-color:var(--line2)}
+.pchk input{accent-color:var(--purple);width:15px;height:15px}
+.pchk .t{font-size:12.5px;font-weight:500}
+.pchk .s{font-size:10px;color:var(--faint)}
+.colorrow{display:flex;gap:6px;flex-wrap:wrap}
+.crow-sw{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+.crow-sw.sel{border-color:#fff}
+.pactions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.pbtn{padding:8px;border-radius:7px;background:var(--panel);border:1px solid var(--line);color:var(--muted);font-size:11.5px;font-weight:600;transition:.12s;display:flex;align-items:center;justify-content:center;gap:6px}
+.pbtn:hover{border-color:var(--line2);color:var(--ink)}
+.pbtn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.pbtn svg{width:14px;height:14px}
+
+/* range */
+.rng{width:100%;accent-color:var(--sky)}
+.rngrow{display:flex;align-items:center;gap:8px}
+.rngrow .val{font-size:11px;color:var(--muted);min-width:44px;text-align:right}
+
+/* modal / gallery */
+.scrim{position:fixed;inset:0;background:rgba(4,8,16,.72);backdrop-filter:blur(6px);z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+.scrim.show{display:flex}
+.modal{background:var(--panel2);border:1px solid var(--line2);border-radius:16px;width:min(920px,94vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal h2{font-family:"DM Serif Display",serif;margin:0;font-size:22px}
+.mhead{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.mbody{padding:22px;overflow-y:auto}
+.mclose{margin-left:auto;color:var(--muted);padding:6px;border-radius:6px}
+.mclose:hover{background:var(--panel);color:var(--ink)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.15s}
+.gcard:hover{border-color:var(--sky);transform:translateY(-2px)}
+.gcard .thumb{aspect-ratio:4/3;background:#0a1122 center/cover;display:flex;align-items:center;justify-content:center;color:var(--faint)}
+.gcard .meta{padding:10px 12px}
+.gcard .meta .t{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard .meta .d{font-size:10.5px;color:var(--faint);margin-top:3px;display:flex;justify-content:space-between}
+.gcard .meta .del{color:var(--faint);float:right}
+.gcard .meta .del:hover{color:var(--bad)}
+
+/* settings modal */
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.setrow .lab .t{font-weight:600}
+.setrow .lab .s{font-size:11px;color:var(--faint);margin-top:2px}
+.platebank{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pbank-row{display:grid;grid-template-columns:1fr 70px 70px 70px auto;gap:8px;align-items:center}
+.pbank-row .inp{padding:6px}
+
+/* toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#060a14;border:1px solid var(--line2);
+  padding:11px 18px;border-radius:10px;font-size:12.5px;font-weight:600;z-index:80;opacity:0;transition:.25s;box-shadow:var(--shadow);pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.good{border-color:var(--good)} #toast.bad{border-color:var(--bad)}
+
+.dropzone{border:2px dashed var(--line2);border-radius:12px;padding:26px;text-align:center;color:var(--muted);transition:.15s;cursor:pointer}
+.dropzone:hover,.dropzone.over{border-color:var(--sky);color:var(--ink);background:rgba(56,189,248,.05)}
+
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:5px}
+::-webkit-scrollbar-track{background:transparent}
+
+@media (max-width:1100px){#app{grid-template-columns:200px 1fr 240px}}
+#loader{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spin{width:34px;height:34px;border:3px solid var(--line2);border-top-color:var(--sky);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="loader"><div class="spin"></div><div style="color:var(--faint);font-size:12px">Loading engine…</div></div>
+
+<div id="app">
+  <!-- TOP BAR -->
+  <div id="top">
+    <div class="logo">JakeCAD<small>studio</small></div>
+    <div class="topsep"></div>
+    <input id="projName" class="proj-name" value="Untitled design" spellcheck="false">
+    <div class="grow"></div>
+    <button class="tbtn" id="btnUndo" data-tip="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>Undo</button>
+    <button class="tbtn" id="btnRedo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg>Redo</button>
+    <div class="topsep"></div>
+    <button class="tbtn" id="btnGallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>My designs</button>
+    <button class="tbtn" id="btnSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <button class="tbtn" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Save</button>
+    <button class="tbtn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Export</button>
+  </div>
+
+  <!-- LEFT -->
+  <div id="left">
+    <div class="section">
+      <h3>Solid shapes</h3>
+      <div class="shapes" id="solidShapes"></div>
+    </div>
+    <div class="section">
+      <h3>Holes / cutouts</h3>
+      <div class="shapes" id="holeShapes"></div>
+    </div>
+    <div class="section">
+      <h3>Create</h3>
+      <button class="railbtn" id="btnText"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>Add 3D text</button>
+      <button class="railbtn" id="btnSvg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>Import SVG shape</button>
+    </div>
+    <div class="section">
+      <h3>Build plates
+        <button id="btnAddPlate" style="margin-left:auto;color:var(--sky);font-size:16px;line-height:1" title="Add plate">+</button>
+      </h3>
+      <div class="plate-tabs" id="plateTabs"></div>
+      <button class="railbtn" id="btnPack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Auto-pack plate</button>
+    </div>
+    <div class="section" style="border-bottom:none">
+      <h3>Selection</h3>
+      <button class="railbtn" id="btnCombine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>Combine / apply holes</button>
+      <button class="railbtn" id="btnUngroup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Ungroup</button>
+      <button class="railbtn" id="btnDup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+      <button class="railbtn" id="btnDrop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13M6 11l6 6 6-6M4 21h16"/></svg>Drop to plate</button>
+    </div>
+  </div>
+
+  <!-- STAGE -->
+  <div id="stage">
+    <div id="view"></div>
+    <div class="overlay tools" id="tools">
+      <button class="tool active" data-tool="select" data-tip="Select · Q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7 18 2-8 8-2z"/></svg></button>
+      <button class="tool" data-tool="translate" data-tip="Move · W"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M8 6l4-4 4 4M8 18l4 4 4-4M6 8l-4 4 4 4M18 8l4 4-4 4"/></svg></button>
+      <button class="tool" data-tool="rotate" data-tip="Rotate · E"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="tool" data-tool="scale" data-tip="Scale · R"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 3H3v18M21 3l-9 9M21 3v6M21 3h-6"/></svg></button>
+      <div style="width:1px;background:var(--line);margin:2px 3px"></div>
+      <button class="tool" data-tool="paint" data-tip="Paint · P"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 3l2 2-9 9-3 1 1-3 9-9z"/><path d="M4 20s2-4 5-4 3 3 6 3"/></svg></button>
+    </div>
+    <div class="overlay viewcube">
+      <button class="vc-btn" data-view="top">TOP</button>
+      <button class="vc-btn" data-view="front">FRT</button>
+      <button class="vc-btn" data-view="right">RGT</button>
+      <button class="vc-btn" data-view="iso">ISO</button>
+      <button class="vc-btn" data-view="fit">FIT</button>
+    </div>
+    <div class="overlay palette" id="palette">
+      <div class="pmode">
+        <button data-pmode="object" class="on">Object</button>
+        <button data-pmode="face">Face</button>
+      </div>
+      <div id="swatches" style="display:flex;gap:6px"></div>
+      <input type="color" id="customColor" class="swatch" style="padding:0;width:24px;height:24px;background:none" value="#38bdf8" title="Custom color">
+    </div>
+    <div class="overlay hint" id="hint">Drag a shape in · scroll to zoom · right-drag to pan</div>
+    <div class="overlay status" id="status">0 objects</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div class="rtabs">
+      <button class="rtab active" data-rtab="props">Properties</button>
+      <button class="rtab" data-rtab="outline">Objects</button>
+    </div>
+    <div class="rpane active" id="pane-props"><div id="propsHost"></div></div>
+    <div class="rpane" id="pane-outline"><div class="olist" id="outliner"></div></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="scrim" id="galleryScrim">
+  <div class="modal">
+    <div class="mhead"><h2>My designs</h2>
+      <button class="tbtn" id="btnNewFromGallery" style="border:1px solid var(--line)">+ New design</button>
+      <button class="mclose" data-close="galleryScrim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mbody"><div class="gal" id="galleryGrid"></div></div>
+  </div>
+</div>
+
+<div class="scrim" id="settingsScrim">
+  <div class="modal">
+    <div class="mhead"><h2>Settings</h2><button class="mclose" data-close="settingsScrim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="mbody" id="settingsBody"></div>
+  </div>
+</div>
+
+<div class="scrim" id="textScrim">
+  <div class="modal" style="width:min(460px,94vw)">
+    <div class="mhead"><h2>3D text</h2><button class="mclose" data-close="textScrim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="mbody">
+      <div class="field" style="margin-bottom:12px"><span class="lab">Text</span><input id="textInput" class="inp" value="Hello" placeholder="Type here"></div>
+      <div class="row2" style="margin-bottom:12px">
+        <div class="field"><span class="lab">Height (mm)</span><input id="textSize" class="inp mono" type="number" value="10" min="1"></div>
+        <div class="field"><span class="lab">Depth (mm)</span><input id="textDepth" class="inp mono" type="number" value="4" min="0.5" step="0.5"></div>
+      </div>
+      <label class="pchk" style="margin-bottom:14px"><input type="checkbox" id="textHole"><div><div class="t">Make it a hole</div><div class="s">Cut this text out when combined</div></div></label>
+      <button class="tbtn primary" id="textAdd" style="width:100%;justify-content:center">Add text</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="svgScrim">
+  <div class="modal" style="width:min(500px,94vw)">
+    <div class="mhead"><h2>Import SVG</h2><button class="mclose" data-close="svgScrim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="mbody">
+      <div class="dropzone" id="svgDrop">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="margin-bottom:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <div style="font-weight:600">Drop an .svg file or click to browse</div>
+        <div style="font-size:11px;color:var(--faint);margin-top:4px">Paths become an extruded shape</div>
+      </div>
+      <input type="file" id="svgFile" accept=".svg" hidden>
+      <div class="row2" style="margin-top:14px">
+        <div class="field"><span class="lab">Width (mm)</span><input id="svgW" class="inp mono" type="number" value="40" min="1"></div>
+        <div class="field"><span class="lab">Depth (mm)</span><input id="svgD" class="inp mono" type="number" value="4" min="0.5" step="0.5"></div>
+      </div>
+      <label class="pchk" style="margin-top:12px"><input type="checkbox" id="svgHole"><div><div class="t">Make it a hole</div><div class="s">Cut this shape out when combined</div></div></label>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="exportScrim">
+  <div class="modal" style="width:min(460px,94vw)">
+    <div class="mhead"><h2>Export model</h2><button class="mclose" data-close="exportScrim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="mbody">
+      <p style="color:var(--muted);font-size:12.5px;margin:0 0 16px">3MF keeps your painted colors for multicolor printing (Bambu Studio, PrusaSlicer, Orca). STL is single-color and universal.</p>
+      <div class="field" style="margin-bottom:14px"><span class="lab">What to export</span>
+        <select id="exportScope" class="inp"><option value="plate">Current plate only</option><option value="all">Everything (all plates)</option><option value="sel">Selected object only</option></select>
+      </div>
+      <button class="tbtn primary" id="exp3mf" style="width:100%;justify-content:center;margin-bottom:8px"><svg viewBox="0 0 24 24" width="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Export 3MF (multicolor)</button>
+      <button class="tbtn" id="expStl" style="width:100%;justify-content:center;border:1px solid var(--line)">Export STL</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/[email protected]/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/[email protected]/examples/jsm/",
+    "three-mesh-bvh":"https://cdn.jsdelivr.net/npm/[email protected]/build/index.module.js",
+    "three-bvh-csg":"https://cdn.jsdelivr.net/npm/[email protected]/build/index.module.js",
+    "fflate":"https://cdn.jsdelivr.net/npm/[email protected]/esm/browser.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {TransformControls} from 'three/addons/controls/TransformControls.js';
+import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
+import {FontLoader} from 'three/addons/loaders/FontLoader.js';
+import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
+import {STLExporter} from 'three/addons/exporters/STLExporter.js';
+import {Brush, Evaluator, ADDITION, SUBTRACTION} from 'three-bvh-csg';
+import {zipSync, strToU8} from 'fflate';
+
+/* ========================================================= STATE */
+const PALETTE = ['#38bdf8','#a78bfa','#f472b6','#fb923c','#facc15','#4ade80','#f87171','#e2e8f0','#1e293b','#0ea5e9'];
+const PLATE_PRESETS = {
+  'Bambu A1 / X1 (256×256)':[256,256,256],
+  'Bambu A1 mini (180×180)':[180,180,180],
+  'Prusa MK4 (250×210)':[250,210,220],
+  'Ender 3 (220×220)':[220,220,250],
+  'Custom small (120×120)':[120,120,120],
+};
+const uid = ()=>Math.random().toString(36).slice(2,9);
+let font=null;
+const LS='jakecad_projects_v1';
+
+let project = newProject();
+function newProject(){
+  const pid=uid();
+  return {id:uid(),name:'Untitled design',
+    plates:[{id:pid,name:'Plate 1',w:256,d:256,h:256}],
+    activePlate:pid, objects:[], created:Date.now(), updated:Date.now()};
+}
+function activePlate(){return project.plates.find(p=>p.id===project.activePlate)||project.plates[0];}
+function plateObjects(){return project.objects.filter(o=>o.plate===project.activePlate);}
+
+let selected=[]; // ids
+let tool='select';
+let paintMode='object';
+let paintColor='#38bdf8';
+
+/* ========================================================= THREE SETUP */
+const host=document.getElementById('view');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,1,1,20000);
+camera.position.set(320,300,360);
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=.09; controls.target.set(0,40,0);
+
+const gizmo=new TransformControls(camera,renderer.domElement);
+gizmo.addEventListener('dragging-changed',e=>{controls.enabled=!e.value; if(!e.value){onGizmoEnd();}});
+gizmo.addEventListener('objectChange',syncFromGizmo);
+gizmo.setSize(.82);
+scene.add(gizmo);
+
+// lights
+scene.add(new THREE.HemisphereLight(0xbcd4ff,0x1a2238,0.9));
+const key=new THREE.DirectionalLight(0xffffff,1.15);
+key.position.set(260,420,180); key.castShadow=true;
+key.shadow.mapSize.set(2048,2048); key.shadow.camera.near=10; key.shadow.camera.far=1600;
+const s=420; key.shadow.camera.left=-s;key.shadow.camera.right=s;key.shadow.camera.top=s;key.shadow.camera.bottom=-s;
+scene.add(key);
+const fill=new THREE.DirectionalLight(0x88aaff,.35); fill.position.set(-200,120,-260); scene.add(fill);
+
+// plate group
+const plateGroup=new THREE.Group(); scene.add(plateGroup);
+const objGroup=new THREE.Group(); scene.add(objGroup);
+
+const raycaster=new THREE.Raycaster();
+const pointer=new THREE.Vector2();
+
+/* ========================================================= GEOMETRY BUILDERS */
+function buildGeometry(o){
+  const p=o.params||{};
+  let g;
+  switch(o.kind){
+    case 'box': g=new THREE.BoxGeometry(p.w,p.h,p.d,1,1,1);break;
+    case 'cylinder': g=new THREE.CylinderGeometry(p.r,p.r,p.h,Math.max(6,p.seg||48));break;
+    case 'cone': g=new THREE.ConeGeometry(p.r,p.h,Math.max(6,p.seg||48));break;
+    case 'sphere': g=new THREE.SphereGeometry(p.r,Math.max(8,p.seg||40),Math.max(6,Math.round((p.seg||40)/1.6)));break;
+    case 'pyramid': g=new THREE.ConeGeometry(p.r,p.h,4);g.rotateY(Math.PI/4);break;
+    case 'torus': g=new THREE.TorusGeometry(p.r,p.tube,20,Math.max(8,p.seg||44));g.rotateX(Math.PI/2);break;
+    case 'wedge': g=wedgeGeo(p.w,p.h,p.d);break;
+    case 'text': g=textGeo(o);break;
+    case 'svg': g=svgGeo(o);break;
+    case 'group': g=groupGeo(o);break;
+    default: g=new THREE.BoxGeometry(20,20,20);
+  }
+  if(!g) g=new THREE.BoxGeometry(10,10,10);
+  g.computeBoundingBox();
+  const c=new THREE.Vector3(); g.boundingBox.getCenter(c);
+  g.translate(-c.x,-c.y,-c.z); // center at origin
+  g.computeVertexNormals();
+  o._halfH = (g.boundingBox.max.y-g.boundingBox.min.y)/2;
+  return g;
+}
+function wedgeGeo(w,h,d){
+  const g=new THREE.BufferGeometry();
+  const x=w/2,y=h/2,z=d/2;
+  // right-triangle prism (ramp): high edge at -x, tapers to 0 at +x
+  const v=[
+    -x,-y,-z, x,-y,-z, x,-y,z, -x,-y,z, // bottom
+    -x,y,-z, -x,y,z // top ridge
+  ];
+  const idx=[0,1,2, 0,2,3, 0,4,5, 0,5,3, 4,0,1, 4,1,5, 5,1,2, 5,2,3];
+  g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+  g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function textGeo(o){
+  if(!font) return new THREE.BoxGeometry(20,10,4);
+  // letters sit in the XY plane, extruded along Z (thickness front-to-back), standing on the plate
+  const g=new TextGeometry(o.text||'Text',{font,size:o.params.size||10,height:o.params.depth||4,curveSegments:6,bevelEnabled:false});
+  return g;
+}
+function svgGeo(o){
+  const data=new SVGLoader().parse(o.svg);
+  const shapes=[];
+  data.paths.forEach(path=>{ SVGLoader.createShapes(path).forEach(sh=>shapes.push(sh)); });
+  if(!shapes.length) return new THREE.BoxGeometry(20,20,4);
+  const g=new THREE.ExtrudeGeometry(shapes,{depth:o.params.depth||4,bevelEnabled:false});
+  g.rotateX(-Math.PI/2);              // lay flat, extrude becomes height
+  g.scale(1,1,-1);
+  // normalize to target width
+  g.computeBoundingBox();
+  const bw=g.boundingBox.max.x-g.boundingBox.min.x || 1;
+  const k=(o.params.w||40)/bw; g.scale(k,1,k);
+  return g;
+}
+function groupGeo(o){
+  // recompute CSG from children snapshots
+  const solids=[],holes=[];
+  o.children.forEach(ch=>{
+    const geo=buildGeometry(ch);
+    const m=new THREE.Matrix4().compose(new THREE.Vector3(...ch.pos),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(...ch.rot.map(THREE.MathUtils.degToRad))),
+      new THREE.Vector3(...ch.scale));
+    geo.applyMatrix4(m);
+    setGeoColor(geo,ch.color);
+    (ch.hole?holes:solids).push(geo);
+  });
+  if(!solids.length) return new THREE.BoxGeometry(10,10,10);
+  const ev=new Evaluator(); ev.useGroups=true; ev.attributes=['position','normal','color'];
+  let brush=new Brush(mergeColored(solids)); brush.updateMatrixWorld();
+  for(const h of holes){ const hb=new Brush(h); hb.updateMatrixWorld(); brush=ev.evaluate(brush,hb,SUBTRACTION); }
+  const out=brush.geometry.clone();
+  out.applyMatrix4(new THREE.Matrix4().copy(brush.matrixWorld).invert());
+  return out;
+}
+// merge a list of geometries preserving per-geo color into a vertex-color attribute
+function mergeColored(geos){
+  const merged=new THREE.BufferGeometry();
+  let posArr=[],normArr=[],colArr=[];
+  geos.forEach(g=>{
+    const gg=g.index?g.toNonIndexed():g;
+    const p=gg.getAttribute('position'), n=gg.getAttribute('normal');
+    const c=gg.getAttribute('color');
+    for(let i=0;i<p.count;i++){
+      posArr.push(p.getX(i),p.getY(i),p.getZ(i));
+      normArr.push(n?n.getX(i):0,n?n.getY(i):1,n?n.getZ(i):0);
+      if(c) colArr.push(c.getX(i),c.getY(i),c.getZ(i)); else colArr.push(1,1,1);
+    }
+  });
+  merged.setAttribute('position',new THREE.Float32BufferAttribute(posArr,3));
+  merged.setAttribute('normal',new THREE.Float32BufferAttribute(normArr,3));
+  merged.setAttribute('color',new THREE.Float32BufferAttribute(colArr,3));
+  return merged;
+}
+function setGeoColor(g,hex){
+  const col=new THREE.Color(hex);
+  const p=g.getAttribute('position');
+  const arr=new Float32Array(p.count*3);
+  for(let i=0;i<p.count;i++){arr[i*3]=col.r;arr[i*3+1]=col.g;arr[i*3+2]=col.b;}
+  g.setAttribute('color',new THREE.Float32BufferAttribute(arr,3));
+}
+
+/* ========================================================= MESH MANAGEMENT */
+const meshMap=new Map(); // id -> mesh
+
+function makeMaterial(o){
+  const hole=o.hole;
+  const useVC = o.kind==='group' || (o.faceColors && Object.keys(o.faceColors).length);
+  return new THREE.MeshStandardMaterial({
+    color:hole?0x8b5cf6:new THREE.Color(o.color),
+    vertexColors:useVC, transparent:hole, opacity:hole?0.42:1,
+    roughness:.62, metalness:.04, flatShading:false,
+    depthWrite:!hole,
+  });
+}
+function rebuildMesh(o){
+  const old=meshMap.get(o.id);
+  if(old){objGroup.remove(old); old.geometry.dispose(); old.material.dispose(); meshMap.delete(o.id);}
+  if(o.plate!==project.activePlate) return;
+  const g=buildGeometry(o);
+  // apply saved face colors for painted single objects
+  if(o.faceColors && Object.keys(o.faceColors).length && o.kind!=='group'){
+    applyFaceColors(g,o);
+  }
+  const mesh=new THREE.Mesh(g,makeMaterial(o));
+  mesh.castShadow=true; mesh.receiveShadow=true;
+  mesh.position.set(...o.pos);
+  mesh.rotation.set(...o.rot.map(THREE.MathUtils.degToRad));
+  mesh.scale.set(...o.scale);
+  mesh.userData.id=o.id;
+  objGroup.add(mesh); meshMap.set(o.id,mesh);
+  return mesh;
+}
+function applyFaceColors(g,o){
+  const ng = g.index? g.toNonIndexed():g;
+  if(ng!==g){g.copy(ng);}
+  const p=g.getAttribute('position');
+  const base=new THREE.Color(o.color);
+  const arr=new Float32Array(p.count*3);
+  for(let i=0;i<p.count;i++){arr[i*3]=base.r;arr[i*3+1]=base.g;arr[i*3+2]=base.b;}
+  Object.entries(o.faceColors).forEach(([fi,hex])=>{
+    const c=new THREE.Color(hex); const f=+fi*3;
+    for(let k=0;k<3;k++){const vi=(f+k);arr[vi*3]=c.r;arr[vi*3+1]=c.g;arr[vi*3+2]=c.b;}
+  });
+  g.setAttribute('color',new THREE.Float32BufferAttribute(arr,3));
+}
+
+function rebuildAll(){
+  [...meshMap.keys()].forEach(id=>{const m=meshMap.get(id);objGroup.remove(m);m.geometry.dispose();m.material.dispose();});
+  meshMap.clear();
+  plateObjects().forEach(rebuildMesh);
+  refreshSelectionVisual(); updateStatus();
+}
+
+/* ========================================================= PLATE VISUAL */
+let outlineBox;
+function drawPlate(){
+  while(plateGroup.children.length) plateGroup.remove(plateGroup.children[0]);
+  const pl=activePlate();
+  const w=pl.w,d=pl.d,h=pl.h;
+  const base=new THREE.Mesh(new THREE.BoxGeometry(w,4,d),
+    new THREE.MeshStandardMaterial({color:0x0e1830,roughness:.9,metalness:0}));
+  base.position.y=-2; base.receiveShadow=true; plateGroup.add(base);
+  const grid=new THREE.GridHelper(Math.max(w,d),Math.round(Math.max(w,d)/10),0x2b3a5a,0x1a2740);
+  grid.position.y=0.1;
+  // clip grid to plate by scaling then it's square; keep simple
+  grid.scale.set(w/Math.max(w,d),1,d/Math.max(w,d));
+  plateGroup.add(grid);
+  // build volume outline
+  const eg=new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d));
+  outlineBox=new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:0x2b4b7a,transparent:true,opacity:.5}));
+  outlineBox.position.y=h/2; plateGroup.add(outlineBox);
+  controls.target.set(0,Math.min(h,120)/2,0);
+}
+
+/* ========================================================= SELECTION */
+function selectOnly(id){selected=id?[id]:[];afterSelectChange();}
+function toggleSelect(id){if(selected.includes(id))selected=selected.filter(x=>x!==id);else selected.push(id);afterSelectChange();}
+function afterSelectChange(){refreshSelectionVisual();attachGizmo();renderProps();renderOutliner();}
+function refreshSelectionVisual(){
+  meshMap.forEach((m,id)=>{
+    const on=selected.includes(id);
+    if(m.userData._out){m.remove(m.userData._out);m.userData._out=null;}
+    if(on){
+      const e=new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),
+        new THREE.LineBasicMaterial({color:0x38bdf8}));
+      m.add(e); m.userData._out=e;
+    }
+  });
+}
+function attachGizmo(){
+  gizmo.detach();
+  if(tool==='select'||tool==='paint'||selected.length!==1){return;}
+  const m=meshMap.get(selected[0]); if(!m)return;
+  gizmo.attach(m);
+  gizmo.setMode(tool==='translate'?'translate':tool==='rotate'?'rotate':'scale');
+}
+function getObj(id){return project.objects.find(o=>o.id===id);}
+
+/* gizmo -> data */
+function syncFromGizmo(){
+  const id=selected[0]; const o=getObj(id); const m=meshMap.get(id); if(!o||!m)return;
+  o.pos=[m.position.x,m.position.y,m.position.z];
+  o.rot=[THREE.MathUtils.radToDeg(m.rotation.x),THREE.MathUtils.radToDeg(m.rotation.y),THREE.MathUtils.radToDeg(m.rotation.z)];
+  o.scale=[m.scale.x,m.scale.y,m.scale.z];
+  renderProps();
+}
+function onGizmoEnd(){pushHistory();markDirty();}
+
+/* ========================================================= ADD OBJECTS */
+const SHAPE_DEFS={
+  box:{w:40,h:40,d:40}, cylinder:{r:20,h:40,seg:48}, sphere:{r:22,seg:40},
+  cone:{r:22,h:44,seg:48}, pyramid:{r:26,h:44}, torus:{r:22,tube:8,seg:44}, wedge:{w:40,h:40,d:40}
+};
+function addShape(kind,hole){
+  const params={...SHAPE_DEFS[kind]};
+  const o={id:uid(),kind,name:cap(kind),params,pos:[0,0,0],rot:[0,0,0],scale:[1,1,1],
+    color:hole?'#a78bfa':PALETTE[Math.floor(Math.random()*7)],hole:!!hole,plate:project.activePlate,faceColors:{}};
+  const g=buildGeometry(o); o.pos=[0,o._halfH,0];
+  placeNoOverlap(o);
+  project.objects.push(o); rebuildMesh(o); selectOnly(o.id);
+  pushHistory(); markDirty(); updateStatus();
+  toast(`Added ${o.name}`);
+}
+function placeNoOverlap(o){ // nudge new objects so they don't stack exactly
+  const others=plateObjects().filter(x=>x.id!==o.id);
+  let tries=0;
+  while(tries<40){
+    const clash=others.some(x=>Math.hypot(x.pos[0]-o.pos[0],x.pos[2]-o.pos[2])<25);
+    if(!clash)break;
+    o.pos[0]+=30; if(o.pos[0]>activePlate().w/2-30){o.pos[0]=-activePlate().w/2+30;o.pos[2]+=30;}
+    tries++;
+  }
+}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ========================================================= COMBINE / CSG */
+function combineSelected(){
+  if(selected.length<1){toast('Select objects to combine','bad');return;}
+  const objs=selected.map(getObj).filter(Boolean);
+  const hasSolid=objs.some(o=>!o.hole);
+  if(!hasSolid){toast('Need at least one solid','bad');return;}
+  // snapshot children in local (already have pos/rot/scale)
+  const children=objs.map(o=>JSON.parse(JSON.stringify(stripRuntime(o))));
+  const grp={id:uid(),kind:'group',name:'Group',children,
+    pos:[0,0,0],rot:[0,0,0],scale:[1,1,1],color:objs.find(o=>!o.hole).color,hole:false,
+    plate:project.activePlate,faceColors:{}};
+  try{ buildGeometry(grp); }catch(e){toast('Combine failed','bad');console.error(e);return;}
+  // geometry is centered at origin; rest it on the plate
+  grp.pos=[0, grp._halfH||0, 0];
+  project.objects=project.objects.filter(o=>!selected.includes(o.id));
+  project.objects.push(grp);
+  rebuildAll(); selectOnly(grp.id); pushHistory(); markDirty();
+  toast('Combined — holes applied');
+}
+function ungroupSelected(){
+  const id=selected[0]; const o=getObj(id);
+  if(!o||o.kind!=='group'){toast('Select a group to ungroup','bad');return;}
+  project.objects=project.objects.filter(x=>x.id!==id);
+  const newIds=[];
+  o.children.forEach(ch=>{const n={...JSON.parse(JSON.stringify(ch)),id:uid(),plate:project.activePlate,faceColors:ch.faceColors||{}};project.objects.push(n);newIds.push(n.id);});
+  rebuildAll(); selected=newIds; afterSelectChange(); pushHistory(); markDirty();
+  toast('Ungrouped');
+}
+function stripRuntime(o){const c={...o};delete c._halfH;delete c._noop;return c;}
+
+/* ========================================================= DUP / DELETE / DROP */
+function duplicateSelected(){
+  if(!selected.length)return;
+  const clones=[];
+  selected.map(getObj).filter(Boolean).forEach(o=>{
+    const c=JSON.parse(JSON.stringify(stripRuntime(o))); c.id=uid();
+    c.pos=[o.pos[0]+15,o.pos[1],o.pos[2]+15]; c.name=o.name+' copy';
+    project.objects.push(c); clones.push(c.id);
+  });
+  rebuildAll(); selected=clones; afterSelectChange(); pushHistory(); markDirty();
+}
+function deleteSelected(){
+  if(!selected.length)return;
+  project.objects=project.objects.filter(o=>!selected.includes(o.id));
+  selected=[]; rebuildAll(); afterSelectChange(); pushHistory(); markDirty();
+}
+function dropToPlate(){
+  selected.map(getObj).filter(Boolean).forEach(o=>{
+    const m=meshMap.get(o.id); if(!m)return;
+    m.updateMatrixWorld(); const bb=new THREE.Box3().setFromObject(m);
+    o.pos[1]-= bb.min.y; // move bottom to y=0
+  });
+  rebuildAll(); afterSelectChange(); pushHistory(); markDirty();
+}
+
+/* ========================================================= AUTO-PACK */
+function autoPack(){
+  const objs=plateObjects();
+  if(!objs.length){toast('Nothing to pack','bad');return;}
+  const pl=activePlate(); const pad=8;
+  // measure footprints
+  const items=objs.map(o=>{
+    const m=meshMap.get(o.id); m.updateMatrixWorld();
+    const bb=new THREE.Box3().setFromObject(m);
+    return {o,w:bb.max.x-bb.min.x,d:bb.max.z-bb.min.z,minY:bb.min.y};
+  }).sort((a,b)=>b.d-a.d);
+  let cx=-pl.w/2+pad, cz=-pl.d/2+pad, rowD=0;
+  for(const it of items){
+    if(cx+it.w > pl.w/2-pad){cx=-pl.w/2+pad; cz+=rowD+pad; rowD=0;}
+    it.o.pos[0]=cx+it.w/2; it.o.pos[2]=cz+it.d/2; it.o.pos[1]-=it.minY;
+    cx+=it.w+pad; rowD=Math.max(rowD,it.d);
+  }
+  rebuildAll(); afterSelectChange(); pushHistory(); markDirty();
+  toast('Packed onto plate');
+}
+
+/* ========================================================= POINTER / TOOLS */
+renderer.domElement.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  if(gizmo.dragging)return;
+  const r=renderer.domElement.getBoundingClientRect();
+  pointer.x=((e.clientX-r.left)/r.width)*2-1;
+  pointer.y=-((e.clientY-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects([...meshMap.values()],false);
+  if(tool==='paint'){
+    if(hits.length){paintHit(hits[0]);} return;
+  }
+  if(hits.length){
+    const id=hits[0].object.userData.id;
+    if(e.shiftKey)toggleSelect(id); else selectOnly(id);
+  }else{ if(!e.shiftKey)selectOnly(null); }
+});
+
+function paintHit(hit){
+  const o=getObj(hit.object.userData.id); if(!o)return;
+  if(paintMode==='object'){
+    o.color=paintColor;
+    if(o.kind!=='group'){o.faceColors={};}
+    rebuildMesh(o); refreshSelectionVisual(); pushHistory(); markDirty();
+  }else{
+    // face paint — needs non-grouped mesh; convert to non-indexed persistent
+    if(o.kind==='group'){toast('Face-paint works on simple shapes; ungroup first','bad');return;}
+    const fi=hit.faceIndex;
+    o.faceColors=o.faceColors||{}; o.faceColors[fi]=paintColor;
+    // also paint the sibling triangle of a quad-ish face for nicer coverage on boxes
+    rebuildMesh(o); refreshSelectionVisual(); pushHistory(); markDirty();
+  }
+}
+
+/* ========================================================= HISTORY */
+let history=[],hptr=-1;
+function snapshot(){return JSON.stringify({objects:project.objects.map(stripRuntime),plates:project.plates,activePlate:project.activePlate});}
+function pushHistory(){
+  const s=snapshot();
+  history=history.slice(0,hptr+1); history.push(s); if(history.length>60)history.shift();
+  hptr=history.length-1;
+}
+function restore(s){
+  const d=JSON.parse(s);
+  project.objects=d.objects; project.plates=d.plates; project.activePlate=d.activePlate;
+  drawPlate(); rebuildAll(); renderPlateTabs();
+  selected=selected.filter(id=>getObj(id)); afterSelectChange();
+}
+function undo(){if(hptr>0){hptr--;restore(history[hptr]);markDirty();}}
+function redo(){if(hptr<history.length-1){hptr++;restore(history[hptr]);markDirty();}}
+
+/* ========================================================= UI: LEFT SHAPES */
+const SHAPE_ICONS={
+  box:'<rect x="5" y="7" width="14" height="12" rx="1"/><path d="M5 7l4-3h10l-4 3M19 7l-4-3v12"/>',
+  cylinder:'<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12a7 3 0 0 0 14 0V6"/>',
+  sphere:'<circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="8" ry="3"/>',
+  cone:'<path d="M12 3l8 15H4z"/><ellipse cx="12" cy="18" rx="8" ry="3"/>',
+  pyramid:'<path d="M12 3l9 16H3zM12 3v16"/>',
+  torus:'<ellipse cx="12" cy="12" rx="8" ry="4.5"/><ellipse cx="12" cy="12" rx="3" ry="1.6"/>',
+  wedge:'<path d="M4 18h16L4 6z"/>'
+};
+function shapeBtn(kind,hole){
+  const b=document.createElement('button');
+  b.className='shape'+(hole?' hole':'');
+  b.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">${SHAPE_ICONS[kind]}</svg><span>${cap(kind)}</span>`;
+  b.onclick=()=>addShape(kind,hole);
+  return b;
+}
+const solidHost=document.getElementById('solidShapes'),holeHost=document.getElementById('holeShapes');
+['box','cylinder','sphere','cone','pyramid','torus','wedge'].forEach(k=>solidHost.appendChild(shapeBtn(k,false)));
+['box','cylinder','sphere','cone','pyramid'].forEach(k=>holeHost.appendChild(shapeBtn(k,true)));
+
+/* ========================================================= UI: OUTLINER */
+function renderOutliner(){
+  const host=document.getElementById('outliner');
+  const objs=plateObjects();
+  if(!objs.length){host.innerHTML='<div class="empty">No objects on this plate yet.<br>Click a shape to add one.</div>';return;}
+  host.innerHTML='';
+  objs.forEach(o=>{
+    const el=document.createElement('div');
+    el.className='oitem'+(selected.includes(o.id)?' sel':'')+(o.hole?' holeobj':'');
+    el.innerHTML=`<span class="dot" style="background:${o.hole?'#a78bfa':o.color}"></span>
+      <span class="nm">${o.name}</span>
+      ${o.kind==='group'?'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><path d="M10 6.5h4a3 3 0 0 1 3 3v4.5"/></svg>':''}`;
+    el.onclick=e=>{if(e.shiftKey)toggleSelect(o.id);else selectOnly(o.id);};
+    host.appendChild(el);
+  });
+}
+
+/* ========================================================= UI: PROPERTIES */
+function renderProps(){
+  const host=document.getElementById('propsHost');
+  if(selected.length===0){host.innerHTML='<div class="empty">Select an object to edit its properties.<br><br>Tip: hold Shift to multi-select.</div>';return;}
+  if(selected.length>1){
+    host.innerHTML=`<div class="props"><div class="empty" style="padding:20px 0">${selected.length} objects selected</div>
+    <div class="pactions"><button class="pbtn" id="pDup">Duplicate</button><button class="pbtn danger" id="pDel">Delete</button></div>
+    <button class="railbtn" id="pCombine" style="margin-top:10px">Combine / apply holes</button></div>`;
+    host.querySelector('#pDup').onclick=duplicateSelected;
+    host.querySelector('#pDel').onclick=deleteSelected;
+    host.querySelector('#pCombine').onclick=combineSelected;
+    return;
+  }
+  const o=getObj(selected[0]); if(!o){host.innerHTML='';return;}
+  const p=o.params||{};
+  let dims='';
+  const f=(lab,key,val,step=1)=>`<div class="field"><span class="lab">${lab}</span><input class="inp mono" type="number" step="${step}" value="${round(val)}" data-param="${key}"></div>`;
+  if(o.kind==='box'||o.kind==='wedge') dims=`<div class="row3">${f('W','w',p.w)}${f('H','h',p.h)}${f('D','d',p.d)}</div>`;
+  else if(o.kind==='cylinder'||o.kind==='cone') dims=`<div class="row2">${f('Radius','r',p.r)}${f('Height','h',p.h)}</div>`;
+  else if(o.kind==='sphere') dims=`<div class="row2">${f('Radius','r',p.r)}${f('Detail','seg',p.seg)}</div>`;
+  else if(o.kind==='pyramid') dims=`<div class="row2">${f('Radius','r',p.r)}${f('Height','h',p.h)}</div>`;
+  else if(o.kind==='torus') dims=`<div class="row2">${f('Radius','r',p.r)}${f('Tube','tube',p.tube)}</div>`;
+  else if(o.kind==='text') dims=`<div class="field" style="margin-bottom:8px"><span class="lab">Text</span><input class="inp" value="${(o.text||'').replace(/"/g,'&quot;')}" data-text></div><div class="row2">${f('Height','size',p.size)}${f('Depth','depth',p.depth,.5)}</div>`;
+  else if(o.kind==='svg') dims=`<div class="row2">${f('Width','w',p.w)}${f('Depth','depth',p.depth,.5)}</div>`;
+  else if(o.kind==='group') dims=`<div class="empty" style="padding:8px 0;font-size:11.5px">Grouped from ${o.children.length} parts. Ungroup to edit parts.</div>`;
+
+  host.innerHTML=`<div class="props">
+    <div class="pgroup"><label>Name</label><input class="inp" value="${o.name.replace(/"/g,'&quot;')}" data-name></div>
+    ${dims?`<div class="pgroup"><label>Dimensions (mm)</label>${dims}</div>`:''}
+    <div class="pgroup"><label>Position (mm)</label><div class="row3">
+      <div class="field"><span class="lab">X</span><input class="inp mono" type="number" value="${round(o.pos[0])}" data-pos="0"></div>
+      <div class="field"><span class="lab">Y</span><input class="inp mono" type="number" value="${round(o.pos[1])}" data-pos="1"></div>
+      <div class="field"><span class="lab">Z</span><input class="inp mono" type="number" value="${round(o.pos[2])}" data-pos="2"></div></div></div>
+    <div class="pgroup"><label>Rotation (°)</label><div class="row3">
+      <div class="field"><span class="lab">X</span><input class="inp mono" type="number" value="${round(o.rot[0])}" data-rot="0"></div>
+      <div class="field"><span class="lab">Y</span><input class="inp mono" type="number" value="${round(o.rot[1])}" data-rot="1"></div>
+      <div class="field"><span class="lab">Z</span><input class="inp mono" type="number" value="${round(o.rot[2])}" data-rot="2"></div></div></div>
+    <div class="pgroup"><label>Uniform scale</label><div class="rngrow">
+      <input class="rng" type="range" min="0.2" max="4" step="0.05" value="${o.scale[0]}" data-uscale>
+      <span class="val mono" id="uscaleVal">${o.scale[0].toFixed(2)}×</span></div></div>
+    <div class="pgroup"><label>Color</label><div class="colorrow" id="pColors"></div>
+      <input type="color" class="inp" style="margin-top:8px;height:32px;padding:2px" value="${o.color}" data-color></div>
+    <div class="pgroup"><label class="pchk"><input type="checkbox" ${o.hole?'checked':''} data-hole>
+      <div><div class="t">Hole / negative</div><div class="s">Cuts other solids when combined</div></div></label></div>
+    <div class="pactions">
+      <button class="pbtn" id="pDup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+      <button class="pbtn danger" id="pDel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Delete</button>
+    </div>
+  </div>`;
+
+  // color swatches
+  const pc=host.querySelector('#pColors');
+  PALETTE.slice(0,10).forEach(c=>{
+    const sw=document.createElement('div');sw.className='crow-sw'+(c.toLowerCase()===o.color.toLowerCase()?' sel':'');
+    sw.style.background=c; sw.onclick=()=>{o.color=c;o.faceColors={};rebuildMesh(o);refreshSelectionVisual();renderProps();renderOutliner();pushHistory();markDirty();};
+    pc.appendChild(sw);
+  });
+
+  // wiring
+  host.querySelector('[data-name]').oninput=e=>{o.name=e.target.value;renderOutliner();markDirty();};
+  host.querySelectorAll('[data-param]').forEach(inp=>inp.oninput=e=>{
+    o.params[e.target.dataset.param]=parseFloat(e.target.value)||0;
+    rebuildMesh(o);refreshSelectionVisual();markDirty();
+  });
+  const tx=host.querySelector('[data-text]'); if(tx)tx.oninput=e=>{o.text=e.target.value;rebuildMesh(o);refreshSelectionVisual();renderOutliner();markDirty();};
+  host.querySelectorAll('[data-pos]').forEach(inp=>inp.oninput=e=>{o.pos[+e.target.dataset.pos]=parseFloat(e.target.value)||0;applyTransformToMesh(o);markDirty();});
+  host.querySelectorAll('[data-rot]').forEach(inp=>inp.oninput=e=>{o.rot[+e.target.dataset.rot]=parseFloat(e.target.value)||0;applyTransformToMesh(o);markDirty();});
+  const us=host.querySelector('[data-uscale]');
+  us.oninput=e=>{const v=parseFloat(e.target.value);o.scale=[v,v,v];host.querySelector('#uscaleVal').textContent=v.toFixed(2)+'×';applyTransformToMesh(o);markDirty();};
+  us.onchange=()=>pushHistory();
+  host.querySelector('[data-color]').oninput=e=>{o.color=e.target.value;o.faceColors={};rebuildMesh(o);refreshSelectionVisual();renderOutliner();markDirty();};
+  host.querySelector('[data-color]').onchange=()=>pushHistory();
+  host.querySelector('[data-hole]').onchange=e=>{o.hole=e.target.checked;if(o.hole)o.color='#a78bfa';rebuildMesh(o);refreshSelectionVisual();renderOutliner();pushHistory();markDirty();};
+  host.querySelector('#pDup').onclick=duplicateSelected;
+  host.querySelector('#pDel').onclick=deleteSelected;
+}
+function applyTransformToMesh(o){
+  const m=meshMap.get(o.id); if(!m)return;
+  m.position.set(...o.pos);
+  m.rotation.set(...o.rot.map(THREE.MathUtils.degToRad));
+  m.scale.set(...o.scale);
+}
+const round=n=>Math.round((n+Number.EPSILON)*100)/100;
+
+/* ========================================================= UI: PLATE TABS */
+function renderPlateTabs(){
+  const host=document.getElementById('plateTabs'); host.innerHTML='';
+  project.plates.forEach(pl=>{
+    const el=document.createElement('div');
+    el.className='plate-tab'+(pl.id===project.activePlate?' active':'');
+    const count=project.objects.filter(o=>o.plate===pl.id).length;
+    el.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M3 8h18"/></svg>
+      <div style="flex:1;min-width:0"><div class="nm">${pl.name}</div><div class="dim">${pl.w}×${pl.d} · ${count} obj</div></div>
+      ${project.plates.length>1?'<span class="x">✕</span>':''}`;
+    el.onclick=e=>{if(e.target.classList.contains('x')){removePlate(pl.id);return;}switchPlate(pl.id);};
+    host.appendChild(el);
+  });
+}
+function switchPlate(id){project.activePlate=id;selected=[];drawPlate();rebuildAll();renderPlateTabs();afterSelectChange();}
+function addPlate(){
+  const n=project.plates.length+1; const a=activePlate();
+  const pl={id:uid(),name:'Plate '+n,w:a.w,d:a.d,h:a.h};
+  project.plates.push(pl); switchPlate(pl.id); pushHistory(); markDirty();
+}
+function removePlate(id){
+  if(project.plates.length<=1)return;
+  if(!confirm('Delete this plate and its objects?'))return;
+  project.objects=project.objects.filter(o=>o.plate!==id);
+  project.plates=project.plates.filter(p=>p.id!==id);
+  if(project.activePlate===id)project.activePlate=project.plates[0].id;
+  switchPlate(project.activePlate); pushHistory(); markDirty();
+}
+
+/* ========================================================= TOOLS UI */
+document.getElementById('tools').addEventListener('click',e=>{
+  const b=e.target.closest('.tool'); if(!b)return; setTool(b.dataset.tool);
+});
+function setTool(t){
+  tool=t;
+  document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('active',x.dataset.tool===t));
+  document.getElementById('palette').classList.toggle('show',t==='paint');
+  document.getElementById('hint').textContent = t==='paint'
+    ? 'Click objects to paint · switch Object/Face above'
+    : t==='select'?'Click to select · Shift+click multi-select'
+    : `Drag the gizmo to ${t} · snapping on`;
+  attachGizmo();
+}
+// palette
+const swHost=document.getElementById('swatches');
+PALETTE.forEach((c,i)=>{const sw=document.createElement('div');sw.className='swatch'+(i===0?' sel':'');sw.style.background=c;
+  sw.onclick=()=>{paintColor=c;document.querySelectorAll('#swatches .swatch').forEach(x=>x.classList.remove('sel'));sw.classList.add('sel');};swHost.appendChild(sw);});
+document.getElementById('customColor').oninput=e=>{paintColor=e.target.value;document.querySelectorAll('#swatches .swatch').forEach(x=>x.classList.remove('sel'));};
+document.querySelectorAll('.pmode button').forEach(b=>b.onclick=()=>{paintMode=b.dataset.pmode;document.querySelectorAll('.pmode button').forEach(x=>x.classList.remove('on'));b.classList.add('on');});
+
+/* view cube */
+document.querySelector('.viewcube').addEventListener('click',e=>{
+  const b=e.target.closest('.vc-btn'); if(!b)return; setView(b.dataset.view);
+});
+function setView(v){
+  const t=controls.target.clone(); const r=activePlate().w*1.4;
+  const pos={top:[0,r*1.4,0.001],front:[0,r*.4,r],right:[r,r*.4,0],iso:[r*.8,r*.8,r*.9]};
+  if(v==='fit'){fitView();return;}
+  camera.position.set(...pos[v].map((n,i)=>n+t.getComponent(i))); controls.update();
+}
+function fitView(){
+  const box=new THREE.Box3();
+  meshMap.forEach(m=>box.expandByObject(m));
+  if(box.isEmpty()){box.setFromCenterAndSize(new THREE.Vector3(0,40,0),new THREE.Vector3(200,200,200));}
+  const c=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+  const maxd=Math.max(size.x,size.y,size.z);const dist=maxd/(2*Math.tan(camera.fov*Math.PI/360))*1.7;
+  controls.target.copy(c);
+  camera.position.set(c.x+dist*.7,c.y+dist*.7,c.z+dist*.8); controls.update();
+}
+
+/* ========================================================= RIGHT TABS */
+document.querySelectorAll('.rtab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.rtab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+  document.querySelectorAll('.rpane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+(t.dataset.rtab==='props'?'props':'outline')).classList.add('active');
+});
+
+/* ========================================================= TEXT MODAL */
+const textScrim=document.getElementById('textScrim');
+document.getElementById('btnText').onclick=()=>openScrim('textScrim');
+document.getElementById('textAdd').onclick=()=>{
+  const t=document.getElementById('textInput').value||'Text';
+  const size=+document.getElementById('textSize').value||10;
+  const depth=+document.getElementById('textDepth').value||4;
+  const hole=document.getElementById('textHole').checked;
+  const o={id:uid(),kind:'text',name:'“'+t.slice(0,10)+'”',text:t,params:{size,depth},
+    pos:[0,0,0],rot:[0,0,0],scale:[1,1,1],color:hole?'#a78bfa':'#38bdf8',hole,plate:project.activePlate,faceColors:{}};
+  buildGeometry(o); o.pos=[0,o._halfH,0]; placeNoOverlap(o);
+  project.objects.push(o); rebuildMesh(o); selectOnly(o.id); closeScrim('textScrim');
+  pushHistory(); markDirty(); updateStatus(); toast('Text added');
+};
+
+/* ========================================================= SVG MODAL */
+document.getElementById('btnSvg').onclick=()=>openScrim('svgScrim');
+const svgDrop=document.getElementById('svgDrop'),svgFile=document.getElementById('svgFile');
+svgDrop.onclick=()=>svgFile.click();
+svgFile.onchange=e=>{if(e.target.files[0])loadSvgFile(e.target.files[0]);};
+['dragover','dragenter'].forEach(ev=>svgDrop.addEventListener(ev,e=>{e.preventDefault();svgDrop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>svgDrop.addEventListener(ev,e=>{e.preventDefault();svgDrop.classList.remove('over');}));
+svgDrop.addEventListener('drop',e=>{if(e.dataTransfer.files[0])loadSvgFile(e.dataTransfer.files[0]);});
+function loadSvgFile(file){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const svg=rd.result;
+    const w=+document.getElementById('svgW').value||40;
+    const depth=+document.getElementById('svgD').value||4;
+    const hole=document.getElementById('svgHole').checked;
+    const o={id:uid(),kind:'svg',name:file.name.replace('.svg',''),svg,params:{w,depth},
+      pos:[0,0,0],rot:[0,0,0],scale:[1,1,1],color:hole?'#a78bfa':'#4ade80',hole,plate:project.activePlate,faceColors:{}};
+    try{buildGeometry(o);}catch(err){toast('Could not parse SVG','bad');return;}
+    o.pos=[0,o._halfH,0]; placeNoOverlap(o);
+    project.objects.push(o); rebuildMesh(o); selectOnly(o.id); closeScrim('svgScrim');
+    pushHistory(); markDirty(); updateStatus(); toast('SVG imported');
+  };
+  rd.readAsText(file);
+}
+
+/* ========================================================= GALLERY / SAVE */
+function loadStore(){try{return JSON.parse(localStorage.getItem(LS))||{};}catch{return{};}}
+function saveStore(s){localStorage.setItem(LS,JSON.stringify(s));}
+function saveProject(silent){
+  project.name=document.getElementById('projName').value||'Untitled design';
+  project.updated=Date.now();
+  const store=loadStore();
+  store[project.id]={...project,objects:project.objects.map(stripRuntime),thumb:makeThumb()};
+  saveStore(store); dirty=false;
+  if(!silent)toast('Saved to this browser','good');
+}
+function makeThumb(){
+  try{renderer.render(scene,camera);return renderer.domElement.toDataURL('image/jpeg',0.5);}catch{return'';}
+}
+function openGallery(){
+  const grid=document.getElementById('galleryGrid');
+  const store=loadStore();
+  const items=Object.values(store).sort((a,b)=>b.updated-a.updated);
+  if(!items.length){grid.innerHTML='<div class="empty">No saved designs yet. Build something and hit Save.</div>';}
+  else{
+    grid.innerHTML='';
+    items.forEach(pr=>{
+      const card=document.createElement('div');card.className='gcard';
+      const cnt=pr.objects.length;
+      card.innerHTML=`<div class="thumb" style="${pr.thumb?`background-image:url(${pr.thumb})`:''}">${pr.thumb?'':'<svg width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'}</div>
+        <div class="meta"><div class="t">${pr.name}</div>
+        <div class="d"><span>${cnt} object${cnt!==1?'s':''} · ${pr.plates.length} plate${pr.plates.length!==1?'s':''}</span><span class="del" data-del="${pr.id}">Delete</span></div></div>`;
+      card.querySelector('.t').onclick=()=>loadProject(pr.id);
+      card.querySelector('.thumb').onclick=()=>loadProject(pr.id);
+      card.querySelector('[data-del]').onclick=e=>{e.stopPropagation();if(confirm('Delete this design?')){const st=loadStore();delete st[pr.id];saveStore(st);openGallery();}};
+      grid.appendChild(card);
+    });
+  }
+  openScrim('galleryScrim');
+}
+function loadProject(id){
+  const store=loadStore(); const pr=store[id]; if(!pr)return;
+  project=JSON.parse(JSON.stringify(pr)); delete project.thumb;
+  document.getElementById('projName').value=project.name;
+  drawPlate(); rebuildAll(); renderPlateTabs(); selected=[]; afterSelectChange();
+  history=[];hptr=-1;pushHistory(); dirty=false;
+  closeScrim('galleryScrim'); fitView(); toast('Loaded "'+project.name+'"');
+}
+function startNew(){
+  if(dirty && !confirm('Discard unsaved changes?'))return;
+  project=newProject();
+  document.getElementById('projName').value=project.name;
+  drawPlate();rebuildAll();renderPlateTabs();selected=[];afterSelectChange();
+  history=[];hptr=-1;pushHistory();dirty=false;
+  closeScrim('galleryScrim');
+}
+
+/* ========================================================= SETTINGS */
+let settings={grid:10,snapTranslate:1,snapRotate:15,units:'mm'};
+function renderSettings(){
+  const body=document.getElementById('settingsBody');
+  const pl=activePlate();
+  let presetOpts=Object.keys(PLATE_PRESETS).map(k=>`<option>${k}</option>`).join('');
+  body.innerHTML=`
+    <h3 style="margin:0 0 4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)">Active plate — ${pl.name}</h3>
+    <div class="setrow"><div class="lab"><div class="t">Preset size</div><div class="s">Common printer beds</div></div>
+      <select class="inp" id="setPreset" style="width:210px"><option value="">— pick —</option>${presetOpts}</select></div>
+    <div class="setrow"><div class="lab"><div class="t">Plate name</div></div><input class="inp" id="setPlateName" style="width:210px" value="${pl.name}"></div>
+    <div class="setrow"><div class="lab"><div class="t">Dimensions (mm)</div><div class="s">Width × Depth × Height</div></div>
+      <div style="display:flex;gap:6px"><input class="inp mono" id="setPW" type="number" value="${pl.w}" style="width:66px">
+      <input class="inp mono" id="setPD" type="number" value="${pl.d}" style="width:66px">
+      <input class="inp mono" id="setPH" type="number" value="${pl.h}" style="width:66px"></div></div>
+
+    <h3 style="margin:22px 0 4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)">Editor</h3>
+    <div class="setrow"><div class="lab"><div class="t">Grid size (mm)</div><div class="s">Floor grid spacing</div></div>
+      <input class="inp mono" id="setGrid" type="number" value="${settings.grid}" style="width:90px"></div>
+    <div class="setrow"><div class="lab"><div class="t">Move snap (mm)</div><div class="s">0 = free movement</div></div>
+      <input class="inp mono" id="setSnapT" type="number" value="${settings.snapTranslate}" style="width:90px"></div>
+    <div class="setrow"><div class="lab"><div class="t">Rotate snap (°)</div></div>
+      <input class="inp mono" id="setSnapR" type="number" value="${settings.snapRotate}" style="width:90px"></div>
+    <div class="setrow" style="border:none"><div class="lab"><div class="t">Danger zone</div><div class="s">Clears every saved design in this browser</div></div>
+      <button class="pbtn danger" id="setWipe" style="width:auto;padding:8px 14px">Wipe all saved designs</button></div>
+  `;
+  body.querySelector('#setPreset').onchange=e=>{
+    const v=PLATE_PRESETS[e.target.value]; if(!v)return;
+    body.querySelector('#setPW').value=v[0];body.querySelector('#setPD').value=v[1];body.querySelector('#setPH').value=v[2];applyPlateSettings();
+  };
+  ['setPW','setPD','setPH','setPlateName'].forEach(id=>body.querySelector('#'+id).oninput=applyPlateSettings);
+  body.querySelector('#setGrid').oninput=e=>{settings.grid=+e.target.value||10;drawPlate();};
+  body.querySelector('#setSnapT').oninput=e=>{settings.snapTranslate=+e.target.value||0;updateSnaps();};
+  body.querySelector('#setSnapR').oninput=e=>{settings.snapRotate=+e.target.value||0;updateSnaps();};
+  body.querySelector('#setWipe').onclick=()=>{if(confirm('Really delete ALL saved designs?')){localStorage.removeItem(LS);toast('All designs cleared','bad');}};
+}
+function applyPlateSettings(){
+  const pl=activePlate();const b=document.getElementById('settingsBody');
+  pl.name=b.querySelector('#setPlateName').value||pl.name;
+  pl.w=+b.querySelector('#setPW').value||pl.w;
+  pl.d=+b.querySelector('#setPD').value||pl.d;
+  pl.h=+b.querySelector('#setPH').value||pl.h;
+  drawPlate();renderPlateTabs();markDirty();
+}
+function updateSnaps(){
+  gizmo.setTranslationSnap(settings.snapTranslate>0?settings.snapTranslate:null);
+  gizmo.setRotationSnap(settings.snapRotate>0?THREE.MathUtils.degToRad(settings.snapRotate):null);
+}
+
+/* ========================================================= EXPORT */
+function collectExportObjects(scope){
+  let objs;
+  if(scope==='sel')objs=selected.map(getObj).filter(Boolean);
+  else if(scope==='all')objs=project.objects.slice();
+  else objs=plateObjects();
+  return objs.filter(o=>!o.hole); // holes only meaningful inside groups (already baked)
+}
+// gather world-space triangles with color
+function gatherTriangles(scope){
+  const objs=collectExportObjects(scope);
+  const tris=[]; // {a,b,c: Vector3, color:'#hex'}
+  objs.forEach(o=>{
+    const m=meshMap.get(o.id);
+    let geo,mat;
+    if(m){geo=m.geometry;mat=m.matrixWorld.clone();m.updateMatrixWorld();mat=m.matrixWorld.clone();}
+    else{geo=buildGeometry(o);const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(...o.rot.map(THREE.MathUtils.degToRad)));mat=new THREE.Matrix4().compose(new THREE.Vector3(...o.pos),q,new THREE.Vector3(...o.scale));}
+    const g=geo.index?geo.toNonIndexed():geo.clone();
+    const pos=g.getAttribute('position'); const col=g.getAttribute('color');
+    const baseHex=o.color;
+    for(let i=0;i<pos.count;i+=3){
+      const a=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(mat);
+      const b=new THREE.Vector3().fromBufferAttribute(pos,i+1).applyMatrix4(mat);
+      const c=new THREE.Vector3().fromBufferAttribute(pos,i+2).applyMatrix4(mat);
+      let hex=baseHex;
+      if(col){const cc=new THREE.Color(col.getX(i),col.getY(i),col.getZ(i));hex='#'+cc.getHexString();}
+      tris.push({a,b,c,color:hex});
+    }
+  });
+  return tris;
+}
+function exportSTL(scope){
+  const tris=gatherTriangles(scope);
+  if(!tris.length){toast('Nothing to export','bad');return;}
+  // build a single geometry
+  const g=new THREE.BufferGeometry();const arr=[];
+  tris.forEach(t=>{arr.push(t.a.x,t.a.y,t.a.z,t.b.x,t.b.y,t.b.z,t.c.x,t.c.y,t.c.z);});
+  g.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));g.computeVertexNormals();
+  const mesh=new THREE.Mesh(g);
+  const stl=new STLExporter().parse(mesh,{binary:true});
+  download(new Blob([stl],{type:'model/stl'}), safeName()+'.stl');
+  toast('STL exported','good');
+}
+function export3MF(scope){
+  const tris=gatherTriangles(scope);
+  if(!tris.length){toast('Nothing to export','bad');return;}
+  // palette
+  const palette=[]; const pIndex=new Map();
+  tris.forEach(t=>{if(!pIndex.has(t.color)){pIndex.set(t.color,palette.length);palette.push(t.color);}});
+  // vertices (dedup lightly by string)
+  const verts=[]; const vIndex=new Map();
+  const vid=(v)=>{const k=v.x.toFixed(3)+','+v.y.toFixed(3)+','+v.z.toFixed(3);
+    if(vIndex.has(k))return vIndex.get(k);const id=verts.length;verts.push(v);vIndex.set(k,id);return id;};
+  const triXml=tris.map(t=>{
+    const i1=vid(t.a),i2=vid(t.b),i3=vid(t.c),pi=pIndex.get(t.color);
+    return `<triangle v1="${i1}" v2="${i2}" v3="${i3}" pid="1" p1="${pi}"/>`;
+  }).join('');
+  const vertXml=verts.map(v=>`<vertex x="${v.x.toFixed(4)}" y="${v.z.toFixed(4)}" z="${v.y.toFixed(4)}"/>`).join(''); // Y-up -> Z-up for printers
+  const matXml=palette.map(h=>`<base name="${h}" displaycolor="${h.toUpperCase()}FF"/>`).join('');
+  const model=`<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+<resources>
+<basematerials id="1">${matXml}</basematerials>
+<object id="2" type="model"><mesh><vertices>${vertXml}</vertices><triangles>${triXml}</triangles></mesh></object>
+</resources>
+<build><item objectid="2"/></build>
+</model>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>`;
+  const zip=zipSync({
+    '[Content_Types].xml':strToU8(ct),
+    '_rels/.rels':strToU8(rels),
+    '3D/3dmodel.model':strToU8(model)
+  },{level:6});
+  download(new Blob([zip],{type:'model/3mf'}), safeName()+'.3mf');
+  toast(`3MF exported · ${palette.length} color${palette.length!==1?'s':''}`,'good');
+}
+function safeName(){return (document.getElementById('projName').value||'model').replace(/[^\w-]+/g,'_');}
+function download(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+
+/* ========================================================= MISC UI HELPERS */
+function openScrim(id){document.getElementById(id).classList.add('show');}
+function closeScrim(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeScrim(b.dataset.close));
+document.querySelectorAll('.scrim').forEach(s=>s.addEventListener('mousedown',e=>{if(e.target===s)s.classList.remove('show');}));
+
+let toastT;
+function toast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(type?' '+type:'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='',2200);}
+let dirty=false; function markDirty(){dirty=true;}
+function updateStatus(){document.getElementById('status').textContent=`${plateObjects().length} objects · plate ${activePlate().w}×${activePlate().d}mm`;}
+
+/* button wiring */
+document.getElementById('btnUndo').onclick=undo;
+document.getElementById('btnRedo').onclick=redo;
+document.getElementById('btnGallery').onclick=openGallery;
+document.getElementById('btnNewFromGallery').onclick=startNew;
+document.getElementById('btnSettings').onclick=()=>{renderSettings();openScrim('settingsScrim');};
+document.getElementById('btnSave').onclick=()=>saveProject(false);
+document.getElementById('btnExport').onclick=()=>openScrim('exportScrim');
+document.getElementById('exp3mf').onclick=()=>{export3MF(document.getElementById('exportScope').value);closeScrim('exportScrim');};
+document.getElementById('expStl').onclick=()=>{exportSTL(document.getElementById('exportScope').value);closeScrim('exportScrim');};
+document.getElementById('btnAddPlate').onclick=addPlate;
+document.getElementById('btnPack').onclick=autoPack;
+document.getElementById('btnCombine').onclick=combineSelected;
+document.getElementById('btnUngroup').onclick=ungroupSelected;
+document.getElementById('btnDup').onclick=duplicateSelected;
+document.getElementById('btnDrop').onclick=dropToPlate;
+document.getElementById('projName').oninput=markDirty;
+
+/* keyboard */
+addEventListener('keydown',e=>{
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='y'){e.preventDefault();redo();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='s'){e.preventDefault();saveProject(false);return;}
+  if((e.ctrlKey||e.metaKey)&&k==='d'){e.preventDefault();duplicateSelected();return;}
+  if(k==='q')setTool('select');
+  if(k==='w')setTool('translate');
+  if(k==='e')setTool('rotate');
+  if(k==='r')setTool('scale');
+  if(k==='p')setTool('paint');
+  if(k==='delete'||k==='backspace'){deleteSelected();}
+  if(k==='g'&&selected.length>1)combineSelected();
+  if(k==='f')fitView();
+});
+
+/* ========================================================= RESIZE + LOOP */
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(host);
+function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera);}
+
+/* ========================================================= BOOT */
+new FontLoader().load('https://cdn.jsdelivr.net/npm/[email protected]/examples/fonts/helvetiker_regular.typeface.json',
+  f=>{font=f;},undefined,()=>{});
+
+drawPlate(); renderPlateTabs(); renderProps(); renderOutliner();
+updateSnaps(); updateStatus(); pushHistory();
+resize(); loop(); fitView();
+document.getElementById('loader').style.display='none';
+
+// autosave every 45s if dirty
+setInterval(()=>{if(dirty)saveProject(true);},45000);
+addEventListener('beforeunload',e=>{if(dirty){saveProject(true);}});
+</script>
+</body>
+</html>
