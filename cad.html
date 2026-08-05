@@ -199,7 +199,39 @@ select.inp{cursor:pointer}
 </style>
 </head>
 <body>
-<div id="loader"><div class="spin"></div><div style="color:var(--faint);font-size:12px">Loading engine…</div></div>
+<div id="loader">
+  <div class="spin" id="loaderSpin"></div>
+  <div id="loaderMsg" style="color:var(--faint);font-size:12px">Loading engine…</div>
+  <div id="loaderErr" style="display:none;max-width:540px;text-align:left;background:#160f1a;border:1px solid #f8717155;border-radius:12px;padding:16px 18px;color:#fca5a5;font-size:12.5px;line-height:1.6"></div>
+</div>
+<script>
+/* Boot watchdog — runs even if the ES module never loads, so failures aren't silent */
+(function(){
+  window.__cadBooted=false;
+  var errs=[];
+  function show(title,detail){
+    var s=document.getElementById('loaderSpin'); if(s)s.style.display='none';
+    var m=document.getElementById('loaderMsg'); if(m)m.style.display='none';
+    var e=document.getElementById('loaderErr'); if(!e)return;
+    e.style.display='block';
+    e.innerHTML='<b style="color:#f87171;font-size:14px">'+title+'</b><br><br>'+detail;
+  }
+  window.addEventListener('error',function(ev){ if(ev&&ev.message)errs.push(ev.message); },true);
+  window.addEventListener('unhandledrejection',function(ev){ errs.push((ev.reason&&ev.reason.message)||String(ev.reason)); });
+  setTimeout(function(){
+    if(window.__cadBooted) return;
+    show('Engine didn\u2019t start',
+      (navigator.onLine?'':'Your device looks offline. ')+
+      'JakeCAD loads its 3D engine (Three.js) from a CDN, so the page needs internet and the CDN must not be blocked.<br><br>'+
+      '<b>Most common causes on a live site:</b><br>'+
+      '&bull; A Content-Security-Policy on the site blocking <code>cdn.jsdelivr.net</code> or inline scripts.<br>'+
+      '&bull; The page served at the wrong path, or a catch-all redirect showing another page (404 / SPA fallback).<br>'+
+      '&bull; A browser extension / ad-blocker stopping jsDelivr.<br><br>'+
+      (errs.length?('<b>Console reported:</b><br><span style="color:#fca5a5">'+errs.slice(0,4).join('<br>')+'</span><br><br>'):'')+
+      'Open DevTools \u2192 Console (F12) and send me the red error text.');
+  },9000);
+})();
+</script>
 
 <div id="app">
   <!-- TOP BAR -->
@@ -1289,6 +1321,7 @@ new FontLoader().load('https://cdn.jsdelivr.net/npm/[email protected]/examples/f
 drawPlate(); renderPlateTabs(); renderProps(); renderOutliner();
 updateSnaps(); updateStatus(); pushHistory();
 resize(); loop(); fitView();
+window.__cadBooted=true;
 document.getElementById('loader').style.display='none';
 
 // autosave every 45s if dirty
