@@ -141,6 +141,9 @@ kbd{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--muted);backg
 .chip:hover{color:var(--text)}
 .chip.on{border-color:color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .vsep{width:1px;align-self:stretch;background:var(--edge);flex-shrink:0;margin:2px 0}
+.qcols{display:flex;gap:3px;flex-shrink:0}
+.qcols .sw{width:20px;height:20px;aspect-ratio:auto}
+.qcols:empty{display:none}
 
 /* views */
 .viewbar{display:flex;align-items:center;gap:6px;padding:6px 8px;position:absolute;top:0;left:0;right:0;z-index:5;pointer-events:none;flex-wrap:wrap}
@@ -352,7 +355,34 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
 .toast.err{border-color:var(--bad)}
 .spinner{width:18px;height:18px;border:2px solid var(--edge2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.reduce-motion *{transition:none!important;animation-duration:0s!important}
+.reduce-motion *,.no-anim *{transition:none!important;animation:none!important}
+/* motion: small, quick transitions so the UI feels smooth instead of jumpy */
+.tb,.btn,.vb,.chip,.tool,.ptab,.pt,.item,.sw,.cs,.tab,.ib,.theme-card,.mode-card,.seg button,.layer,.menu button,.tpl button{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,transform .12s ease,opacity .16s ease}
+.tb:active,.btn:active,.vb:active,.chip:active,.tool:active,.ptab:active,.pt:active,.item:active,.ib:active,.theme-card:active,.mode-card:active,.seg button:active,.tab:active,.tpl button:active{transform:scale(.95)}
+.sw:active,.cs:active{transform:scale(.9)}
+.panel.active{animation:panelIn .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.menu.open{animation:popIn .16s cubic-bezier(.2,.8,.2,1);transform-origin:top left}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-4px)}to{opacity:1;transform:none}}
+dialog[open]{animation:dlgIn .22s cubic-bezier(.2,.8,.2,1)}
+dialog[open]::backdrop{animation:fadeIn .22s ease}
+@keyframes dlgIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.tab{animation:fadeIn .2s ease}
+.tool.active .i{animation:toolPop .25s cubic-bezier(.2,1.4,.4,1)}
+@keyframes toolPop{0%{transform:scale(.8)}100%{transform:scale(1)}}
+.cs.sel{transition:border-color .15s,box-shadow .15s}
+details.guide .gb{animation:panelIn .2s ease}
+.views .view{transition:flex .2s ease}
+.spin-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:6px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+#stSaved{display:inline-flex;align-items:center;gap:4px;color:var(--good)}
+#stSaved .i{width:13px;height:13px}
+.bk{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--edge)}
+.bk:last-child{border-bottom:none}
+.bk img{width:32px;height:32px;image-rendering:pixelated;border-radius:5px;background:var(--panel3);flex-shrink:0}
+.bk .t{font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk .d{font-size:11px;color:var(--dim)}
 
 /* simple mode hides advanced controls */
 .simple .adv{display:none!important}
@@ -401,7 +431,8 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
   .ptab{min-width:58px;flex-shrink:0}
   .pbody{position:absolute;left:0;right:0;bottom:100%;height:min(48vh,500px);background:var(--panel);border-top:1px solid var(--edge2);border-radius:16px 16px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.45);display:none;z-index:30;padding-top:30px}
   [data-theme=minecraft] .pbody{border-radius:0}
-  .side.open .pbody{display:block}
+  .side.open .pbody{display:block;animation:sheetUp .26s cubic-bezier(.2,.8,.2,1)}
+  @keyframes sheetUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
   .sheet-close{display:flex;position:absolute;top:0;left:0;right:0;height:26px;align-items:center;justify-content:center;border:none;background:none;z-index:2}
   .sheet-close::before{content:"";width:44px;height:5px;border-radius:3px;background:var(--edge2)}
   .views.split{flex-direction:column}
@@ -436,6 +467,8 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
         <hr>
         <button data-act="settings"><svg class="i"><use href="#i-settings"/></svg>Settings</button>
         <button data-act="help"><svg class="i"><use href="#i-help"/></svg>Help and shortcuts <kbd>?</kbd></button>
+        <button data-act="reopen"><svg class="i"><use href="#i-undo"/></svg>Reopen closed tab</button>
+        <button data-act="backups"><svg class="i"><use href="#i-save"/></svg>Restore points</button>
         <button data-act="close"><svg class="i"><use href="#i-x"/></svg>Close tab</button>
       </div>
     </div>
@@ -787,6 +820,12 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
         <h3>Check skin</h3>
         <button class="btn w" id="validateBtn">Run skin check</button>
         <ul class="warnlist" id="validateOut"></ul>
+        <h3>Saved in this browser <span class="r hint" id="skSaved" style="margin:0"></span></h3>
+        <div class="hint" style="margin-top:0">Your open tabs are saved automatically, so closing the page or a crash won't lose your work. Restore points keep older versions of this skin.</div>
+        <div class="row" style="margin-bottom:6px"><span class="lbl grow" style="margin:0">Restore points</span><button class="btn sm" id="bkNow"><svg class="i"><use href="#i-save"/></svg>Save one now</button></div>
+        <div id="bkPoints"></div>
+        <span class="lbl" style="margin-top:10px">Recently closed tabs</span>
+        <div id="bkClosed"></div>
         <h3>Export</h3>
         <div class="grid2">
           <button class="btn sm" data-act="download"><svg class="i"><use href="#i-download"/></svg>PNG</button>
@@ -810,10 +849,12 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
         <div class="srow"><div><div class="t">Background</div></div><select id="setBg"><option value="theme">Theme default</option><option value="sky">Minecraft sky</option><option value="night">Night sky</option><option value="grass">Grass field</option><option value="solid">Solid color</option><option value="checker">Checkerboard</option></select></div>
         <div class="srow" id="setBgColorRow"><div><div class="t">Background color</div></div><input type="color" id="setBgColor" value="#1e293b"></div>
         <div class="srow"><div><div class="t">Name tag</div><div class="d">Show the skin name above the head</div></div><label class="switch"><input type="checkbox" id="setNametag"><span></span></label></div>
-        <div class="srow"><div><div class="t">Shading</div><div class="d">Off shows the exact colors</div></div><label class="switch"><input type="checkbox" id="setLight"><span></span></label></div>
+        <div class="srow"><div><div class="t">Shading</div><div class="d">Adds light and shadow. Off shows the exact colors.</div></div><label class="switch"><input type="checkbox" id="setLight"><span></span></label></div>
         <div class="srow"><div><div class="t">Pixel grid on the model</div></div><label class="switch"><input type="checkbox" id="setGrid3d"><span></span></label></div>
         <div class="srow"><div><div class="t">Floor shadow</div></div><label class="switch"><input type="checkbox" id="setShadow" checked><span></span></label></div>
         <div class="srow"><div><div class="t">Invert scroll zoom</div></div><label class="switch"><input type="checkbox" id="setInvZoom"><span></span></label></div>
+        <div class="srow"><div><div class="t">Smooth camera</div><div class="d">The model keeps spinning a little after you let go</div></div><label class="switch"><input type="checkbox" id="setInertia"><span></span></label></div>
+        <div class="srow"><div><div class="t">Rotate speed</div></div><input type="range" id="setSens" min="0.4" max="2" step="0.1" style="max-width:130px"></div>
         <h3>Flat view</h3>
         <div class="srow"><div><div class="t">Dim unused areas</div></div><label class="switch"><input type="checkbox" id="setDim" checked><span></span></label></div>
         <div class="srow"><div><div class="t">Pixel grid</div></div><label class="switch"><input type="checkbox" id="setGrid2d"><span></span></label></div>
@@ -821,14 +862,18 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
         <h3>Editing</h3>
         <div class="srow"><div><div class="t">Default brush size</div></div><select id="setBrush"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
         <div class="srow"><div><div class="t">Default model for new skins</div></div><select id="setModel"><option value="classic">Classic</option><option value="slim">Slim</option></select></div>
-        <div class="srow"><div><div class="t">Highlight color for Swap</div></div><input type="color" id="setHiColor" value="#ff00c8"></div>
+        <div class="srow"><div><div class="t">Swap tab highlight</div><div class="d">How chosen colors are shown on the skin</div></div><select id="setHl"><option value="dim">Dim the rest</option><option value="outline">Outline</option><option value="both">Dim and outline</option></select></div>
+        <div class="srow"><div><div class="t">Outline color</div></div><input type="color" id="setHiColor" value="#facc15"></div>
+        <div class="srow"><div><div class="t">Check before downloading</div><div class="d">Warn about see-through base pixels</div></div><label class="switch"><input type="checkbox" id="setCheckDl"><span></span></label></div>
         <div class="srow"><div><div class="t">Ask before closing edited tabs</div></div><label class="switch"><input type="checkbox" id="setConfirm" checked><span></span></label></div>
         <h3>Interface</h3>
         <div class="srow"><div><div class="t">Show tips in the status bar</div></div><label class="switch"><input type="checkbox" id="setTips" checked><span></span></label></div>
         <div class="srow"><div><div class="t">Show shortcut letters on tools</div></div><label class="switch"><input type="checkbox" id="setKeys" checked><span></span></label></div>
-        <div class="srow"><div><div class="t">Reduce motion</div><div class="d">No blinking highlights or animations</div></div><label class="switch"><input type="checkbox" id="setMotion"><span></span></label></div>
+        <div class="srow"><div><div class="t">Interface animations</div><div class="d">Smooth transitions on buttons and panels</div></div><label class="switch"><input type="checkbox" id="setUiAnim"><span></span></label></div>
+        <div class="srow"><div><div class="t">Reduce motion</div><div class="d">Turns off all animation, including the camera</div></div><label class="switch"><input type="checkbox" id="setMotion"><span></span></label></div>
         <h3>Saving</h3>
         <div class="srow"><div><div class="t">Auto-save open tabs</div><div class="d">Kept in this browser only</div></div><label class="switch"><input type="checkbox" id="autosaveChk" checked><span></span></label></div>
+        <div class="srow"><div><div class="t">Restore points</div><div class="d">Keep older versions every few minutes</div></div><label class="switch"><input type="checkbox" id="setPoints"><span></span></label></div>
         <div class="row" style="margin-top:8px"><button class="btn sm danger grow" id="clearSaved">Forget saved tabs</button><button class="btn sm grow" id="resetSettings">Reset settings</button></div>
       </div>
 
@@ -841,7 +886,7 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
     </div>
   </aside>
 
-  <footer class="status" id="status"><span id="stPos">-</span><span id="stPart"></span><span id="stCol"></span><span class="tip" id="stTip" title="Click for the next tip"></span><span id="stDoc"></span></footer>
+  <footer class="status" id="status"><span id="stPos">-</span><span id="stPart"></span><span id="stCol"></span><span class="tip" id="stTip" title="Click for the next tip"></span><span id="stSaved" title="Your tabs are saved in this browser"></span><span id="stDoc"></span></footer>
 </div>
 
 <!-- New skin -->
@@ -887,7 +932,7 @@ dialog::backdrop{background:rgba(3,7,16,.7);backdrop-filter:blur(3px)}
       <kbd>L</kbd><span>Line</span><kbd>U</kbd><span>Rectangle</span><kbd>M</kbd><span>Select</span><kbd>V</kbd><span>Paste stamp</span>
       <kbd>P</kbd><span>Pose tool</span><kbd>H</kbd><span>Move / rotate the view</span>
       <kbd>X</kbd><span>Swap primary and secondary colors</span><kbd>K</kbd><span>Mirror painting on/off</span><kbd>[ ]</kbd><span>Brush size</span>
-      <kbd>O</kbd><span>Show/hide the outer layer</span><kbd>1 2 3</kbd><span>3D, split or flat view</span><kbd>F</kbd><span>Fit the flat view</span>
+      <kbd>O</kbd><span>Show/hide the outer layer</span><kbd>1 2 3</kbd><span>3D, split or flat view</span><kbd>F</kbd><span>Fit the flat view</span><kbd>Arrow keys</kbd><span>Turn the 3D model (Shift turns faster)</span>
       <kbd>Ctrl+Z</kbd><span>Undo</span><kbd>Ctrl+Y</kbd><span>Redo</span><kbd>Ctrl+S</kbd><span>Download PNG</span>
       <kbd>Ctrl+C / X / V</kbd><span>Copy, cut, paste a selection. Pasting an image file opens it.</span>
       <kbd>Esc</kbd><span>Clear selection</span><kbd>?</kbd><span>This list</span>
@@ -1134,7 +1179,7 @@ class Doc {
     for (const L of this.layers) if (L.visible && L.opacity > 0) { ctx.globalAlpha = L.opacity; ctx.drawImage(L.canvas, 0, 0); }
     ctx.globalAlpha = 1;
     this.compData = ctx.getImageData(0, 0, this.size, this.size).data;
-    this.needComp = false;
+    this.needComp = false; this.compVer = (this.compVer || 0) + 1;
   }
   flatData() { if (this.needComp) this.composite(); return this.compData; }
 }
@@ -1182,7 +1227,8 @@ function updateUndoBtns() {
 /* ─────────────── global state ─────────────── */
 function defaultSettings() {
   return { mode: 'advanced', theme: 'midnight', accent: '', bg: 'theme', bgColor: '#1e293b', nametag: false, shadow: true, invZoom: false,
-    dim: true, brush: 1, model: 'classic', hiColor: '#ff00c8', confirmClose: true, tips: true, keys: true, reduceMotion: false };
+    dim: true, brush: 1, model: 'classic', hiColor: '#facc15', confirmClose: true, tips: true, keys: true, reduceMotion: false,
+    hlStyle: 'dim', inertia: true, sens: 1, restorePoints: true, checkOnDownload: true, uiAnim: true };
 }
 const S = {
   docs: [], doc: null,
@@ -1192,7 +1238,7 @@ const S = {
   target: 'auto',
   vis: Object.fromEntries(PARTS.map(p => [p, [true, true]])),
   lock: [false, false], lockHidden: true,
-  view: 'split', pose: null, poseName: 'stand', posePart: 'rarm', anim: 'none', explode: false, showCape: true, spin: false, light: true, grid3d: true,
+  view: 'split', pose: null, poseName: 'stand', posePart: 'rarm', anim: 'none', explode: false, showCape: true, spin: false, light: false, grid3d: true,
   grid2d: true, outlines: true, labels: false,
   recent: [], saved: [],
   sel: null, clip: null, highlight: null,
@@ -1294,7 +1340,8 @@ function boxFromRects(w, h, d, inflate, rects, texW, texH) {
     left: [[a, b, c], [a, b, -c], [a, -b, c], [a, -b, -c]],
     back: [[a, b, -c], [-a, b, -c], [a, -b, -c], [-a, -b, -c]],
     top: [[-a, b, -c], [a, b, -c], [-a, b, c], [a, b, c]],
-    bottom: [[-a, -b, c], [a, -b, c], [-a, -b, -c], [a, -b, -c]],
+    // bottom uses the same orientation as the top seen from above (first row = back), which is what Minecraft does
+    bottom: [[-a, -b, -c], [a, -b, -c], [-a, -b, c], [a, -b, c]],
   };
   const eu = 0.02 / texW, ev = 0.02 / texH;
   const pos = [], uv = [], nrm = [], faceOf = [];
@@ -1303,8 +1350,11 @@ function boxFromRects(w, h, d, inflate, rects, texW, texH) {
     const u0 = x / texW + eu, u1 = (x + fw) / texW - eu, v0 = 1 - y / texH - ev, v1 = 1 - (y + fh) / texH + ev;
     const [TL, TR, BL, BR] = corners[f];
     const quadUV = { TL: [u0, v0], TR: [u1, v0], BL: [u0, v1], BR: [u1, v1] };
+    const flip = f === 'bottom'; // its corners wind the other way, so swap the triangle order to keep it facing out
     const nv = new THREE.Vector3().subVectors(new THREE.Vector3(...BL), new THREE.Vector3(...TL)).cross(new THREE.Vector3().subVectors(new THREE.Vector3(...TR), new THREE.Vector3(...TL))).normalize();
-    for (const [P, k] of [[TL, 'TL'], [BL, 'BL'], [TR, 'TR'], [TR, 'TR'], [BL, 'BL'], [BR, 'BR']]) { pos.push(...P); uv.push(...quadUV[k]); nrm.push(nv.x, nv.y, nv.z); }
+    if (flip) nv.negate();
+    const order = flip ? [[TL, 'TL'], [TR, 'TR'], [BL, 'BL'], [TR, 'TR'], [BR, 'BR'], [BL, 'BL']] : [[TL, 'TL'], [BL, 'BL'], [TR, 'TR'], [TR, 'TR'], [BL, 'BL'], [BR, 'BR']];
+    for (const [P, k] of order) { pos.push(...P); uv.push(...quadUV[k]); nrm.push(nv.x, nv.y, nv.z); }
     faceOf.push(f, f);
   }
   const geo = new THREE.BufferGeometry();
@@ -1408,7 +1458,7 @@ function drawDisplay() {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, W, W);
   ctx.drawImage(d.comp, 0, 0, W, W);
-  if (S.highlight && S.highlight.keys.size) drawHighlight(ctx, d, ds);
+  if (S.highlight && S.highlight.keys.size) { ctx.drawImage(highlightMask(d), 0, 0, W, W); if (S.set.hlStyle !== 'dim') drawHighlightOutline(ctx, d, ds); }
   if (S.hover && S.hover.view === '3d' && S.hover.pixels) {
     const pc = S.tool === 'eraser' ? [255, 60, 60, 200] : ['pencil', 'noise', 'line', 'rect'].includes(S.tool) ? PRIMARY() : [255, 255, 255, 170];
     ctx.fillStyle = C.css([pc[0], pc[1], pc[2], Math.max(170, pc[3])]);
@@ -1428,18 +1478,30 @@ function drawDisplay() {
   if (V3.tex) V3.tex.needsUpdate = true;
   V3.needs = true;
 }
-function hlColor(on) { return on ? S.set.hiColor : '#00ffff'; }
-function drawHighlight(ctx, d, ds) {
-  const on = S.set.reduceMotion || Math.floor(performance.now() / 350) % 2 === 0;
-  const data = d.compData, keys = S.highlight.keys, n = d.size, t = Math.max(1, ds / 4);
-  ctx.fillStyle = hlColor(on);
-  for (let i = 0, p = 0; p < n * n; p++, i += 4) {
-    if (!data[i + 3]) continue;
-    if (keys.has(C.key(data[i], data[i + 1], data[i + 2], data[i + 3]))) {
-      const x = p % n, y = (p / n) | 0;
-      if (ds >= 4) { ctx.fillRect(x * ds, y * ds, ds, t); ctx.fillRect(x * ds, y * ds + ds - t, ds, t); ctx.fillRect(x * ds, y * ds, t, ds); ctx.fillRect(x * ds + ds - t, y * ds, t, ds); }
-      else ctx.fillRect(x * ds, y * ds, ds, ds);
-    }
+function hlColor() { return S.set.hiColor; }
+/* Highlight for the Swap tab: everything that isn't the chosen color gets dimmed,
+   so the matching pixels stand out without any flashing. Cached per composite. */
+function highlightMask(d) {
+  const h = S.highlight;
+  if (h.mask && h.maskVer === d.compVer && h.maskDoc === d.id) return h.mask;
+  const n = d.size, data = d.compData, c = newCanvas(n), ctx = c.getContext('2d'), img = ctx.createImageData(n, n);
+  const dim = S.set.hlStyle === 'outline' ? 0 : 165;
+  for (let p = 0; p < n * n; p++) {
+    const i = p * 4; if (!data[i + 3]) continue;
+    if (!h.keys.has(C.key(data[i], data[i + 1], data[i + 2], data[i + 3]))) img.data[i + 3] = dim;
+  }
+  ctx.putImageData(img, 0, 0);
+  h.mask = c; h.maskVer = d.compVer; h.maskDoc = d.id;
+  return c;
+}
+function drawHighlightOutline(ctx, d, ds) {
+  const data = d.compData, keys = S.highlight.keys, n = d.size, t = Math.max(1, Math.round(ds / 6));
+  ctx.fillStyle = hlColor();
+  for (let p = 0; p < n * n; p++) {
+    const i = p * 4; if (!data[i + 3] || !keys.has(C.key(data[i], data[i + 1], data[i + 2], data[i + 3]))) continue;
+    const x = p % n, y = (p / n) | 0;
+    if (ds >= 4) { ctx.fillRect(x * ds, y * ds, ds, t); ctx.fillRect(x * ds, y * ds + ds - t, ds, t); ctx.fillRect(x * ds, y * ds, t, ds); ctx.fillRect(x * ds + ds - t, y * ds, t, ds); }
+    else ctx.fillRect(x * ds, y * ds, ds, ds);
   }
 }
 
@@ -1449,7 +1511,7 @@ function resize3D() {
   if (!w || !h) return;
   V3.renderer.setSize(w, h, false);
   V3.camera.aspect = w / h; V3.camera.updateProjectionMatrix();
-  if (!V3.userZoom) V3.radius = fitRadius();
+  if (!V3.userZoom) V3.radius = V3.rTarget = fitRadius();
   V3.needs = true;
 }
 function fitRadius() {
@@ -1462,7 +1524,7 @@ function updateCamera() {
   c.position.set(t.x + V3.radius * Math.sin(V3.phi) * Math.sin(V3.theta), t.y + V3.radius * Math.cos(V3.phi), t.z + V3.radius * Math.sin(V3.phi) * Math.cos(V3.theta));
   c.lookAt(t);
 }
-function refit() { if (!V3.userZoom && V3.camera) { V3.target.y = S.set.nametag ? 17.5 : 16; V3.radius = fitRadius(); V3.needs = true; } }
+function refit() { if (!V3.userZoom && V3.camera) { V3.target.y = S.set.nametag ? 17.5 : 16; V3.radius = V3.rTarget = fitRadius(); V3.needs = true; } }
 function camPreset(p) {
   const presets = { front: [0, 1.45], back: [Math.PI, 1.45], left: [Math.PI / 2, 1.45], right: [-Math.PI / 2, 1.45], top: [0, 0.12], reset: [0.5, 1.35] };
   const [th, ph] = presets[p];
@@ -1474,7 +1536,7 @@ function camPreset(p) {
   const step = now => {
     const k = S.set.reduceMotion ? 1 : Math.min(1, (now - t0) / 350), e = 1 - Math.pow(1 - k, 3);
     V3.theta = start.th + dth * e; V3.phi = start.ph + (ph - start.ph) * e;
-    if (p === 'reset') { V3.radius = start.r + (fr - start.r) * e; V3.pan.copy(start.px).multiplyScalar(1 - e); }
+    if (p === 'reset') { V3.radius = V3.rTarget = start.r + (fr - start.r) * e; V3.pan.copy(start.px).multiplyScalar(1 - e); }
     V3.needs = true; if (k < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
@@ -1523,7 +1585,13 @@ function applyPose(t) {
 
 function loop3D(now) {
   requestAnimationFrame(loop3D);
-  if (S.highlight && !S.set.reduceMotion) { drawDisplay(); draw2d(); }
+  // smooth zoom and a little camera glide after you let go
+  if (V3.rTarget != null && Math.abs(V3.radius - V3.rTarget) > .02) { V3.radius += (V3.rTarget - V3.radius) * (S.set.reduceMotion ? 1 : .22); V3.needs = true; }
+  if (V3.coast && !V3.dragging) {
+    V3.theta += V3.vel.th; V3.phi = clamp(V3.phi + V3.vel.ph, 0.05, Math.PI - 0.05);
+    V3.vel.th *= .9; V3.vel.ph *= .9; V3.needs = true;
+    if (Math.abs(V3.vel.th) + Math.abs(V3.vel.ph) < .0005) V3.coast = false;
+  }
   if (!V3.renderer || $('#v3d').offsetParent === null) return;
   const t = (now - V3.t0) / 1000;
   if (S.spin && !V3.dragging) { V3.theta += 0.008; V3.needs = true; }
@@ -1577,7 +1645,7 @@ function bind3DInput() {
   cv.addEventListener('pointerdown', e => {
     cv.setPointerCapture(e.pointerId);
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    V3.dragging = true;
+    V3.dragging = true; V3.coast = false; V3.vel = { th: 0, ph: 0 };
     if (pts.size === 2) {
       if (mode === 'paint') endStroke();
       mode = 'pinch'; const [a, b] = [...pts.values()];
@@ -1611,13 +1679,13 @@ function bind3DInput() {
     if (mode === 'pinch' && pts.size >= 2) {
       const [a, b] = [...pts.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      V3.radius = clamp(pinch0.r * pinch0.d / Math.max(d, 1), 12, 400); V3.userZoom = true;
+      V3.radius = V3.rTarget = clamp(pinch0.r * pinch0.d / Math.max(d, 1), 12, 400); V3.userZoom = true;
       V3.theta -= (mx - pinch0.mx) * 0.01; V3.phi = clamp(V3.phi - (my - pinch0.my) * 0.01, 0.05, Math.PI - 0.05);
       pinch0.mx = mx; pinch0.my = my; V3.needs = true; return;
     }
     if (mode === 'rotate' || mode === 'pan') {
       const dx = e.clientX - last.x, dy = e.clientY - last.y; last = { x: e.clientX, y: e.clientY };
-      if (mode === 'rotate') { V3.theta -= dx * 0.009; V3.phi = clamp(V3.phi - dy * 0.009, 0.05, Math.PI - 0.05); }
+      if (mode === 'rotate') { const k = 0.009 * S.set.sens; V3.theta -= dx * k; V3.phi = clamp(V3.phi - dy * k, 0.05, Math.PI - 0.05); V3.vel = { th: -dx * k, ph: -dy * k }; V3.lastMove = performance.now(); }
       else {
         const k = V3.radius / 600, cam = V3.camera;
         const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0), up = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 1);
@@ -1650,12 +1718,12 @@ function bind3DInput() {
     if (mode === 'paint') endStroke();
     if (mode === 'grad3d') { const hit = pick3D(e.clientX, e.clientY, S.target); commitGradient(V3.gradStart, hit || V3.gradStart); endStroke(); }
     if (mode === 'pose') endPoseDrag();
-    if (pts.size === 0) { mode = null; V3.dragging = false; }
+    if (pts.size === 0) { if (mode === 'rotate' && S.set.inertia && V3.vel && performance.now() - (V3.lastMove || 0) < 70) V3.coast = true; mode = null; V3.dragging = false; }
     else if (mode === 'pinch' && pts.size === 1) { mode = 'rotate'; last = [...pts.values()][0]; }
   };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   cv.addEventListener('pointerleave', () => { if (S.hover && S.hover.view === '3d') { S.hover = null; drawDisplay(); } });
-  cv.addEventListener('wheel', e => { e.preventDefault(); const dir = S.set.invZoom ? -1 : 1; V3.radius = clamp(V3.radius * Math.pow(1.0015, e.deltaY * dir), 12, 400); V3.userZoom = true; V3.needs = true; }, { passive: false });
+  cv.addEventListener('wheel', e => { e.preventDefault(); const dir = S.set.invZoom ? -1 : 1; V3.rTarget = clamp((V3.rTarget ?? V3.radius) * Math.pow(1.0015, e.deltaY * dir), 12, 400); V3.userZoom = true; V3.needs = true; }, { passive: false });
 }
 function pickModeFor(tool) { return tool === 'picker' || tool === 'replace' ? 'auto' : S.target; }
 function hover3D(e) {
@@ -1768,7 +1836,7 @@ function pixelLocked(d, x, y) {
 function beginStroke(tool, view) {
   const d = S.doc; if (!d) return;
   Stroke.active = true; Stroke.tool = tool; Stroke.view = view; Stroke.touched = new Set(); Stroke.changed = false;
-  Stroke.button = 0; Stroke.did = false;
+  Stroke.button = 0; Stroke.did = false; Stroke.warned = false;
   if (typeof ADJ !== 'undefined' && ADJ.orig) commitAdjustPreview(); // keep an unapplied adjustment instead of losing it
   if (!['picker', 'hand', 'select'].includes(tool)) Stroke.snap = snapshot(d); else Stroke.snap = null;
   if (!d.layer.visible && Stroke.snap) toast('The active layer was hidden, so it is shown again', false, 1500), (d.layer.visible = true, renderLayers());
@@ -1787,6 +1855,11 @@ function endStroke() {
   Stroke.snap = null;
 }
 
+function warnLocked(d, x, y) {
+  if (Stroke.warned) return; Stroke.warned = true;
+  const inf = pixelInfo(d, x, y); if (!inf) return;
+  toast(S.lock[inf.layer] ? `The ${inf.layer ? 'outer' : 'base'} layer is locked (Parts tab)` : `${PART_NAMES[inf.part]} ${inf.layer ? 'outer layer' : 'base'} is hidden, so it can't be painted here`, false, 1800);
+}
 function setPx(L, x, y, c) {
   const n = L.img.width, i = (y * n + x) * 4, a = L.img.data;
   if (a[i] === c[0] && a[i + 1] === c[1] && a[i + 2] === c[2] && a[i + 3] === c[3]) return false;
@@ -1814,7 +1887,7 @@ function applyToolAt(x, y, tool, button) {
     }
     case 'pencil': case 'eraser': case 'shade': case 'noise': {
       for (const [px, py] of brushPixels(x, y, tool)) {
-        if (pixelLocked(d, px, py)) continue;
+        if (pixelLocked(d, px, py)) { warnLocked(d, px, py); continue; }
         const k = py * n + px;
         if (tool === 'eraser') { changed = setPx(L, px, py, [0, 0, 0, 0]) || changed; continue; }
         if (tool === 'pencil') { changed = setPx(L, px, py, col) || changed; continue; }
@@ -1972,7 +2045,13 @@ function fit2d() {
 }
 function zoom2d(f, cx = V2.w / 2, cy = V2.h / 2) {
   const nz = clamp(V2.zoom * f, 0.5, 80);
-  V2.ox = cx - (cx - V2.ox) * nz / V2.zoom; V2.oy = cy - (cy - V2.oy) * nz / V2.zoom; V2.zoom = nz; draw2d();
+  V2.ox = cx - (cx - V2.ox) * nz / V2.zoom; V2.oy = cy - (cy - V2.oy) * nz / V2.zoom; V2.zoom = nz; draw2d(); showZoom();
+}
+let _zoomT = 0;
+function showZoom() {
+  const el = $('#zoomFit'); if (!el || !S.doc) return;
+  el.textContent = Math.round(V2.zoom * 100 / 8) * 1 + '%';
+  clearTimeout(_zoomT); _zoomT = setTimeout(() => { el.textContent = 'Fit'; }, 1400);
 }
 function screenToPx(cx, cy) {
   const r = V2.cv.getBoundingClientRect();
@@ -2007,13 +2086,15 @@ function draw2d() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(d.comp, X, Y, W, W);
   ctx.drawImage(getMask(d), X, Y, W, W);
-  // highlight
+  // highlight: dim everything except the chosen colors
   if (S.highlight && S.highlight.keys.size) {
-    const on = S.set.reduceMotion || Math.floor(performance.now() / 350) % 2 === 0, data = d.compData, keys = S.highlight.keys;
-    ctx.strokeStyle = hlColor(on); ctx.lineWidth = Math.max(1.5, Math.min(3, z / 6));
-    ctx.beginPath();
-    for (let p = 0; p < n * n; p++) { const i = p * 4; if (data[i + 3] && keys.has(C.key(data[i], data[i + 1], data[i + 2], data[i + 3]))) ctx.rect(X + (p % n) * z + 1, Y + ((p / n) | 0) * z + 1, z - 2, z - 2); }
-    ctx.stroke();
+    ctx.drawImage(highlightMask(d), X, Y, W, W);
+    if (S.set.hlStyle !== 'dim') {
+      const data = d.compData, keys = S.highlight.keys;
+      ctx.strokeStyle = hlColor(); ctx.lineWidth = Math.max(1.5, Math.min(3, z / 6)); ctx.beginPath();
+      for (let p = 0; p < n * n; p++) { const i = p * 4; if (data[i + 3] && keys.has(C.key(data[i], data[i + 1], data[i + 2], data[i + 3]))) ctx.rect(X + (p % n) * z + 1, Y + ((p / n) | 0) * z + 1, z - 2, z - 2); }
+      ctx.stroke();
+    }
   }
   // grid
   const x0 = Math.max(0, Math.floor(-X / z)), x1 = Math.min(n, Math.ceil((V2.w - X) / z));
@@ -2332,7 +2413,7 @@ function genRandom(slim) {
     P.sides('body', 1, (x, y, f) => (f !== 'front' || x < 2 || x > 5) && y < 11 ? jitter(jc, .03) : null);
     for (const a of ['rarm', 'larm']) P.sides(a, 1, (x, y) => y < 10 ? jitter(jc, .03) : null);
   }
-  if (Math.random() < .4) LIB.find(i => i.id === pickR(['beanie', 'cap', 'headband', 'glasses', 'scarf', 'headphones'])).draw(P, pickR(SHIRTS), '#ffffff');
+  if (Math.random() < .4) { const id = pickR(['beanie', 'cap', 'headband', 'glasses', 'scarf', 'headphones']); const it = LIB.find(i => i.id === id); if (it) it.draw(P, pickR(SHIRTS), '#ffffff'); }
   return P.buf;
 }
 function scaleBuf(src64, size) {
@@ -2436,7 +2517,7 @@ const LIB = [
   { id: 'beard', name: 'Beard', cat: 'Face', tags: 'viking', c1: '#5b3a1e', c2: '#000000', draw(P, c1) {
     P.face('head', 1, 'front', (x, y) => y === 5 && (x <= 1 || x >= 6 || (x >= 2 && x <= 5)) ? jitter(c1, .05) : y >= 6 && !(y === 6 && (x === 3 || x === 4)) ? jitter(c1, .05) : null);
     P.face('head', 1, 'right', (x, y) => x >= 6 && y >= 4 ? jitter(c1, .05) : null); P.face('head', 1, 'left', (x, y) => x <= 1 && y >= 4 ? jitter(c1, .05) : null);
-    P.face('head', 1, 'bottom', (x, y) => y <= 3 ? jitter(c1, .05) : null);
+    P.face('head', 1, 'bottom', (x, y) => y >= 4 ? jitter(c1, .05) : null);
   } },
   { id: 'mask', name: 'Face mask', cat: 'Face', tags: 'medical', c1: '#7dd3fc', c2: '#ffffff', draw(P, c1, c2) {
     P.face('head', 1, 'front', (x, y) => y >= 5 && y <= 7 ? (y === 6 ? sh(c1, -.05) : c1) : null);
@@ -2699,8 +2780,17 @@ function exportCanvas(d, legacy = false) {
 }
 function safeName(s) { return (s || 'skin').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'skin'; }
 function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
-function downloadPNG(legacy = false) {
+function baseHoles(d) {
+  const n = d.size, m = regionMap(n, d.slim), a = d.flatData(); let h = 0;
+  for (let i = 0; i < n * n; i++) if (m.layer[i] === 0 && a[i * 4 + 3] === 0) h++;
+  return h;
+}
+function downloadPNG(legacy = false, skipCheck = false) {
   const d = S.doc; if (!d) return;
+  if (!skipCheck && S.set.checkOnDownload) {
+    const h = baseHoles(d);
+    if (h && !confirm(`Heads up: ${h} pixels on the base layer are see-through. Minecraft shows those as solid (usually black).\n\nPress OK to download anyway, or Cancel and use Fill base holes in the Adjust tab.`)) return;
+  }
   if (legacy && d.size !== 64) { toast('The old 64x32 format only works for 64x64 skins', true); return; }
   exportCanvas(d, legacy).toBlob(b => { downloadBlob(b, safeName(d.name) + (legacy ? '_legacy' : '') + '.png'); d.dirty = false; renderTabs(); toast(legacy ? 'Saved in the old 64x32 format (left limbs and most outer layers are dropped)' : 'Skin downloaded'); }, 'image/png');
 }
@@ -3070,6 +3160,7 @@ function buildOptbar() {
   if (!['picker', 'select', 'paste', 'hand', 'pose'].includes(t)) o.push(`<button class="chip ${S.mirror ? 'on' : ''}" id="oMirror" title="Mirror painting left and right (K)">${ic('mirror')}Mirror</button>`);
   if (!['select', 'paste', 'hand', 'line', 'rect', 'pose'].includes(t)) o.push(`<span class="vsep"></span><label class="opt">3D paints on<div class="seg" id="oTarget"><button data-v="auto">Auto</button><button data-v="base">Base</button><button data-v="outer">Outer</button></div></label>`);
   if (t === 'pose') o.push(`<label class="opt">Part<select id="oPosePart">${POSE_PARTS.map(p => `<option value="${p}">${POSE_NAMES[p]}</option>`).join('')}</select></label><button class="chip" id="oPoseReset">Reset pose</button>`);
+  if (['pencil', 'bucket', 'noise', 'gradient', 'line', 'rect', 'replace'].includes(t)) o.push(`<span class="vsep"></span><div class="qcols" id="qcols" title="Recent colors. Click for primary, right-click for secondary."></div>`);
   o.push(`<span class="opt m-hide" style="color:var(--dim)">${TOOL_HELP[t] || ''}</span>`);
   $('#optbar').innerHTML = o.join('');
   const bindR = (id, fn, suf = '') => { const e = $('#' + id); if (e) e.oninput = () => { fn(+e.value); $('#' + id + 'V').textContent = e.value + suf; if (S.hover) { S.hover.pixels = brushPixels(S.hover.x, S.hover.y); drawDisplay(); draw2d(); } }; };
@@ -3084,7 +3175,14 @@ function buildOptbar() {
   const rf = $('#oRectFill'); if (rf) rf.onclick = () => { S.rectFill = !S.rectFill; rf.classList.toggle('on', S.rectFill); };
   const pp = $('#oPosePart'); if (pp) { pp.value = S.posePart; pp.onchange = () => setPosePart(pp.value); }
   const pr = $('#oPoseReset'); if (pr) pr.onclick = () => applyPreset('stand');
+  const qc = $('#qcols');
+  if (qc) {
+    updateQuickColors();
+    qc.onclick = e => { const b = e.target.closest('.sw'); if (b) setColor(0, C.parse(b.dataset.c)); };
+    qc.oncontextmenu = e => { const b = e.target.closest('.sw'); if (b) { e.preventDefault(); setColor(1, C.parse(b.dataset.c)); } };
+  }
 }
+function updateQuickColors() { const qc = $('#qcols'); if (qc) qc.innerHTML = S.recent.slice(0, 10).map(c => swatchBtn(c)).join(''); }
 function segBind(sel, cur, fn) {
   const el = typeof sel === 'string' ? $(sel) : sel; if (!el) return;
   const val = b => b.dataset.v ?? b.dataset.m ?? b.dataset.t ?? b.dataset.slot;
@@ -3139,6 +3237,9 @@ const TIPS = [
   'Right-click in the flat view to paint with the secondary color.',
   'The Gradient tool blends your two colors across a face. Try Steps with Dither for a pixel-art look.',
   'Changed your mind? Ctrl+Z undoes almost everything, even color swaps.',
+  'Closed a tab by mistake? File menu, Reopen closed tab.',
+  'The Skin tab keeps restore points, older copies of your skin saved every few minutes.',
+  'Use the arrow keys to turn the model without touching the mouse.',
   'Simple mode in Settings hides the advanced tools if the screen feels busy.',
   'If a username shows the wrong skin, pick a different source in the lookup window.',
   'Put a logo or picture on your shirt with Put an image on a part in the Extras tab.',
@@ -3259,7 +3360,7 @@ function renderHarmony() {
 function addRecent(c) {
   const h = C.hex(c, true); S.recent = [c.slice(), ...S.recent.filter(x => C.hex(x, true) !== h)].slice(0, 24);
   if (curPanel === 'color') renderSwatches();
-  savePrefs();
+  updateQuickColors(); savePrefsSoon();
 }
 function initSwatchClicks() {
   for (const id of ['#recentSw', '#savedSw', '#palSw', '#harmony', '#locOut']) {
@@ -3569,7 +3670,7 @@ function initPosePanel() {
     if (curPanel === 'pose') renderPosePanel(); savePrefsSoon();
   };
   $('#renderBtn').onclick = () => saveRender();
-  $('#fovRange').oninput = e => { if (!V3.camera) return; V3.camera.fov = +e.target.value; V3.camera.updateProjectionMatrix(); if (!V3.userZoom) V3.radius = fitRadius(); V3.needs = true; };
+  $('#fovRange').oninput = e => { if (!V3.camera) return; V3.camera.fov = +e.target.value; V3.camera.updateProjectionMatrix(); if (!V3.userZoom) V3.radius = V3.rTarget = fitRadius(); V3.needs = true; };
 }
 
 /* =====================================================================
@@ -3881,6 +3982,9 @@ function initSkinPanel() {
   $('#skName').oninput = () => { S.doc.name = $('#skName').value || 'Skin'; renderTabs(); buildNameTag(); scheduleAutosave(); };
   $('#resApply').onclick = () => setResolution(+$('#resSel').value);
   $('#validateBtn').onclick = validateSkin;
+  $('#bkNow').onclick = async () => { await maybeRestorePoint(true); renderBackups(); toast('Restore point saved'); };
+  $('#bkPoints').addEventListener('click', e => { const b = e.target.closest('[data-point]'); if (b) restorePoint(b.dataset.point); });
+  $('#bkClosed').addEventListener('click', e => { const b = e.target.closest('[data-reopen]'); if (b) reopenClosed(+b.dataset.reopen); });
 }
 
 /* =====================================================================
@@ -3930,6 +4034,8 @@ function applySettings() {
   $('#setDim').checked = s.dim; $('#setGrid2d').checked = S.grid2d; $('#setOutlines').checked = S.outlines;
   $('#setBrush').value = String(s.brush); $('#setModel').value = s.model; $('#setHiColor').value = s.hiColor; $('#setConfirm').checked = s.confirmClose;
   $('#setTips').checked = s.tips; $('#setKeys').checked = s.keys; $('#setMotion').checked = s.reduceMotion;
+  $('#setHl').value = s.hlStyle; $('#setInertia').checked = s.inertia; $('#setSens').value = s.sens; $('#setPoints').checked = s.restorePoints; $('#setCheckDl').checked = s.checkOnDownload; $('#setUiAnim').checked = s.uiAnim;
+  document.body.classList.toggle('no-anim', !s.uiAnim || s.reduceMotion);
   syncToggles();
   applyBg(); applyVisibility(); V2.maskKey = ''; draw2d(); showTip();
   if (V3.renderer) { buildNameTag(); refit(); V3.needs = true; }
@@ -3964,9 +4070,15 @@ function initSettings() {
   $('#setTips').onchange = e => setSetting('tips', e.target.checked);
   $('#setKeys').onchange = e => setSetting('keys', e.target.checked);
   $('#setMotion').onchange = e => setSetting('reduceMotion', e.target.checked);
-  $('#autosaveChk').onchange = e => { try { localStorage.setItem('skinstudio.autosave', e.target.checked ? '1' : '0'); } catch { } if (e.target.checked) scheduleAutosave(); };
-  $('#clearSaved').onclick = () => { if (!confirm('Forget the tabs saved in this browser? Your open tabs stay open until you close the page.')) return; try { localStorage.removeItem('skinstudio.docs'); } catch { } toast('Saved tabs forgotten'); };
-  $('#resetSettings').onclick = () => { if (!confirm('Reset all settings to default?')) return; S.set = defaultSettings(); S.light = true; S.grid3d = true; S.grid2d = true; S.outlines = true; applySettings(); makeMaterials(); savePrefs(); toast('Settings reset'); };
+  $('#autosaveChk').onchange = e => { try { localStorage.setItem('skinstudio.autosave', e.target.checked ? '1' : '0'); } catch { } if (e.target.checked) scheduleAutosave(); else setSaveState(); };
+  $('#clearSaved').onclick = async () => { if (!confirm('Forget everything saved in this browser (tabs, restore points and closed tabs)? Your open tabs stay open until you close the page.')) return; try { localStorage.removeItem('skinstudio.docs'); } catch { } await Store.set('docs', null); await Store.set('points', []); await Store.set('closed', []); toast('Saved data cleared'); if (curPanel === 'skin') renderBackups(); };
+  $('#setHl').onchange = e => { setSetting('hlStyle', e.target.value); if (S.highlight) setHighlight([...S.highlight.keys]); };
+  $('#setInertia').onchange = e => setSetting('inertia', e.target.checked);
+  $('#setSens').oninput = e => setSetting('sens', +e.target.value);
+  $('#setPoints').onchange = e => setSetting('restorePoints', e.target.checked);
+  $('#setCheckDl').onchange = e => setSetting('checkOnDownload', e.target.checked);
+  $('#setUiAnim').onchange = e => setSetting('uiAnim', e.target.checked);
+  $('#resetSettings').onclick = () => { if (!confirm('Reset all settings to default?')) return; S.set = defaultSettings(); S.light = false; S.grid3d = true; S.grid2d = true; S.outlines = true; applySettings(); makeMaterials(); savePrefs(); toast('Settings reset'); };
 }
 
 /* =====================================================================
@@ -3985,7 +4097,7 @@ const GUIDES = [
     <ul><li>Hide either layer per body part in the <b>Parts</b> tab. Press O to toggle the whole outer layer.</li><li>You can lock a layer so you don't paint on it by mistake.</li><li>The base layer can't have see-through pixels in game. The outer layer can.</li></ul>
     <p>Advanced mode also has <b>edit layers</b>, like layers in a photo editor. They get combined into one PNG when you download.</p>`],
   ['drops', 'Changing colors everywhere', `<p>The <b>Swap</b> tab lists every color in your skin, most used first.</p>
-    <ol><li>Click a color to see where it's used (it blinks on the model).</li><li>Shift-click more colors, or use <b>Select similar shades</b> to grab every shade of pink in one go.</li><li>Pick the new color and press <b>Apply color change</b>.</li></ol>
+    <ol><li>Click a color to see where it's used. Everything else dims so it stands out.</li><li>Shift-click more colors, or use <b>Select similar shades</b> to grab every shade of pink in one go.</li><li>Pick the new color and press <b>Apply color change</b>.</li></ol>
     <p><b>Keep shading</b> keeps the light and dark differences, so a checker or gradient pattern still looks right in the new color. If your skin has lots of nearly-identical colors, move <b>Group similar shades</b> up first.</p>`],
   ['hat', 'Accessories', `<p>The <b>Library</b> tab has hats, glasses, faces, scarves, shoes and seasonal items. Click one to add it.</p>
     <ul><li>Each item goes on its own layer, so Undo or the Layers tab removes it cleanly.</li><li>Tick <b>Use my own colors</b> to recolor items before adding them.</li><li>Items sit on the outer layer, so your face and clothes underneath stay safe.</li></ul>`],
@@ -4001,7 +4113,7 @@ const GUIDES = [
     <p><b>Bedrock Edition:</b> go to <b>Dressing Room</b>, then <b>Classic Skins</b>, pick the empty slot under <b>Owned</b>, choose <b>Import</b> and pick your PNG, then choose the arm type.</p>`],
   ['help', 'Troubleshooting', `<ul><li><b>A username shows the wrong skin:</b> some skin sites return a default Steve or Alex when they're having problems. Pick another source in the lookup window. The one marked exact is read straight from Mojang.</li>
     <li><b>Black spots in game:</b> the base layer has holes. Run the skin check in the Skin tab.</li><li><b>Painting doesn't show up:</b> the active layer might be hidden, the part might be locked, or you might be painting the outer layer while it's hidden.</li>
-    <li><b>Lost work?</b> Tabs are saved in this browser. Clearing site data removes them, so download often.</li></ul>`],
+    <li><b>Closed a tab or the page by accident?</b> Just open Skin Studio again, your tabs come back. Closed tabs can be reopened from the File menu, and the Skin tab keeps restore points of older versions. Clearing your browser's site data removes all of this, so still download your finished skins.</li></ul>`],
 ];
 function renderGuides() {
   $('#guides').innerHTML = GUIDES.map(([icn, t, body], i) => `<details class="guide"${i === 0 ? ' open' : ''}><summary>${ic(icn)}${t}</summary><div class="gb">${body}</div></details>`).join('');
@@ -4041,7 +4153,7 @@ function refreshPanel(p = curPanel) {
   else if (p === 'parts') renderParts();
   else if (p === 'library') renderLibrary();
   else if (p === 'transfer') renderTransfer();
-  else if (p === 'skin') renderSkinPanel();
+  else if (p === 'skin') { renderSkinPanel(); renderBackups(); }
   else if (p === 'color') renderSwatches();
   else if (p === 'pose') renderPosePanel();
   else if (p === 'extras') { if (S.doc && S.doc.uuid && !$('#locOut').dataset.hex) { $('#locName').value = S.doc.name; renderLocator(S.doc.uuid, S.doc.name); } }
@@ -4086,6 +4198,7 @@ function switchDoc(d) {
 }
 function closeDoc(d) {
   if (d.dirty && S.set.confirmClose && !confirm(`Close "${d.name}"? It has changes you haven't downloaded.`)) return;
+  rememberClosed(d);
   const i = S.docs.indexOf(d); S.docs.splice(i, 1);
   if (!S.docs.length) { S.doc = null; addDoc(makeTemplate('starter', S.set.model === 'slim', 64, 'My skin')); }
   else if (S.doc === d) { S.doc = null; switchDoc(S.docs[Math.max(0, i - 1)]); }
@@ -4190,6 +4303,8 @@ function doAction(a) {
     case 'render': saveRender(); break;
     case 'copyimg': copyImage(); break;
     case 'close': closeDoc(S.doc); break;
+    case 'reopen': reopenClosed(0); break;
+    case 'backups': openPanel('skin'); setTimeout(() => $('#bkPoints').scrollIntoView({ block: 'center', behavior: 'smooth' }), 60); break;
     case 'help': openPanel('help'); break;
     case 'settings': openPanel('settings'); break;
   }
@@ -4224,6 +4339,7 @@ function initKeys() {
     else if (k === 'escape') { S.sel = null; if (S.tool === 'paste') setTool('select'); updateSelbar(); draw2d(); }
     else if (k === 'delete' || k === 'backspace') { if (S.sel) selClear(); }
     else if (k === 'f') fit2d();
+    else if (k.startsWith('arrow') && V3.renderer) { e.preventDefault(); const st = e.shiftKey ? .06 : .025; V3.vel = { th: k === 'arrowleft' ? -st : k === 'arrowright' ? st : 0, ph: k === 'arrowup' ? -st : k === 'arrowdown' ? st : 0 }; V3.coast = true; }
   });
 }
 
@@ -4233,34 +4349,132 @@ function initKeys() {
 let _rq = false;
 function requestRender() { if (_rq) return; _rq = true; requestAnimationFrame(() => { _rq = false; if (!S.doc) return; if (S.doc.needComp) S.doc.composite(); drawDisplay(); draw2d(); }); }
 
-let _saveT = 0;
-function scheduleAutosave() { clearTimeout(_saveT); _saveT = setTimeout(autosave, 1500); }
-function autosave() {
-  try { if (localStorage.getItem('skinstudio.autosave') === '0') return; } catch { return; }
+/* ─── browser storage: IndexedDB (plenty of room for HD skins), localStorage as a fallback ─── */
+const Store = {
+  db: undefined,
+  open() {
+    if (this.db !== undefined) return Promise.resolve(this.db);
+    return new Promise(res => {
+      try {
+        const r = indexedDB.open('skinstudio', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv');
+        r.onsuccess = () => { this.db = r.result; res(this.db); };
+        r.onerror = () => { this.db = null; res(null); };
+      } catch { this.db = null; res(null); }
+    });
+  },
+  async get(k) {
+    const db = await this.open();
+    if (!db) { try { const v = localStorage.getItem('skinstudio.' + k); return v ? JSON.parse(v) : null; } catch { return null; } }
+    return new Promise(res => { try { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result ?? null); q.onerror = () => res(null); } catch { res(null); } });
+  },
+  async set(k, v) {
+    const db = await this.open();
+    if (!db) { try { localStorage.setItem('skinstudio.' + k, JSON.stringify(v)); return true; } catch { return false; } }
+    return new Promise(res => { try { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => res(false); } catch { res(false); } });
+  },
+};
+function autosaveOn() { try { return localStorage.getItem('skinstudio.autosave') !== '0'; } catch { return true; } }
+function serializeDoc(d) {
+  return { id: d.id, name: d.name, size: d.size, slim: d.slim, active: d.active, dirty: d.dirty, uuid: d.uuid || null, cape: d.cape ? d.cape.toDataURL('image/png') : null,
+    layers: d.layers.map(L => ({ name: L.name, visible: L.visible, opacity: L.opacity, png: L.canvas.toDataURL('image/png') })) };
+}
+async function deserializeDoc(o) {
+  const d = new Doc(o.name, o.size, o.slim);
+  if (o.id) d.id = o.id; // keep the id so restore points still match after a reload
+  for (const lo of o.layers || []) {
+    const img = await loadImage(lo.png); const L = makeLayer(o.size, lo.name); L.ctx.drawImage(img, 0, 0); L.img = L.ctx.getImageData(0, 0, o.size, o.size); L.visible = lo.visible !== false; L.opacity = lo.opacity ?? 1; d.layers.push(L);
+  }
+  if (!d.layers.length) d.layers.push(makeLayer(o.size, 'Skin'));
+  if (o.cape) { try { d.cape = capeCanvasFrom(await loadImage(o.cape)); } catch { } }
+  d.uuid = o.uuid || null; d.active = clamp(o.active || 0, 0, d.layers.length - 1); d.dirty = !!o.dirty; d.composite();
+  return d;
+}
+function thumbOf(d) { const c = newCanvas(64), ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = false; if (d.needComp) d.composite(); ctx.drawImage(d.comp, 0, 0, 64, 64); return c.toDataURL('image/png'); }
+let _saveT = 0, lastSaved = 0, _saving = false;
+function scheduleAutosave() { clearTimeout(_saveT); setSaveState('pending'); _saveT = setTimeout(autosave, 800); }
+function setSaveState(st) {
+  const el = $('#stSaved'); if (!el) return;
+  if (!autosaveOn()) { el.innerHTML = '<span style="color:var(--dim)">Auto-save off</span>'; return; }
+  el.innerHTML = st === 'pending' ? `<span class="spin-dot"></span>Saving` : st === 'error' ? '<span style="color:var(--bad)">Not saved (storage full?)</span>' : `${ic('check')}Saved`;
+  const sk = $('#skSaved'); if (sk) sk.textContent = lastSaved ? 'Last saved ' + timeAgo(lastSaved) : '';
+}
+async function autosave() {
+  if (!autosaveOn() || !S.docs.length) return;
+  if (_saving) { scheduleAutosave(); return; }
+  _saving = true;
   try {
-    const docs = S.docs.map(d => ({ name: d.name, size: d.size, slim: d.slim, active: d.active, dirty: d.dirty, uuid: d.uuid || null, cape: d.cape ? d.cape.toDataURL('image/png') : null, layers: d.layers.map(L => ({ name: L.name, visible: L.visible, opacity: L.opacity, png: L.canvas.toDataURL('image/png') })) }));
-    localStorage.setItem('skinstudio.docs', JSON.stringify({ current: S.docs.indexOf(S.doc), docs }));
-  } catch (e) { /* storage full or blocked */ }
+    const docs = S.docs.map(serializeDoc);
+    const ok = await Store.set('docs', { t: Date.now(), current: S.docs.indexOf(S.doc), docs });
+    if (ok) { lastSaved = Date.now(); setSaveState('saved'); } else setSaveState('error');
+    await maybeRestorePoint();
+  } catch (e) { setSaveState('error'); }
+  _saving = false;
+}
+/* quick synchronous backup for when the tab is closing (IndexedDB may not finish in time) */
+function emergencySave() {
+  if (!autosaveOn()) return;
+  try { localStorage.setItem('skinstudio.docs', JSON.stringify({ t: Date.now(), current: S.docs.indexOf(S.doc), docs: S.docs.map(serializeDoc) })); } catch { }
 }
 async function restoreSession() {
-  let raw; try { raw = localStorage.getItem('skinstudio.docs'); } catch { return false; }
-  if (!raw) return false;
+  let j = await Store.get('docs'), ls = null;
+  try { ls = JSON.parse(localStorage.getItem('skinstudio.docs') || 'null'); } catch { }
+  if (ls && (!j || (ls.t || 0) > (j.t || 0))) j = ls; // the unload backup is newer
+  if (!j || !j.docs || !j.docs.length) return false;
   try {
-    const j = JSON.parse(raw); if (!j.docs || !j.docs.length) return false;
-    for (const o of j.docs) {
-      const d = new Doc(o.name, o.size, o.slim);
-      for (const lo of o.layers) {
-        const img = await loadImage(lo.png); const L = makeLayer(o.size, lo.name); L.ctx.drawImage(img, 0, 0); L.img = L.ctx.getImageData(0, 0, o.size, o.size); L.visible = lo.visible; L.opacity = lo.opacity; d.layers.push(L);
-      }
-      if (!d.layers.length) d.layers.push(makeLayer(o.size, 'Skin'));
-      if (o.cape) { try { d.cape = capeCanvasFrom(await loadImage(o.cape)); } catch { } }
-      d.uuid = o.uuid || null;
-      d.active = clamp(o.active || 0, 0, d.layers.length - 1); d.dirty = !!o.dirty; d.composite();
-      S.docs.push(d);
-    }
+    for (const o of j.docs) S.docs.push(await deserializeDoc(o));
     switchDoc(S.docs[clamp(j.current, 0, S.docs.length - 1)] || S.docs[0]);
+    lastSaved = j.t || Date.now(); setSaveState('saved');
     return true;
   } catch (e) { return false; }
+}
+/* restore points: a copy of each skin every few minutes while you work */
+const pointTimes = {};
+async function maybeRestorePoint(force) {
+  if (!S.set.restorePoints && !force) return;
+  const d = S.doc; if (!d || (!d.dirty && !force)) return;
+  const now = Date.now();
+  if (!force && pointTimes[d.id] && now - pointTimes[d.id] < 3 * 60 * 1000) return;
+  if (!force && !pointTimes[d.id]) { pointTimes[d.id] = now; return; } // first change: start the clock
+  pointTimes[d.id] = now;
+  const pts = (await Store.get('points')) || [];
+  pts.unshift({ id: uid(), docId: d.id, name: d.name, t: now, thumb: thumbOf(d), data: serializeDoc(d) });
+  const per = {}; const kept = pts.filter(p => (per[p.docId] = (per[p.docId] || 0) + 1) <= 8).slice(0, 40);
+  await Store.set('points', kept);
+  if (curPanel === 'skin') renderBackups();
+}
+async function rememberClosed(d) {
+  const list = (await Store.get('closed')) || [];
+  list.unshift({ t: Date.now(), name: d.name, thumb: thumbOf(d), data: serializeDoc(d) });
+  await Store.set('closed', list.slice(0, 10));
+}
+async function reopenClosed(i = 0) {
+  const list = (await Store.get('closed')) || [];
+  const it = list[i]; if (!it) { toast('No recently closed tabs'); return; }
+  list.splice(i, 1); await Store.set('closed', list);
+  const d = await deserializeDoc(it.data); d.id = uid(); addDoc(d); toast(`Reopened ${d.name}`);
+  if (curPanel === 'skin') renderBackups();
+}
+async function restorePoint(id) {
+  const pts = (await Store.get('points')) || [], p = pts.find(x => x.id === id); if (!p) return;
+  const d = await deserializeDoc(p.data); d.id = uid(); d.name = p.name + ' (' + new Date(p.t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ')'; d.dirty = true;
+  addDoc(d); toast('Restore point opened in a new tab');
+}
+function timeAgo(t) {
+  const s = Math.round((Date.now() - t) / 1000);
+  if (s < 10) return 'just now'; if (s < 60) return s + ' seconds ago';
+  const m = Math.round(s / 60); if (m < 60) return m + (m === 1 ? ' minute ago' : ' minutes ago');
+  const h = Math.round(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
+  return new Date(t).toLocaleDateString();
+}
+async function renderBackups() {
+  const d = S.doc; if (!d) return;
+  const pts = ((await Store.get('points')) || []).filter(p => p.docId === d.id);
+  const closed = (await Store.get('closed')) || [];
+  const row = (thumb, title, sub, btn) => `<div class="bk"><img src="${thumb}" alt=""><div class="grow"><div class="t">${escapeHtml(title)}</div><div class="d">${sub}</div></div>${btn}</div>`;
+  $('#bkPoints').innerHTML = pts.length ? pts.map(p => row(p.thumb, p.name, timeAgo(p.t), `<button class="btn sm" data-point="${p.id}">Open</button>`)).join('') : '<div class="hint">No restore points yet for this skin. They are made every few minutes while you edit.</div>';
+  $('#bkClosed').innerHTML = closed.length ? closed.map((c, i) => row(c.thumb, c.name, 'closed ' + timeAgo(c.t), `<button class="btn sm" data-reopen="${i}">Reopen</button>`)).join('') : '<div class="hint">Tabs you close show up here so you can bring them back.</div>';
+  setSaveState(_saving ? 'pending' : 'saved');
 }
 let _prefT = 0;
 function savePrefsSoon() { clearTimeout(_prefT); _prefT = setTimeout(savePrefs, 600); }
@@ -4269,7 +4483,7 @@ function savePrefs() {
     localStorage.setItem('skinstudio.prefs', JSON.stringify({
       recent: S.recent.map(c => C.hex(c, true)), saved: S.saved.map(c => C.hex(c, true)), colors: S.colors.map(c => C.hex(c, true)), lu: LU.recent,
       view: S.view, light: S.light, grid3d: S.grid3d, grid2d: S.grid2d, outlines: S.outlines, labels: S.labels, set: S.set,
-      pose: S.pose, poseName: S.poseName, poses: S.poses, anim: S.anim, welcomed: true,
+      pose: S.pose, poseName: S.poseName, poses: S.poses, anim: S.anim, welcomed: true, v: 3,
     }));
   } catch { }
 }
@@ -4285,6 +4499,7 @@ function loadPrefs() {
   if (p.set) S.set = Object.assign(defaultSettings(), p.set);
   S.pose = normalizePose(p.pose); S.poseName = p.poseName || 'stand';
   S.poses = Array.isArray(p.poses) ? p.poses : [];
+  if (!p.v || p.v < 3) { S.light = false; if (S.set.hiColor === '#ff00c8') S.set.hiColor = '#facc15'; } // shading is now off by default
   if (p.anim) S.anim = p.anim;
   S.brush = S.set.brush;
   try { $('#autosaveChk').checked = localStorage.getItem('skinstudio.autosave') !== '0'; } catch { }
@@ -4333,7 +4548,9 @@ function initChrome() {
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#dropHint').classList.remove('show'); if (e.dataTransfer.files.length) openFiles([...e.dataTransfer.files]); });
   window.addEventListener('paste', e => { if (isTyping(e)) return; const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith('image/')); if (files.length) { e.preventDefault(); openFiles(files); } });
-  window.addEventListener('beforeunload', () => { autosave(); savePrefs(); });
+  window.addEventListener('pagehide', () => { emergencySave(); savePrefs(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { autosave(); savePrefs(); } });
+  setInterval(() => { if (lastSaved) setSaveState(_saving ? 'pending' : 'saved'); }, 30000);
   setInterval(() => { if (S.sel && !S.set.reduceMotion) draw2d(); }, 120);
   window.addEventListener('resize', () => { if (!isMobile()) $('#side').classList.remove('open'); });
 }
