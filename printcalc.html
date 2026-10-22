@@ -3,29 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3DPrint Price Calculator</title>
+  <title>3D Print Price Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:#0f172a;--surface:#1e293b;--surface2:#263348;--accent:#38bdf8;--accent2:#818cf8;
-      --text:#f8fafc;--muted:rgba(248,250,252,0.5);--border:rgba(56,189,248,0.15);
+      --text:#f8fafc;--muted:rgba(248,250,252,0.5);--faint:rgba(248,250,252,0.3);--border:rgba(56,189,248,0.15);
       --input-bg:rgba(56,189,248,0.06);--green:#34d399;--yellow:#fbbf24;--orange:#fb923c;
       --red:#f87171;--exp:#a78bfa;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:1.5rem 1rem 5rem;}
-    .topbar{max-width:900px;margin:0 auto 1.75rem;display:flex;align-items:center;justify-content:space-between;}
+    body{background:var(--bg);color:var(--text);font-family:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:1.5rem 1rem 5rem;}
+    .topbar{max-width:960px;margin:0 auto 1.75rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;}
     .back-link{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:600;padding:.4rem .75rem;border:1px solid var(--border);border-radius:.5rem;background:var(--input-bg);transition:color .15s,border-color .15s;}
     .back-link:hover{color:var(--accent);border-color:var(--accent);}
-    .topbar-right{display:flex;gap:.5rem;}
-    .icon-btn{background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;color:var(--muted);cursor:pointer;padding:.4rem .7rem;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:600;}
+    .topbar-right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    .loc-pill{font-size:.72rem;color:var(--muted);padding:.35rem .7rem;border:1px solid var(--border);border-radius:2rem;cursor:pointer;background:none;font-family:inherit;}
+    .loc-pill:hover{color:var(--accent);border-color:var(--accent);}
+    .icon-btn{background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;color:var(--muted);cursor:pointer;padding:.4rem .7rem;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:600;font-family:inherit;}
     .icon-btn:hover{color:var(--accent);border-color:var(--accent);}
+    .icon-btn:disabled{opacity:.5;cursor:wait;}
     header{text-align:center;margin-bottom:2rem;}
-    .logo{font-size:2rem;font-weight:800;letter-spacing:-.05em;background:linear-gradient(to right,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem;}
+    .logo{font-size:2rem;font-weight:800;letter-spacing:-.05em;background:linear-gradient(to right,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem;}
     .tagline{font-size:.85rem;color:var(--muted);}
-    .mode-tabs{max-width:900px;margin:0 auto 1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;}
-    .tab-btn{flex:1;padding:.6rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:.6rem;color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;min-width:90px;}
+    .mode-tabs{max-width:960px;margin:0 auto 1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;}
+    .tab-btn{flex:1;padding:.6rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:.6rem;color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;min-width:90px;font-family:inherit;}
     .tab-btn.active{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent);}
-    .calculator{max-width:900px;margin:0 auto;}
+    .calculator{max-width:960px;margin:0 auto;}
     .tab-content{display:none;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease;}
     .tab-content.active{display:block;}
     .tab-content.visible{opacity:1;transform:translateY(0);}
@@ -33,18 +39,26 @@
     .card{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;}
     .card-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
     .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .sub-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:.25rem 0 .6rem;display:flex;align-items:center;gap:.5rem;}
+    .sub-title::after{content:'';flex:1;height:1px;background:rgba(56,189,248,.08);}
+    .mt{margin-top:1rem;} .mb{margin-bottom:1rem;}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
     .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
     .grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;}
     @media(max-width:620px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr 1fr;}}
     @media(max-width:400px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
-    .field{display:flex;flex-direction:column;gap:.35rem;}
+    .field{display:flex;flex-direction:column;gap:.35rem;min-width:0;}
     label{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-    .field-hint{font-size:.67rem;color:rgba(248,250,252,.3);margin-top:.15rem;}
-    input[type="text"],input[type="number"],select{background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-size:.9rem;padding:.55rem .8rem;width:100%;transition:border-color .15s,box-shadow .15s;outline:none;-moz-appearance:textfield;}
+    .field-hint{font-size:.67rem;color:var(--faint);margin-top:.15rem;}
+    input[type="text"],input[type="number"],input[type="search"],select{background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-size:.9rem;padding:.55rem .8rem;width:100%;transition:border-color .15s,box-shadow .15s;outline:none;-moz-appearance:textfield;font-family:inherit;min-width:0;}
+    input:disabled,select:disabled{opacity:.55;}
+    input[type="color"]{height:38px;width:100%;padding:3px;background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;cursor:pointer;}
     select option{background:var(--surface);}
     input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
     input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15);}
+    .time-pair{display:flex;gap:.4rem;align-items:center;}
+    .time-pair input{flex:1;}
+    .time-pair span{font-size:.75rem;color:var(--muted);}
     .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
     .toggle-label-text{font-size:.82rem;color:var(--text);}
     .toggle-sub{font-size:.68rem;color:var(--muted);margin-top:.1rem;}
@@ -56,112 +70,134 @@
     .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--accent);}
     .animated-val{transition:color .2s;}
     .animated-val.flash{color:var(--accent)!important;}
-    .line-items{display:flex;flex-direction:column;gap:.6rem;}
-    .line-item{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:.5rem;align-items:center;animation:slideIn .2s ease;}
+
+    /* line items */
+    .line-items{display:flex;flex-direction:column;gap:.5rem;}
+    .line-item{display:grid;gap:.5rem;align-items:center;animation:slideIn .2s ease;}
+    .row-head{display:grid;gap:.5rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);padding:0 .15rem .35rem;}
+    .fil-grid{grid-template-columns:2.2fr 1fr 1fr .8fr 28px;}
+    .part-grid{grid-template-columns:2fr .7fr 1fr 1fr 28px;}
+    .xtra-grid{grid-template-columns:2fr .7fr .9fr 1.4fr 28px;}
+    .tier-grid{grid-template-columns:1fr 1fr 28px;}
     @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
-    @media(max-width:560px){.line-item{grid-template-columns:1fr 1fr;}}
-    .add-btn{display:inline-flex;align-items:center;gap:.4rem;margin-top:.75rem;background:none;border:1px dashed var(--border);border-radius:.5rem;color:var(--muted);font-size:.78rem;padding:.4rem .8rem;cursor:pointer;transition:all .15s;}
+    @media(max-width:620px){
+      .fil-grid,.part-grid,.xtra-grid{grid-template-columns:1fr 1fr;}
+      .row-head.fil-grid,.row-head.part-grid,.row-head.xtra-grid{display:none;}
+      .line-item.fil-grid,.line-item.part-grid,.line-item.xtra-grid{background:rgba(15,23,42,.35);border:1px solid var(--border);border-radius:.6rem;padding:.6rem;}
+      .line-item.fil-grid>:first-child,.line-item.part-grid>:first-child,.line-item.xtra-grid>:first-child{grid-column:1/-1;}
+    }
+    .sel-wrap{display:flex;align-items:center;gap:.45rem;min-width:0;}
+    .swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.25);display:inline-block;}
+    .row-cost{font-size:.8rem;color:var(--green);font-weight:700;text-align:right;white-space:nowrap;}
+    .add-btn{display:inline-flex;align-items:center;gap:.4rem;margin-top:.75rem;background:none;border:1px dashed var(--border);border-radius:.5rem;color:var(--muted);font-size:.78rem;padding:.45rem .85rem;cursor:pointer;transition:all .15s;font-family:inherit;}
     .add-btn:hover{border-color:var(--accent);color:var(--accent);}
-    .remove-btn{background:none;border:none;cursor:pointer;color:rgba(248,250,252,.25);font-size:1rem;line-height:1;padding:0 .2rem;transition:color .15s;}
+    .remove-btn{background:none;border:none;cursor:pointer;color:rgba(248,250,252,.3);font-size:1.15rem;line-height:1;padding:0 .2rem;transition:color .15s;}
     .remove-btn:hover{color:var(--red);}
-    .price-outputs{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
-    @media(max-width:480px){.price-outputs{grid-template-columns:1fr;}}
-    .price-card{border-radius:.75rem;padding:1.25rem;text-align:center;border:1px solid;transition:transform .15s;}
+    .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;}
+    .btn-row .add-btn{flex:1;justify-content:center;margin-top:0;min-width:150px;}
+
+    /* prices */
+    .price-outputs{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem;}
+    @media(max-width:540px){.price-outputs{grid-template-columns:1fr;}}
+    .price-card{border-radius:.75rem;padding:1.1rem;text-align:center;border:1px solid;transition:transform .15s;}
     .price-card:hover{transform:translateY(-2px);}
     .price-card.m50{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.25);}
     .price-card.m60{background:rgba(56,189,248,.06);border-color:rgba(56,189,248,.3);}
     .price-card.m70{background:rgba(129,140,248,.06);border-color:rgba(129,140,248,.25);}
     .margin-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
-    .m50 .margin-label{color:var(--green);}
-    .m60 .margin-label{color:var(--accent);}
-    .m70 .margin-label{color:var(--accent2);}
-    .price-value{font-size:2rem;font-weight:800;letter-spacing:-.03em;transition:all .3s ease;}
-    .m50 .price-value{color:var(--green);}
-    .m60 .price-value{color:var(--accent);}
-    .m70 .price-value{color:var(--accent2);}
+    .m50 .margin-label,.m50 .price-value{color:var(--green);}
+    .m60 .margin-label,.m60 .price-value{color:var(--accent);}
+    .m70 .margin-label,.m70 .price-value{color:var(--accent2);}
+    .price-value{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;}
     .price-sub{font-size:.7rem;color:var(--muted);margin-top:.25rem;}
     .results-card{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(129,140,248,.08));border:1px solid rgba(56,189,248,.3);}
-    .cost-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-bottom:1.5rem;}
-    .cost-item{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:1rem;}
-    .cost-item .cost-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem;}
-    .cost-item .cost-value{font-size:1.2rem;font-weight:700;color:var(--text);transition:all .3s ease;}
+    .cost-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+    .cost-item{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:.85rem;}
+    .cost-item .cost-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem;}
+    .cost-item .cost-value{font-size:1.1rem;font-weight:700;color:var(--text);}
     .total-landed .cost-value{color:var(--accent);}
-    .custom-margin-row{display:flex;align-items:center;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;}
-    .custom-margin-row label{font-size:.72rem;color:var(--muted);white-space:nowrap;}
+    .custom-margin-row{display:flex;align-items:center;gap:1rem;margin-top:1rem;flex-wrap:wrap;}
+    .custom-margin-row label{white-space:nowrap;}
     input[type="range"]{flex:1;min-width:100px;accent-color:var(--accent);}
-    .custom-price-display{font-size:1.1rem;font-weight:700;color:var(--yellow);min-width:80px;text-align:right;transition:all .3s ease;}
-    .margin-warning{font-size:.7rem;color:var(--orange);margin-top:.5rem;}
-    .simple-big-result{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:1.5rem;margin-top:1rem;text-align:center;}
-    .big-price{font-size:3rem;font-weight:800;letter-spacing:-.04em;color:var(--accent);transition:all .3s ease;}
+    .margin-display{font-size:1.3rem;font-weight:700;color:var(--accent2);}
+    .simple-big-result{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:1.5rem;text-align:center;}
+    .big-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem;}
+    .big-price{font-size:3rem;font-weight:800;letter-spacing:-.04em;color:var(--accent);}
     .price-note{font-size:.8rem;color:var(--muted);margin-top:.25rem;}
-    .simple-stats{display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;}
+    .simple-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.75rem;margin-top:1.25rem;}
     .simple-stat{text-align:center;}
-    .simple-stat-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
-    .simple-stat-val{font-size:1rem;font-weight:700;transition:all .3s ease;}
-    .simple-margin-row{display:flex;align-items:center;gap:1rem;margin-top:1rem;}
-    .margin-display{font-size:1.4rem;font-weight:700;color:var(--accent2);min-width:45px;}
-    .simple-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    @media(max-width:480px){.simple-grid{grid-template-columns:1fr;}}
+    .simple-stat-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+    .simple-stat-val{font-size:1rem;font-weight:700;margin-top:.1rem;}
+    .chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem;justify-content:center;}
+    .chip{font-size:.72rem;background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:2rem;padding:.25rem .65rem;color:var(--muted);}
+    .chip b{color:var(--text);font-weight:600;}
+    .warn{font-size:.75rem;color:var(--orange);margin-top:.6rem;}
+    .info-line{font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.5;}
     .derived-row{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:.5rem;padding:.6rem .9rem;font-size:.78rem;color:var(--green);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
-    .instructions-card{border-color:rgba(129,140,248,.2);overflow:hidden;max-height:0;padding:0 1.5rem;transition:max-height .35s ease,padding .35s ease;}
-    .instructions-card.open{max-height:800px;padding:1.5rem;}
+
+    /* help */
+    .instructions-card{border-color:rgba(129,140,248,.2);overflow:hidden;max-height:0;padding:0 1.5rem;border-width:0;transition:max-height .35s ease,padding .35s ease;}
+    .instructions-card.open{max-height:1400px;padding:1.5rem;border-width:1px;margin-bottom:1.25rem;}
     .step-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;}
     .step-list li{display:flex;gap:.75rem;align-items:flex-start;}
     .step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid var(--accent);color:var(--accent);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
     .step-text{font-size:.83rem;color:rgba(248,250,252,.75);line-height:1.5;}
     .step-text strong{color:var(--text);}
     .tip-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:.6rem;padding:.75rem 1rem;margin-top:1rem;font-size:.8rem;color:rgba(251,191,36,.85);line-height:1.5;}
+
+    /* tables */
+    .table-wrap{overflow-x:auto;}
     .bulk-table{width:100%;border-collapse:collapse;margin-top:.5rem;}
-    .bulk-table th{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);}
-    .bulk-table td{font-size:.85rem;padding:.5rem .75rem;border-bottom:1px solid rgba(56,189,248,.06);transition:background .15s;}
+    .bulk-table th{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .6rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+    .bulk-table td{font-size:.85rem;padding:.55rem .6rem;border-bottom:1px solid rgba(56,189,248,.06);white-space:nowrap;}
     .bulk-table tr:hover td{background:rgba(56,189,248,.04);}
-    .bulk-table .qty-col{color:var(--muted);}
-    .bulk-table .unit-col{color:var(--text);font-weight:600;}
-    .bulk-table .total-col{color:var(--accent);font-weight:700;}
-    .bulk-table .disc-col{color:var(--green);font-size:.75rem;}
-    .bulk-table .save-col{color:var(--yellow);}
+    .qty-col{color:var(--muted);}
+    .unit-col{color:var(--text);font-weight:600;}
+    .total-col{color:var(--accent);font-weight:700;}
+    .disc-col{color:var(--green);font-size:.75rem;}
+    .save-col{color:var(--yellow);}
+    .c50{color:var(--green);font-weight:600;} .c60{color:var(--accent);font-weight:700;} .c70{color:var(--accent2);font-weight:600;} .ccu{color:var(--yellow);font-weight:700;}
+    .neg{color:var(--red)!important;}
     .bulk-inputs{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;}
-    .bulk-inputs .field{flex:1;min-width:120px;}
-    .bulk-tier-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
-    .bulk-tier{display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;align-items:center;animation:slideIn .2s ease;}
-    .saves-list{display:flex;flex-direction:column;gap:.6rem;}
-    .save-row{display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;align-items:center;background:rgba(15,23,42,.4);border:1px solid var(--border);border-radius:.6rem;padding:.75rem 1rem;animation:slideIn .2s ease;}
-    .save-row-name{font-size:.88rem;font-weight:600;}
-    .save-row-price{font-size:.8rem;color:var(--accent);font-weight:700;}
-    .save-row-date{font-size:.68rem;color:var(--muted);}
-    .save-action-btn{background:none;border:1px solid var(--border);border-radius:.4rem;color:var(--muted);font-size:.72rem;padding:.25rem .5rem;cursor:pointer;transition:all .15s;}
+    .bulk-inputs .field{flex:1;min-width:130px;}
+
+    /* lists */
+    .saves-list,.lib-list{display:flex;flex-direction:column;gap:.55rem;}
+    .save-row,.lib-row{display:flex;gap:.6rem;align-items:center;background:rgba(15,23,42,.4);border:1px solid var(--border);border-radius:.6rem;padding:.7rem .9rem;animation:slideIn .2s ease;}
+    .save-row>div:first-child,.lib-row>div:first-child{flex:1;min-width:0;}
+    .save-row-name,.lib-name{font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:.45rem;}
+    .save-row-date,.lib-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem;}
+    .save-row-price{font-size:.82rem;color:var(--accent);font-weight:700;text-align:right;white-space:nowrap;}
+    .save-action-btn{background:none;border:1px solid var(--border);border-radius:.4rem;color:var(--muted);font-size:.72rem;padding:.28rem .55rem;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;}
     .save-action-btn:hover{color:var(--accent);border-color:var(--accent);}
     .save-action-btn.del:hover{color:var(--red);border-color:var(--red);}
-    .empty-saves{font-size:.82rem;color:var(--muted);text-align:center;padding:1.5rem;}
-    .saves-toolbar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;}
-    .saves-toolbar button{font-size:.75rem;}
-    .lib-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
-    .lib-row{display:grid;grid-template-columns:1fr auto auto;gap:.5rem;align-items:center;background:rgba(15,23,42,.4);border:1px solid var(--border);border-radius:.6rem;padding:.6rem .9rem;animation:slideIn .2s ease;}
-    .lib-name{font-size:.85rem;font-weight:600;}
-    .lib-sub{font-size:.68rem;color:var(--muted);}
-    .exp-badge{display:inline-block;padding:.15rem .5rem;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:1rem;font-size:.62rem;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em;margin-left:.4rem;}
+    .save-action-btn.on{color:var(--yellow);border-color:rgba(251,191,36,.4);}
+    @media(max-width:520px){.save-row,.lib-row{flex-wrap:wrap;}.save-row>div:first-child,.lib-row>div:first-child{flex-basis:100%;}}
+    .empty-saves{font-size:.82rem;color:var(--muted);text-align:center;padding:1.25rem;}
+    .saves-toolbar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+    .saves-toolbar input{flex:1;min-width:160px;}
+    .badge{display:inline-block;padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--accent);}
+    .badge.star{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.35);color:var(--yellow);}
+    .form-box{background:rgba(15,23,42,.55);border:1px solid var(--border);border-radius:.75rem;padding:1.1rem;margin-top:1rem;display:none;animation:slideIn .2s ease;}
+    .form-box.open{display:block;}
+    .form-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--exp);margin-bottom:.8rem;}
+
+    /* modal */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s;}
     .modal-overlay.open{opacity:1;pointer-events:all;}
-    .modal{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.75rem;width:100%;max-width:560px;transform:translateY(12px);transition:transform .2s;max-height:90vh;overflow-y:auto;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.75rem;width:100%;max-width:620px;transform:translateY(12px);transition:transform .2s;max-height:90vh;overflow-y:auto;}
     .modal-overlay.open .modal{transform:translateY(0);}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
     .modal-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);}
     .close-btn{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.1rem .4rem;border-radius:.3rem;transition:color .15s;}
     .close-btn:hover{color:var(--text);}
     .settings-group{display:flex;flex-direction:column;gap:1rem;}
     .settings-divider{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-top:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
-    .settings-divider.exp-div{color:#a78bfa;border-color:rgba(167,139,250,.2);}
-    .save-btn{width:100%;margin-top:1.25rem;padding:.65rem;background:rgba(56,189,248,.15);border:1px solid var(--accent);border-radius:.6rem;color:var(--accent);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;}
+    .save-btn{width:100%;margin-top:1.25rem;padding:.7rem;background:rgba(56,189,248,.15);border:1px solid var(--accent);border-radius:.6rem;color:var(--accent);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
     .save-btn:hover{background:rgba(56,189,248,.25);}
-    .sub-modal{background:rgba(15,23,42,.6);border:1px solid var(--border);border-radius:.75rem;padding:1.25rem;margin-top:1rem;display:none;animation:slideIn .2s ease;}
-    .sub-modal.open{display:block;}
-    .sub-modal-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#a78bfa;margin-bottom:.75rem;}
-    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:2rem;padding:.5rem 1.25rem;font-size:.82rem;color:var(--accent);font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:200;pointer-events:none;}
+    .state-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;}
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:2rem;padding:.5rem 1.25rem;font-size:.82rem;color:var(--accent);font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:200;pointer-events:none;max-width:90vw;text-align:center;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-    .exp-feature{display:none;}
-    .exp-feature.enabled{display:block;}
-    .exp-grid-feature{display:none;}
-    .exp-grid-feature.enabled{display:grid;}
   </style>
 </head>
 <body>
@@ -169,6 +205,7 @@
 <div class="topbar">
   <a class="back-link" href="/">&#8592; jakebitt.com</a>
   <div class="topbar-right">
+    <button class="loc-pill" id="locPill" onclick="openSettings()" title="Tax &amp; power location">&#128205; Set location</button>
     <button class="icon-btn" onclick="openSettings()">&#9881; Settings</button>
     <button class="icon-btn" onclick="toggleInstructions()">? Help</button>
   </div>
@@ -180,10 +217,11 @@
 </header>
 
 <div class="mode-tabs">
-  <button class="tab-btn active" id="tab-simple"   onclick="setMode('simple')">&#9889; Quick</button>
-  <button class="tab-btn"        id="tab-advanced"  onclick="setMode('advanced')">&#128295; Full Calc</button>
-  <button class="tab-btn"        id="tab-bulk"      onclick="setMode('bulk')">&#128230; Bulk Pricing</button>
-  <button class="tab-btn"        id="tab-saves"     onclick="setMode('saves')">&#128190; Saved</button>
+  <button class="tab-btn active" id="tab-quick"    onclick="setMode('quick')">&#9889; Quick</button>
+  <button class="tab-btn"        id="tab-full"     onclick="setMode('full')">&#128295; Full Calc</button>
+  <button class="tab-btn"        id="tab-bulk"     onclick="setMode('bulk')">&#128230; Bulk</button>
+  <button class="tab-btn"        id="tab-profiles" onclick="setMode('profiles')">&#128438; Profiles</button>
+  <button class="tab-btn"        id="tab-saves"    onclick="setMode('saves')">&#128190; Saved</button>
 </div>
 
 <div class="calculator">
@@ -191,268 +229,335 @@
   <div class="card instructions-card" id="instructionsPanel">
     <div class="card-title">How to Use</div>
     <ol class="step-list">
-      <li><span class="step-num">1</span><span class="step-text"><strong>Quick Estimate</strong> &mdash; Filament weight, print time, labor. Fast price with three margin targets.</span></li>
-      <li><span class="step-num">2</span><span class="step-text"><strong>Full Calculator</strong> &mdash; Add hardware, packaging, and shipping for a full breakdown.</span></li>
-      <li><span class="step-num">3</span><span class="step-text"><strong>Bulk Pricing</strong> &mdash; Set quantity tiers with per-tier discounts to auto-generate a bulk price table.</span></li>
-      <li><span class="step-num">4</span><span class="step-text"><strong>Rounding</strong> &mdash; In Settings, choose None, Round Up, Round Down, or Nearest Dollar. Rounding applies to all final prices.</span></li>
-      <li><span class="step-num">5</span><span class="step-text"><strong>Experimental Features</strong> &mdash; Enable Filament Library and Printer Library in Settings to save and load your own presets.</span></li>
-      <li><span class="step-num">6</span><span class="step-text"><strong>Saved Prints</strong> &mdash; Hit "Save This Print" to store in browser memory. Export/import as JSON anytime.</span></li>
+      <li><span class="step-num">1</span><span class="step-text"><strong>Set your location</strong> &mdash; In Settings, pick your state (or tap Detect). Sales tax and the average electricity price fill in automatically. You can override either one.</span></li>
+      <li><span class="step-num">2</span><span class="step-text"><strong>Quick</strong> &mdash; One item, printed one or many times on a plate. Add a row per filament/color, enter the whole plate's grams and print time from your slicer, and how many copies are on the plate. You get the price per item.</span></li>
+      <li><span class="step-num">3</span><span class="step-text"><strong>Full Calc</strong> &mdash; Full breakdown with hardware and packaging. With one part it works like the original advanced calculator. Add more parts for different items on the same plate. Shared plate costs (filament, power, machine wear, plate cleanup) are split across parts by weight if every part has grams, otherwise evenly per piece. Hardware and packaging can apply to all parts or just one.</span></li>
+      <li><span class="step-num">4</span><span class="step-text"><strong>Fees &amp; tax</strong> &mdash; Card processing, marketplace, and per-item event fees are built into the price so your margin holds after fees. Choose whether your sticker price includes tax (common at events) or tax is added at checkout.</span></li>
+      <li><span class="step-num">5</span><span class="step-text"><strong>Profiles</strong> &mdash; Save your printers (wattage, cost, lifespan) and filaments (spool price &amp; size). Star one of each as the default.</span></li>
+      <li><span class="step-num">6</span><span class="step-text"><strong>Bulk &amp; Saved</strong> &mdash; Send any item's cost to Bulk to build a quantity discount table. Save prints to this browser and back up everything as a JSON file.</span></li>
     </ol>
-    <div class="tip-box">&#128161; <strong>Margin math:</strong> 60% margin = profit is 60% of sale price. Formula: <em>Price = Cost &divide; (1 &minus; Margin)</em>. Rounding applies to the final price, never the cost.</div>
+    <div class="tip-box">&#128161; <strong>Margin math:</strong> margin = profit &divide; pre-tax price. With fees built in: <em>Price = (Cost + fixed fees) &divide; (1 &minus; Margin &minus; fee% &times; (1 + tax))</em>. Fee % is charged on what the customer pays, including tax. Rounding applies to the sticker price; profit is recalculated from the rounded price. Tax and power rates are statewide averages (Tax Foundation July 2026, EIA July 2026) &mdash; check your exact local rate before filing.</div>
   </div>
 
-  <!-- SIMPLE TAB -->
-  <div class="tab-content active" id="tab-content-simple">
+  <!-- ===== QUICK ===== -->
+  <div class="tab-content active" id="tab-content-quick">
     <div class="card">
       <div class="card-title">Quick Estimate</div>
-      <div class="exp-feature" id="simple-filament-picker">
-        <div class="field" style="margin-bottom:1rem">
-          <label>Load Saved Filament</label>
-          <select id="s_filamentPicker" onchange="loadFilamentSimple()"><option value="">&#8212; Choose from library &#8212;</option></select>
-        </div>
+      <div class="grid-2 mb">
+        <div class="field"><label>Item Name</label><input type="text" data-model="quick" data-key="name" placeholder="e.g. Flexi dragon"></div>
+        <div class="field"><label>Printer</label><select id="q_printer" data-model="quick" data-key="printerId"></select></div>
       </div>
-      <div class="simple-grid">
-        <div class="field"><label>Filament Used (g)</label><input type="number" id="s_filamentG" value="100" min="0" step="1" oninput="calcSimple()"><span class="field-hint">Check your slicer</span></div>
-        <div class="field"><label>Filament Cost ($/kg)</label><input type="number" id="s_filamentCost" value="20" min="0" step="0.5" oninput="calcSimple()"></div>
-        <div class="field"><label>Print Time (hr)</label><input type="number" id="s_printTime" value="3.5" min="0" step="0.1" oninput="calcSimple()"><span class="field-hint">From slicer estimate</span></div>
-        <div class="field"><label>Post-Processing (min)</label><input type="number" id="s_laborMin" value="10" min="0" step="1" oninput="calcSimple()"><span class="field-hint">Removal, sanding, assembly</span></div>
+
+      <div class="sub-title">Filament on the plate</div>
+      <div class="row-head fil-grid"><span>Filament / color</span><span>Grams</span><span>$ / kg</span><span style="text-align:right">Cost</span><span></span></div>
+      <div class="line-items" id="q_fils"></div>
+      <button class="add-btn" onclick="addFil('q')">+ Add filament / color</button>
+
+      <div class="grid-4 mt">
+        <div class="field"><label>Items on Plate</label><input type="number" data-model="quick" data-key="copies" min="1" step="1"><span class="field-hint">Copies printed at once</span></div>
+        <div class="field"><label>Plate Print Time</label><div class="time-pair"><input type="number" data-model="quick" data-key="hrs" min="0" step="1" aria-label="hours"><span>h</span><input type="number" data-model="quick" data-key="mins" min="0" step="1" aria-label="minutes"><span>m</span></div><span class="field-hint">From slicer</span></div>
+        <div class="field"><label>Labor / Item (min)</label><input type="number" data-model="quick" data-key="laborMin" min="0" step="1"><span class="field-hint">Removal, sanding, assembly</span></div>
+        <div class="field"><label>Extras / Item ($)</label><input type="number" data-model="quick" data-key="extra" min="0" step="0.01"><span class="field-hint">Keyring, magnet, bag, etc.</span></div>
       </div>
-      <div class="simple-margin-row">
-        <label style="white-space:nowrap;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Target Margin: <span class="margin-display" id="s_marginPct">60</span>%</label>
-        <input type="range" id="s_margin" min="1" max="99" value="60" oninput="calcSimple()">
+
+      <div class="custom-margin-row">
+        <label>Target Margin: <span class="margin-display" id="q_marginPct">60</span>%</label>
+        <input type="range" data-model="quick" data-key="margin" min="1" max="95" step="1">
       </div>
-      <div class="price-outputs" style="margin-top:1.25rem">
-        <div class="price-card m50"><div class="margin-label" id="s_lbl50">50% Margin</div><div class="price-value animated-val" id="s_price50">&#8212;</div><div class="price-sub">Entry pricing</div></div>
-        <div class="price-card m60"><div class="margin-label" id="s_lbl60">60% Margin</div><div class="price-value animated-val" id="s_price60">&#8212;</div><div class="price-sub">Recommended</div></div>
-        <div class="price-card m70"><div class="margin-label" id="s_lbl70">70% Margin</div><div class="price-value animated-val" id="s_price70">&#8212;</div><div class="price-sub">Premium pricing</div></div>
-      </div>
+
+      <div class="price-outputs mt" id="q_cards"></div>
+
       <div class="simple-big-result">
-        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem">Your Target Price (<span id="s_marginPct2">60</span>% Margin)</div>
-        <div class="big-price animated-val" id="s_price">&#8212;</div>
-        <div class="price-note" id="s_note">&#8212;</div>
+        <div class="big-label">Your Price per Item (<span id="q_marginPct2">60</span>% margin)</div>
+        <div class="big-price animated-val" id="q_price">&#8212;</div>
+        <div class="price-note" id="q_note">&#8212;</div>
         <div class="simple-stats">
-          <div class="simple-stat"><div class="simple-stat-label">Landed Cost</div><div class="simple-stat-val animated-val" id="s_landed" style="color:var(--text)">&#8212;</div></div>
-          <div class="simple-stat"><div class="simple-stat-label">Electricity</div><div class="simple-stat-val animated-val" id="s_elec" style="color:var(--yellow)">&#8212;</div></div>
-          <div class="simple-stat"><div class="simple-stat-label">Your Profit</div><div class="simple-stat-val animated-val" id="s_profit" style="color:var(--green)">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Cost / Item</div><div class="simple-stat-val" id="q_costItem">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Fees / Item</div><div class="simple-stat-val" id="q_fees" style="color:var(--orange)">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Sales Tax</div><div class="simple-stat-val" id="q_tax" style="color:var(--yellow)">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Customer Pays</div><div class="simple-stat-val" id="q_customer">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Profit / Item</div><div class="simple-stat-val" id="q_profit" style="color:var(--green)">&#8212;</div></div>
+          <div class="simple-stat"><div class="simple-stat-label">Profit / Plate</div><div class="simple-stat-val" id="q_profitPlate" style="color:var(--green)">&#8212;</div></div>
         </div>
+        <div class="chips" id="q_chips"></div>
+        <div class="warn" id="q_warn" style="display:none"></div>
       </div>
-      <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
-        <button class="add-btn" style="flex:1;justify-content:center" onclick="savePrint('simple')">&#128190; Save This Print</button>
-        <button class="add-btn" style="flex:1;justify-content:center" onclick="pushToBulk()">&#128230; Send to Bulk Pricing</button>
+
+      <div class="btn-row">
+        <button class="add-btn" onclick="savePrint('quick')">&#128190; Save This Print</button>
+        <button class="add-btn" onclick="sendQuickToBulk()">&#128230; Send to Bulk Pricing</button>
+        <button class="add-btn" onclick="copySummary('quick')">&#128203; Copy Summary</button>
       </div>
     </div>
   </div>
 
-  <!-- ADVANCED TAB -->
-  <div class="tab-content" id="tab-content-advanced">
+  <!-- ===== FULL CALC ===== -->
+  <div class="tab-content" id="tab-content-full">
     <div class="card">
       <div class="card-title">Print Details</div>
-      <div class="exp-grid-feature grid-2" id="adv-pickers" style="margin-bottom:1rem">
-        <div class="field"><label>Load Saved Filament</label><select id="a_filamentPicker" onchange="loadFilamentAdv()"><option value="">&#8212; Choose from library &#8212;</option></select></div>
-        <div class="field"><label>Load Saved Printer</label><select id="a_printerPicker" onchange="loadPrinterAdv()"><option value="">&#8212; Choose from library &#8212;</option></select></div>
-      </div>
-      <div class="grid-2" style="margin-bottom:1rem">
-        <div class="field"><label>Part Name</label><input type="text" id="partName" value="My Part" oninput="calc()"></div>
-        <div class="field"><label>Material</label><input type="text" id="material" value="PETG" oninput="calc()"></div>
-      </div>
       <div class="grid-4">
-        <div class="field"><label>Filament Cost ($/kg)</label><input type="number" id="filamentCost" value="20" min="0" step="0.01" oninput="calc()"></div>
-        <div class="field"><label>Filament Used (g)</label><input type="number" id="filamentG" value="100" min="0" step="1" oninput="calc()"><span class="field-hint">From slicer</span></div>
-        <div class="field"><label>Print Time (hr)</label><input type="number" id="printTime" value="3.5" min="0" step="0.1" oninput="calc()"></div>
-        <div class="field"><label>Labor Required (min)</label><input type="number" id="laborMin" value="10" min="0" step="1" oninput="calc()"></div>
+        <div class="field"><label>Part / Job Name</label><input type="text" data-model="full" data-key="name"></div>
+        <div class="field"><label>Printer</label><select id="f_printer" data-model="full" data-key="printerId"></select></div>
+        <div class="field"><label>Print Time</label><div class="time-pair"><input type="number" data-model="full" data-key="hrs" min="0" step="1" aria-label="hours"><span>h</span><input type="number" data-model="full" data-key="mins" min="0" step="1" aria-label="minutes"><span>m</span></div></div>
+        <div class="field"><label>Setup Labor (min)</label><input type="number" data-model="full" data-key="plateLaborMin" min="0" step="1"><span class="field-hint">Setup, plate cleanup</span></div>
       </div>
-      <div class="derived-row" style="margin-top:1rem">&#9889; Electricity cost for this print: <strong id="elecCost">$0.00</strong></div>
+      <div class="derived-row mt" id="f_derived">&#8212;</div>
     </div>
+
     <div class="card">
-      <div class="card-title">Additional Materials / Hardware</div>
-      <div class="line-items" id="hardwareList"></div>
-      <button class="add-btn" onclick="addLine('hardwareList',hardwareItems)">+ Add Item</button>
+      <div class="card-title">Filament</div>
+      <div class="row-head fil-grid"><span>Filament / color</span><span>Grams</span><span>$ / kg</span><span style="text-align:right">Cost</span><span></span></div>
+      <div class="line-items" id="f_fils"></div>
+      <button class="add-btn" onclick="addFil('f')">+ Add filament / color</button>
     </div>
+
     <div class="card">
-      <div class="card-title">Packaging &amp; Shipping</div>
-      <div class="line-items" id="packagingList"></div>
-      <button class="add-btn" onclick="addLine('packagingList',packagingItems)">+ Add Item</button>
+      <div class="card-title">Parts on the Plate</div>
+      <p class="info-line" style="margin:-.5rem 0 .9rem">Pricing one item? Leave a single part. Add more parts when several different items print on the same plate.</p>
+      <div class="row-head part-grid"><span>Part name</span><span>Qty</span><span>Grams each</span><span>Labor each (min)</span><span></span></div>
+      <div class="line-items" id="f_parts"></div>
+      <button class="add-btn" onclick="addPart()">+ Add part</button>
+      <div class="info-line" id="f_splitInfo"></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">Additional Materials / Hardware (per piece)</div>
+      <div class="row-head xtra-grid"><span>Item</span><span>Qty</span><span>Unit $</span><span>Applies to</span><span></span></div>
+      <div class="line-items" id="f_hardware"></div>
+      <button class="add-btn" onclick="addXtra('hardware')">+ Add item</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Packaging (per piece)</div>
+      <div class="row-head xtra-grid"><span>Item</span><span>Qty</span><span>Unit $</span><span>Applies to</span><span></span></div>
+      <div class="line-items" id="f_packaging"></div>
+      <button class="add-btn" onclick="addXtra('packaging')">+ Add item</button>
+    </div>
+
     <div class="card results-card">
       <div class="card-title">Pricing Output</div>
       <div class="cost-breakdown">
-        <div class="cost-item"><div class="cost-label">Filament</div><div class="cost-value animated-val" id="outMaterials">&#8212;</div></div>
-        <div class="cost-item"><div class="cost-label">Hardware</div><div class="cost-value animated-val" id="outHardware">&#8212;</div></div>
-        <div class="cost-item"><div class="cost-label">Labor</div><div class="cost-value animated-val" id="outLabor">&#8212;</div></div>
-        <div class="cost-item"><div class="cost-label">Electricity</div><div class="cost-value animated-val" id="outElec">&#8212;</div></div>
-        <div class="cost-item"><div class="cost-label">Machine Wear</div><div class="cost-value animated-val" id="outMachine">&#8212;</div></div>
-        <div class="cost-item"><div class="cost-label">Packaging</div><div class="cost-value animated-val" id="outPackaging">&#8212;</div></div>
-        <div class="cost-item total-landed"><div class="cost-label">Total Landed Cost</div><div class="cost-value animated-val" id="outLanded">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Filament</div><div class="cost-value" id="f_outFil">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Electricity</div><div class="cost-value" id="f_outElec">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Machine Wear</div><div class="cost-value" id="f_outMach">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Failure Allow.</div><div class="cost-value" id="f_outFail">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Labor</div><div class="cost-value" id="f_outLabor">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Hardware</div><div class="cost-value" id="f_outHw">&#8212;</div></div>
+        <div class="cost-item"><div class="cost-label">Packaging</div><div class="cost-value" id="f_outPkg">&#8212;</div></div>
+        <div class="cost-item total-landed"><div class="cost-label" id="f_totalLabel">Total Landed Cost</div><div class="cost-value animated-val" id="f_outTotal">&#8212;</div></div>
       </div>
-      <div class="price-outputs">
-        <div class="price-card m50"><div class="margin-label" id="adv_lbl50">50% Margin</div><div class="price-value animated-val" id="price50">&#8212;</div><div class="price-sub">Entry pricing</div></div>
-        <div class="price-card m60"><div class="margin-label" id="adv_lbl60">60% Margin</div><div class="price-value animated-val" id="price60">&#8212;</div><div class="price-sub">Recommended</div></div>
-        <div class="price-card m70"><div class="margin-label" id="adv_lbl70">70% Margin</div><div class="price-value animated-val" id="price70">&#8212;</div><div class="price-sub">Premium pricing</div></div>
+
+      <div id="f_single">
+        <div class="price-outputs" id="f_cards"></div>
       </div>
-      <div class="custom-margin-row">
-        <label>Custom Margin: <strong id="customPct">65</strong>%</label>
-        <input type="range" id="customMargin" min="1" max="99" value="65" oninput="updateCustom()">
-        <div class="custom-price-display animated-val" id="customPrice">&#8212;</div>
+      <div class="card-title" id="f_multiTitle" style="display:none">Price per Part</div>
+      <div class="custom-margin-row" style="margin-top:0;margin-bottom:.75rem">
+        <label>Custom Margin: <span class="margin-display" id="f_customPct">65</span>%</label>
+        <input type="range" data-model="full" data-key="customMargin" min="1" max="95" step="1">
+        <div class="ccu" id="f_customPrice" style="font-size:1.15rem;min-width:80px;text-align:right">&#8212;</div>
       </div>
-      <div class="margin-warning" id="marginWarning" style="display:none">&#9888; Margins above 90% result in very high prices.</div>
-      <div style="display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap">
-        <button class="add-btn" style="flex:1;justify-content:center" onclick="savePrint('advanced')">&#128190; Save This Print</button>
-        <button class="add-btn" style="flex:1;justify-content:center" onclick="pushToBulk()">&#128230; Send to Bulk Pricing</button>
+      <div class="price-note" id="f_customNote" style="text-align:left"></div>
+      <div class="table-wrap" id="f_tableWrap">
+        <table class="bulk-table">
+          <thead><tr><th>Part</th><th>Qty</th><th>Cost / ea</th><th id="f_h1">50%</th><th id="f_h2">60%</th><th id="f_h3">70%</th><th id="f_hc">Custom</th><th>Profit / ea</th><th></th></tr></thead>
+          <tbody id="f_partsBody"></tbody>
+        </table>
+      </div>
+      <div class="chips" id="f_chips"></div>
+      <div class="warn" id="f_warn" style="display:none"></div>
+      <div class="btn-row">
+        <button class="add-btn" onclick="savePrint('full')">&#128190; Save This Print</button>
+        <button class="add-btn" id="f_bulkBtn" onclick="sendFullToBulk()">&#128230; Send to Bulk Pricing</button>
+        <button class="add-btn" onclick="copySummary('full')">&#128203; Copy Summary</button>
       </div>
     </div>
   </div>
 
-  <!-- BULK TAB -->
+  <!-- ===== BULK ===== -->
   <div class="tab-content" id="tab-content-bulk">
     <div class="card">
-      <div class="card-title">Bulk Pricing Calculator</div>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:1.25rem">Set a base unit cost and target margin, then define quantity tiers with per-tier discounts. The table auto-generates per-unit and total prices with rounding applied.</p>
+      <div class="card-title">Bulk Pricing</div>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:1.25rem">Start from a cost per unit and a base margin, then set quantity tiers with a discount. Fees, tax and rounding from Settings apply, and profit per unit is shown so you can see how far a discount can go.</p>
       <div class="bulk-inputs">
-        <div class="field"><label>Base Unit Cost ($)</label><input type="number" id="bulk_cost" value="5.00" min="0" step="0.01" oninput="calcBulk()"><span class="field-hint">Your landed cost per unit</span></div>
-        <div class="field"><label>Base Margin (%)</label><input type="number" id="bulk_margin" value="60" min="1" max="99" step="1" oninput="calcBulk()"></div>
+        <div class="field"><label>Cost per Unit ($)</label><input type="number" data-model="bulk" data-key="cost" min="0" step="0.01"><span class="field-hint">Your landed cost</span></div>
+        <div class="field"><label>Base Margin (%)</label><input type="number" data-model="bulk" data-key="margin" min="1" max="95" step="1"></div>
+        <div class="field"><label>Base Price</label><input type="text" id="b_base" disabled></div>
       </div>
-      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem">Quantity Tiers<span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
-      <div class="bulk-tier-list" id="bulkTierList"></div>
-      <button class="add-btn" onclick="addBulkTier()">+ Add Tier</button>
-      <div style="margin-top:1.5rem">
-        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem">Price Table<span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
-        <div style="overflow-x:auto">
-          <table class="bulk-table">
-            <thead><tr><th>Quantity</th><th>Discount</th><th>Unit Price</th><th>Order Total</th><th>You Save</th></tr></thead>
-            <tbody id="bulkTableBody"></tbody>
-          </table>
+      <div class="sub-title">Quantity tiers</div>
+      <div class="row-head tier-grid"><span>Min quantity</span><span>Discount %</span><span></span></div>
+      <div class="line-items" id="b_tiers"></div>
+      <button class="add-btn" onclick="addTier()">+ Add tier</button>
+      <div class="sub-title mt">Price table</div>
+      <div class="table-wrap">
+        <table class="bulk-table">
+          <thead><tr><th>Quantity</th><th>Discount</th><th>Unit Price</th><th>Order Total</th><th>Profit / Unit</th><th>Customer Saves</th></tr></thead>
+          <tbody id="b_body"></tbody>
+        </table>
+      </div>
+      <div class="info-line" id="b_info"></div>
+    </div>
+  </div>
+
+  <!-- ===== PROFILES ===== -->
+  <div class="tab-content" id="tab-content-profiles">
+    <div class="card">
+      <div class="card-title">&#128438; Printers</div>
+      <div class="lib-list" id="printerList"></div>
+      <button class="add-btn" onclick="openPrinterForm()">+ Add printer</button>
+      <div class="form-box" id="printerForm">
+        <div class="form-title" id="pf_title">Add Printer</div>
+        <input type="hidden" id="pf_id">
+        <div class="grid-3 mb">
+          <div class="field"><label>Name</label><input type="text" id="pf_name" placeholder="e.g. Bambu P1S"></div>
+          <div class="field"><label>Avg Power (W)</label><input type="number" id="pf_watts" min="0" step="5" placeholder="150"><span class="field-hint">Average draw while printing</span></div>
+          <div class="field"><label>Purchase Cost ($)</label><input type="number" id="pf_cost" min="0" step="10" placeholder="1000"></div>
+        </div>
+        <div class="grid-3 mb">
+          <div class="field"><label>Lifetime (yrs)</label><input type="number" id="pf_life" min="1" step="0.5" placeholder="3"></div>
+          <div class="field"><label>Annual Maint ($)</label><input type="number" id="pf_maint" min="0" step="5" placeholder="75"><span class="field-hint">Nozzles, belts, plates</span></div>
+          <div class="field"><label>Uptime (%)</label><input type="number" id="pf_uptime" min="1" max="100" step="5" placeholder="50"><span class="field-hint">% of all hours it prints</span></div>
+        </div>
+        <div class="btn-row" style="margin-top:.5rem">
+          <button class="add-btn" style="border-color:var(--accent);color:var(--accent)" onclick="savePrinterForm()">Save Printer</button>
+          <button class="add-btn" onclick="closeForm('printerForm')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">&#129525; Filaments</div>
+      <div class="lib-list" id="filamentList"></div>
+      <button class="add-btn" onclick="openFilamentForm()">+ Add filament</button>
+      <div class="form-box" id="filamentForm">
+        <div class="form-title" id="ff_title">Add Filament</div>
+        <input type="hidden" id="ff_id">
+        <div class="grid-3 mb">
+          <div class="field"><label>Name / Brand</label><input type="text" id="ff_name" placeholder="e.g. Bambu PLA Basic Black"></div>
+          <div class="field"><label>Material</label><input type="text" id="ff_material" placeholder="PLA, PETG, TPU..."></div>
+          <div class="field"><label>Color</label><input type="color" id="ff_color" value="#38bdf8"></div>
+        </div>
+        <div class="grid-3 mb">
+          <div class="field"><label>Spool Price ($)</label><input type="number" id="ff_spoolPrice" min="0" step="0.01" placeholder="19.99" oninput="ffAutoCost()"></div>
+          <div class="field"><label>Spool Size (g)</label><input type="number" id="ff_spoolG" min="1" step="50" placeholder="1000" oninput="ffAutoCost()"></div>
+          <div class="field"><label>Cost ($/kg)</label><input type="number" id="ff_costKg" min="0" step="0.01" placeholder="20"><span class="field-hint">Auto from spool, or type it</span></div>
+        </div>
+        <div class="btn-row" style="margin-top:.5rem">
+          <button class="add-btn" style="border-color:var(--accent);color:var(--accent)" onclick="saveFilamentForm()">Save Filament</button>
+          <button class="add-btn" onclick="closeForm('filamentForm')">Cancel</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SAVES TAB -->
+  <!-- ===== SAVES ===== -->
   <div class="tab-content" id="tab-content-saves">
     <div class="card">
       <div class="card-title">Saved Prints</div>
       <div class="saves-toolbar">
-        <button class="icon-btn" onclick="exportSaves()">&#11015; Export JSON</button>
-        <button class="icon-btn" onclick="document.getElementById('importFile').click()">&#11014; Import JSON</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSaves(event)">
-        <button class="icon-btn" style="margin-left:auto;color:var(--red)" onclick="clearAllSaves()">&#128465; Clear All</button>
+        <input type="search" id="saveSearch" placeholder="Search saved prints..." oninput="renderSaves()">
+        <button class="icon-btn" style="color:var(--red)" onclick="clearAllSaves()">&#128465; Clear All</button>
       </div>
       <div class="saves-list" id="savesList"></div>
     </div>
-
-    <!-- Experimental: Filament Library -->
-    <div class="card exp-feature" id="filamentLibraryCard" style="border-color:rgba(167,139,250,.2)">
-      <div class="card-title" style="color:#a78bfa">&#129514; Filament Library <span class="exp-badge">Experimental</span></div>
-      <div class="lib-list" id="filamentLibList"></div>
-      <button class="add-btn" style="border-color:rgba(167,139,250,.3);color:#a78bfa" onclick="openSubModal('addFilamentModal')">+ Add Filament</button>
-      <div class="sub-modal" id="addFilamentModal">
-        <div class="sub-modal-title">Add Filament Preset</div>
-        <div class="grid-3" style="margin-bottom:.75rem">
-          <div class="field"><label>Name / Brand</label><input type="text" id="fl_name" placeholder="e.g. Bambu PETG"></div>
-          <div class="field"><label>Material</label><input type="text" id="fl_material" placeholder="e.g. PETG"></div>
-          <div class="field"><label>Cost ($/kg)</label><input type="number" id="fl_cost" min="0" step="0.5" placeholder="20"></div>
-        </div>
-        <div style="display:flex;gap:.5rem">
-          <button class="add-btn" style="margin-top:0;flex:1;justify-content:center;border-color:rgba(167,139,250,.4);color:#a78bfa" onclick="saveFilament()">Save Filament</button>
-          <button class="add-btn" style="margin-top:0;justify-content:center" onclick="closeSubModal('addFilamentModal')">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Experimental: Printer Library -->
-    <div class="card exp-feature" id="printerLibraryCard" style="border-color:rgba(167,139,250,.2)">
-      <div class="card-title" style="color:#a78bfa">&#128438; Printer Library <span class="exp-badge">Experimental</span></div>
-      <div class="lib-list" id="printerLibList"></div>
-      <button class="add-btn" style="border-color:rgba(167,139,250,.3);color:#a78bfa" onclick="openSubModal('addPrinterModal')">+ Add Printer</button>
-      <div class="sub-modal" id="addPrinterModal">
-        <div class="sub-modal-title">Add Printer Preset</div>
-        <div class="grid-3" style="margin-bottom:.75rem">
-          <div class="field"><label>Printer Name</label><input type="text" id="pr_name" placeholder="e.g. Bambu X1C"></div>
-          <div class="field"><label>Wattage (W)</label><input type="number" id="pr_watts" min="0" step="10" placeholder="150"></div>
-          <div class="field"><label>Purchase Cost ($)</label><input type="number" id="pr_cost" min="0" step="50" placeholder="1000"></div>
-        </div>
-        <div class="grid-3" style="margin-bottom:.75rem">
-          <div class="field"><label>Lifetime (yrs)</label><input type="number" id="pr_life" min="1" step="1" placeholder="3"></div>
-          <div class="field"><label>Annual Maint ($)</label><input type="number" id="pr_maint" min="0" step="5" placeholder="75"></div>
-          <div class="field"><label>Uptime (%)</label><input type="number" id="pr_uptime" min="1" max="100" step="5" placeholder="50"></div>
-        </div>
-        <div style="display:flex;gap:.5rem">
-          <button class="add-btn" style="margin-top:0;flex:1;justify-content:center;border-color:rgba(167,139,250,.4);color:#a78bfa" onclick="savePrinter()">Save Printer</button>
-          <button class="add-btn" style="margin-top:0;justify-content:center" onclick="closeSubModal('addPrinterModal')">Cancel</button>
-        </div>
+    <div class="card">
+      <div class="card-title">Backup</div>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Everything is stored in this browser only. Export a backup to move it to another device. Imports add to what's here; old calculator exports work too.</p>
+      <div class="saves-toolbar" style="margin-bottom:0">
+        <button class="icon-btn" onclick="exportAll()">&#11015; Export Backup</button>
+        <button class="icon-btn" onclick="document.getElementById('importFile').click()">&#11014; Import Backup</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importAll(event)">
       </div>
     </div>
   </div>
 
-</div><!-- /calculator -->
+</div>
 
-<!-- Settings Modal -->
-<div class="modal-overlay" id="settingsModal" onclick="closeSettingsOutside(event)">
-  <div class="modal">
+<!-- ===== SETTINGS ===== -->
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal" role="dialog" aria-labelledby="settingsTitle">
     <div class="modal-header">
-      <div class="modal-title">&#9881; Settings</div>
-      <button class="close-btn" onclick="closeSettings()">&#10005;</button>
+      <div class="modal-title" id="settingsTitle">&#9881; Settings</div>
+      <button class="close-btn" onclick="closeSettings()" aria-label="Close">&#10005;</button>
     </div>
     <div class="settings-group">
 
-      <div class="settings-divider">Electricity</div>
-      <div class="grid-2">
-        <div class="field"><label>Printer Wattage (W)</label><input type="number" id="cfg_watts" value="150" min="0" step="10" oninput="updateDerivedRate()"><span class="field-hint">FDM avg ~150W</span></div>
-        <div class="field"><label>Electricity Rate ($/kWh)</label><input type="number" id="cfg_kwh" value="0.14" min="0" step="0.01" oninput="updateDerivedRate()"><span class="field-hint">US avg ~$0.14</span></div>
+      <div class="settings-divider">Location &mdash; Tax &amp; Power</div>
+      <div class="state-row">
+        <div class="field"><label>State</label><select id="cfg_state" onchange="updateCfgPreview()"></select></div>
+        <button class="icon-btn" id="detectBtn" style="height:38px" onclick="detectState()">&#128205; Detect</button>
       </div>
-
-      <div class="settings-divider">Printer Depreciation</div>
+      <div class="derived-row" id="cfg_preview">&#8212;</div>
       <div class="grid-2">
-        <div class="field"><label>Printer Cost ($)</label><input type="number" id="cfg_printerCost" value="1000" min="0" step="50" oninput="updateDerivedRate()"></div>
-        <div class="field"><label>Printer Lifetime (yrs)</label><input type="number" id="cfg_life" value="3" min="1" step="1" oninput="updateDerivedRate()"></div>
-        <div class="field"><label>Annual Maintenance ($)</label><input type="number" id="cfg_maintenance" value="75" min="0" step="5" oninput="updateDerivedRate()"></div>
-        <div class="field"><label>Uptime (%)</label><input type="number" id="cfg_uptime" value="50" min="1" max="100" step="5" oninput="updateDerivedRate()"><span class="field-hint">% of hours printing</span></div>
+        <div class="field"><label>Sales Tax</label>
+          <select id="cfg_taxMode" onchange="updateCfgPreview()">
+            <option value="combined">State + avg local</option>
+            <option value="state">State rate only</option>
+            <option value="custom">Custom rate</option>
+          </select>
+        </div>
+        <div class="field" id="cfg_customTaxWrap"><label>Custom Tax (%)</label><input type="number" id="cfg_customTax" min="0" max="20" step="0.001" oninput="updateCfgPreview()"></div>
       </div>
-      <div class="derived-row">Calculated machine rate: <strong id="derivedRate">$0.1485/hr</strong></div>
-
-      <div class="settings-divider">Labor &amp; Waste</div>
-      <div class="grid-2">
-        <div class="field"><label>Labor Rate ($/hr)</label><input type="number" id="cfg_laborRate" value="20" min="0" step="0.5"><span class="field-hint">Your time value</span></div>
-        <div class="field"><label>Material Waste Factor</label><input type="number" id="cfg_effFactor" value="1.1" min="1" step="0.05"><span class="field-hint">1.1 = 10% waste buffer</span></div>
+      <div class="toggle-row">
+        <div><div class="toggle-label-text">Prices include tax</div><div class="toggle-sub">On: the sticker price is what the customer pays (common at events). Off: tax is added at checkout.</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg_taxIncluded"><span class="toggle-slider"></span></label>
       </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label-text">Use state average electricity price</div><div class="toggle-sub">Turn off to type your own rate from your power bill.</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg_kwhAuto" onchange="updateCfgPreview()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="field"><label>Electricity Rate ($/kWh)</label><input type="number" id="cfg_kwh" min="0" step="0.001"><span class="field-hint">Your bill's total &divide; kWh used is the most accurate number</span></div>
 
-      <div class="settings-divider">Price Rounding</div>
-      <div class="field">
-        <label>Rounding Mode</label>
-        <select id="cfg_rounding">
-          <option value="none">None (show cents)</option>
-          <option value="nearest">Nearest Dollar</option>
-          <option value="up">Always Round Up</option>
-          <option value="down">Always Round Down</option>
+      <div class="settings-divider">Selling Fees</div>
+      <div class="field"><label>Payment / Platform Preset</label>
+        <select id="cfg_feePreset" onchange="applyFeePreset()">
+          <option value="none">No fees (cash)</option>
+          <option value="square">Square in-person (2.6% + $0.15)</option>
+          <option value="zettle">PayPal Zettle in-person (2.29% + $0.09)</option>
+          <option value="stripe">Stripe online (2.9% + $0.30)</option>
+          <option value="paypal">PayPal checkout (3.49% + $0.49)</option>
+          <option value="etsy">Etsy (6.5% + 3% + $0.45)</option>
+          <option value="custom">Custom</option>
         </select>
-        <span class="field-hint">Applied to all final prices. Landed cost always shows exact cents.</span>
+        <span class="field-hint">Typical published rates &mdash; check your processor for your exact rate</span>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Processing Fee (%)</label><input type="number" id="cfg_payPct" min="0" step="0.01" oninput="feeEdited()"></div>
+        <div class="field"><label>Processing Fixed ($)</label><input type="number" id="cfg_payFixed" min="0" step="0.01" oninput="feeEdited()"><span class="field-hint">Per transaction</span></div>
+        <div class="field"><label>Marketplace Fee (%)</label><input type="number" id="cfg_platformPct" min="0" step="0.1" oninput="feeEdited()"></div>
+        <div class="field"><label>Other Fees (%)</label><input type="number" id="cfg_otherPct" min="0" step="0.1"><span class="field-hint">Commission, consignment, etc.</span></div>
+        <div class="field"><label>Per-Item Fee ($)</label><input type="number" id="cfg_perItemFee" min="0" step="0.01"><span class="field-hint">Booth fee spread per item, bags</span></div>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label-text">Build fees into price</div><div class="toggle-sub">Raises prices so your margin stays the same after fees. Off: fees come out of your profit.</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg_feesInPrice"><span class="toggle-slider"></span></label>
       </div>
 
-      <div class="settings-divider">Margin Presets</div>
+      <div class="settings-divider">Labor, Waste &amp; Failures</div>
       <div class="grid-3">
-        <div class="field"><label>Box 1 Margin (%)</label><input type="number" id="cfg_m1" value="50" min="1" max="99" step="1"></div>
-        <div class="field"><label>Box 2 Margin (%)</label><input type="number" id="cfg_m2" value="60" min="1" max="99" step="1"></div>
-        <div class="field"><label>Box 3 Margin (%)</label><input type="number" id="cfg_m3" value="70" min="1" max="99" step="1"></div>
+        <div class="field"><label>Labor Rate ($/hr)</label><input type="number" id="cfg_laborRate" min="0" step="0.5"></div>
+        <div class="field"><label>Material Waste (%)</label><input type="number" id="cfg_wastePct" min="0" step="1"><span class="field-hint">Purge, supports, brim</span></div>
+        <div class="field"><label>Failure Rate (%)</label><input type="number" id="cfg_failPct" min="0" max="90" step="1"><span class="field-hint">Covers reprints</span></div>
       </div>
+      <div class="field"><label>Machine Wear Buffer</label><input type="number" id="cfg_buffer" min="1" step="0.05"><span class="field-hint">Multiplier on depreciation + maintenance. 1.3 = 30% cushion</span></div>
 
-      <div class="settings-divider">Cost Buffer</div>
-      <div class="field"><label>Machine Cost Buffer Multiplier</label><input type="number" id="cfg_buffer" value="1.3" min="1" step="0.05" oninput="updateDerivedRate()"><span class="field-hint">Covers unexpected costs. Default 1.3</span></div>
-
-      <div class="settings-divider exp-div">&#129514; Experimental Features <span class="exp-badge">Beta</span></div>
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label-text">Filament Library</div>
-          <div class="toggle-sub">Save and load filament presets. Appears in Quick and Full tabs.</div>
-        </div>
-        <label class="toggle"><input type="checkbox" id="cfg_expFilament" onchange="applyExpFeatures()"><span class="toggle-slider"></span></label>
+      <div class="settings-divider">Prices</div>
+      <div class="field"><label>Rounding</label>
+        <select id="cfg_rounding">
+          <option value="none">None (exact cents)</option>
+          <option value="nearest">Nearest dollar</option>
+          <option value="up">Always round up to dollar</option>
+          <option value="down">Always round down to dollar</option>
+          <option value="half">Round up to $0.50</option>
+          <option value="quarter">Round up to $0.25</option>
+          <option value="99">Charm pricing (.99)</option>
+        </select>
+        <span class="field-hint">Applied to the sticker price. Costs always show exact cents.</span>
       </div>
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label-text">Printer Library</div>
-          <div class="toggle-sub">Save printer configs with wattage, cost, uptime. Load to auto-fill settings.</div>
-        </div>
-        <label class="toggle"><input type="checkbox" id="cfg_expPrinter" onchange="applyExpFeatures()"><span class="toggle-slider"></span></label>
+      <div class="grid-3">
+        <div class="field"><label>Box 1 Margin (%)</label><input type="number" id="cfg_m1" min="1" max="95" step="1"></div>
+        <div class="field"><label>Box 2 Margin (%)</label><input type="number" id="cfg_m2" min="1" max="95" step="1"></div>
+        <div class="field"><label>Box 3 Margin (%)</label><input type="number" id="cfg_m3" min="1" max="95" step="1"></div>
       </div>
-
     </div>
     <button class="save-btn" onclick="saveSettings()">Save &amp; Apply Settings</button>
   </div>
@@ -461,539 +566,873 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===== STATE ===== */
-const settings = {
-  watts:150, kwh:0.14, printerCost:1000, life:3, maintenance:75, uptime:50,
-  laborRate:20, effFactor:1.1, buffer:1.3, m1:50, m2:60, m3:70,
-  rounding:'none', expFilament:false, expPrinter:false
+/* =====================================================================
+   DATA — statewide averages
+   Sales tax: Tax Foundation, rates as of July 1, 2026 [state %, avg local %]
+   Electricity: EIA Electric Power Monthly, avg residential price July 2026 (¢/kWh)
+   ===================================================================== */
+const DATA_NOTE = 'Tax: Tax Foundation Jul 2026 · Power: EIA Jul 2026';
+const US_AVG_KWH = 0.183;
+const STATES = {
+  AL:['Alabama',4,5.46,16.4], AK:['Alaska',0,1.82,28.8], AZ:['Arizona',5.6,2.94,15.4], AR:['Arkansas',6.5,2.98,14.3],
+  CA:['California',7.25,1.78,33.6], CO:['Colorado',2.9,4.99,17.0], CT:['Connecticut',6.35,0,24.2], DE:['Delaware',0,0,18.5],
+  DC:['District of Columbia',6,0,25.2], FL:['Florida',6,0.98,15.0], GA:['Georgia',4,3.56,16.3], HI:['Hawaii',4,0.5,48.0],
+  ID:['Idaho',6,0.03,13.7], IL:['Illinois',6.25,2.73,19.2], IN:['Indiana',7,0,16.7], IA:['Iowa',6,0.94,16.0],
+  KS:['Kansas',6.5,2.21,15.3], KY:['Kentucky',6,0,13.8], LA:['Louisiana',5,5.13,12.7], ME:['Maine',5.5,0,32.4],
+  MD:['Maryland',6,0,21.4], MA:['Massachusetts',6.25,0,30.5], MI:['Michigan',6,0,23.1], MN:['Minnesota',6.875,1.26,17.4],
+  MS:['Mississippi',7,0.06,14.5], MO:['Missouri',4.225,4.22,16.1], MT:['Montana',0,0,15.0], NE:['Nebraska',5.5,1.48,13.8],
+  NV:['Nevada',6.85,1.39,12.8], NH:['New Hampshire',0,0,26.6], NJ:['New Jersey',6.625,-0.02,25.2], NM:['New Mexico',4.875,2.8,16.1],
+  NY:['New York',4,4.54,29.9], NC:['North Carolina',4.75,2.35,15.2], ND:['North Dakota',5,2.09,13.4], OH:['Ohio',5.75,1.54,19.4],
+  OK:['Oklahoma',4.5,4.56,14.3], OR:['Oregon',0,0,16.0], PA:['Pennsylvania',6,0.34,21.7], RI:['Rhode Island',7,0,28.3],
+  SC:['South Carolina',6,1.49,15.5], SD:['South Dakota',4.2,1.91,15.4], TN:['Tennessee',7,2.61,13.7], TX:['Texas',6.25,1.95,15.9],
+  UT:['Utah',6.1,1.32,13.1], VT:['Vermont',6,0.43,23.8], VA:['Virginia',5.3,0.47,17.6], WA:['Washington',6.5,3.07,14.7],
+  WV:['West Virginia',6,0.6,15.8], WI:['Wisconsin',5,0.72,19.1], WY:['Wyoming',4,1.39,14.4]
 };
-const hardwareItems = [];
-const packagingItems = [];
-let currentMode = 'simple';
-let savedPrints    = load('jakebitt_prints',   []);
-let filamentLib    = load('jakebitt_filaments', []);
-let printerLib     = load('jakebitt_printers',  []);
-let bulkTiers      = [{id:1,qty:10,disc:0},{id:2,qty:25,disc:5},{id:3,qty:50,disc:10}];
+const FEE_PRESETS = {
+  none:[0,0,0], square:[2.6,0.15,0], zettle:[2.29,0.09,0], stripe:[2.9,0.30,0], paypal:[3.49,0.49,0], etsy:[3,0.45,6.5]
+};
 
-function load(key, def) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch{ return def; }
+/* ===== UTIL ===== */
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o));
+const r2 = v => Math.round(v * 100) / 100;
+function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } }
+function persist(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+function m2(v){ if (!isFinite(v)) return '\u2014'; return (v < 0 ? '-$' : '$') + Math.abs(v).toFixed(2); }
+function money(v){
+  if (!isFinite(v)) return '\u2014';
+  const c = r2(v);
+  if (settings.rounding !== 'none' && Number.isInteger(c)) return (c < 0 ? '-$' : '$') + Math.abs(c).toFixed(0);
+  return m2(c);
 }
-function persist(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch{}
+function pct(v, d=2){ return (+v).toFixed(d).replace(/\.?0+$/, m => m.includes('.') ? '' : m) + '%'; }
+function showToast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove('show'), 2400);
 }
-
-/* ===== TOAST ===== */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-/* ===== ROUNDING ===== */
-function applyRounding(val) {
-  switch(settings.rounding) {
-    case 'up':      return Math.ceil(val);
-    case 'down':    return Math.floor(val);
-    case 'nearest': return Math.round(val);
-    default:        return val;
-  }
-}
-function fmt(val) {
-  const r = applyRounding(val);
-  return settings.rounding === 'none' ? '$' + val.toFixed(2) : '$' + r.toFixed(0);
-}
-
-/* ===== ANIMATED VALUE ===== */
-function setVal(id, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = text;
-  el.classList.remove('flash');
-  void el.offsetWidth;
-  el.classList.add('flash');
+function flash(id, text){
+  const el = $(id); if (!el) return;
+  if (el.textContent === text) return;
+  el.textContent = text; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   setTimeout(() => el.classList.remove('flash'), 300);
 }
-function dollar(id, val) { setVal(id, '$' + val.toFixed(2)); }
-function price(id, val)  { setVal(id, fmt(val)); }
-
-/* ===== TABS ===== */
-function setMode(m) {
-  currentMode = m;
-  ['simple','advanced','bulk','saves'].forEach(name => {
-    const tab = document.getElementById('tab-content-' + name);
-    const btn = document.getElementById('tab-' + name);
-    if (name === m) {
-      tab.classList.add('active');
-      btn.classList.add('active');
-      requestAnimationFrame(() => requestAnimationFrame(() => tab.classList.add('visible')));
-    } else {
-      tab.classList.remove('visible');
-      setTimeout(() => tab.classList.remove('active'), 260);
-      btn.classList.remove('active');
-    }
-  });
-  if (m === 'simple')   calcSimple();
-  else if (m === 'advanced') calc();
-  else if (m === 'bulk') calcBulk();
-  else renderSaves();
-}
-
-/* ===== INSTRUCTIONS ===== */
-function toggleInstructions() {
-  document.getElementById('instructionsPanel').classList.toggle('open');
-}
+function setText(id, text){ const el = $(id); if (el) el.textContent = text; }
 
 /* ===== SETTINGS ===== */
-function openSettings() {
-  document.getElementById('cfg_watts').value       = settings.watts;
-  document.getElementById('cfg_kwh').value         = settings.kwh;
-  document.getElementById('cfg_printerCost').value = settings.printerCost;
-  document.getElementById('cfg_life').value        = settings.life;
-  document.getElementById('cfg_maintenance').value = settings.maintenance;
-  document.getElementById('cfg_uptime').value      = settings.uptime;
-  document.getElementById('cfg_laborRate').value   = settings.laborRate;
-  document.getElementById('cfg_effFactor').value   = settings.effFactor;
-  document.getElementById('cfg_buffer').value      = settings.buffer;
-  document.getElementById('cfg_m1').value          = settings.m1;
-  document.getElementById('cfg_m2').value          = settings.m2;
-  document.getElementById('cfg_m3').value          = settings.m3;
-  document.getElementById('cfg_rounding').value    = settings.rounding;
-  document.getElementById('cfg_expFilament').checked = settings.expFilament;
-  document.getElementById('cfg_expPrinter').checked  = settings.expPrinter;
-  updateDerivedRate();
-  document.getElementById('settingsModal').classList.add('open');
-}
-function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
-function closeSettingsOutside(e) { if (e.target.id === 'settingsModal') closeSettings(); }
-function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
+const DEFAULT_SETTINGS = {
+  state:'', taxMode:'combined', customTax:0, taxIncluded:false, kwhAuto:true, kwh:0.14,
+  feePreset:'none', payPct:0, payFixed:0, platformPct:0, otherPct:0, perItemFee:0, feesInPrice:true,
+  laborRate:20, wastePct:10, failPct:0, buffer:1.3, rounding:'none', m1:50, m2:60, m3:70,
+  defaultPrinter:'', defaultFilament:''
+};
+let settings = Object.assign({}, DEFAULT_SETTINGS, load('jb_settings_v2', {}));
+function saveSettingsStore(){ persist('jb_settings_v2', settings); }
 
-function calcMachineRate(ov={}) {
-  const w  = ov.watts ?? settings.watts, k = ov.kwh ?? settings.kwh;
-  const pc = ov.printerCost ?? settings.printerCost, l = ov.life ?? settings.life;
-  const m  = ov.maintenance ?? settings.maintenance, u = (ov.uptime ?? settings.uptime)/100;
-  const b  = ov.buffer ?? settings.buffer;
-  const capitalPerHr = (pc + m*l) / (l * 8760 * u);
-  return (capitalPerHr + (w/1000)*k) * b;
+function taxRate(){
+  if (settings.taxMode === 'custom') return Math.max(0, num(settings.customTax));
+  const s = STATES[settings.state]; if (!s) return 0;
+  return Math.max(0, settings.taxMode === 'state' ? s[1] : s[1] + s[2]);
+}
+function kwhRate(){
+  const s = STATES[settings.state];
+  return (settings.kwhAuto && s) ? s[3] / 100 : Math.max(0, num(settings.kwh));
+}
+const feePct = () => num(settings.payPct) + num(settings.platformPct) + num(settings.otherPct);
+const feeFixed = () => num(settings.payFixed) + num(settings.perItemFee);
+
+function applyRounding(v){
+  if (!isFinite(v)) return v;
+  let out;
+  switch (settings.rounding) {
+    case 'up':      out = Math.ceil(v - 1e-9); break;
+    case 'down':    out = Math.max(Math.floor(v + 1e-9), v >= 1 ? 1 : r2(v)); break;
+    case 'nearest': out = Math.max(Math.round(v), v > 0 && v < 1 ? 1 : 0); break;
+    case 'half':    out = Math.ceil(v * 2 - 1e-9) / 2; break;
+    case 'quarter': out = Math.ceil(v * 4 - 1e-9) / 4; break;
+    case '99':      out = Math.ceil(v + 0.01 - 1e-9) - 0.01; break;
+    default:        out = v;
+  }
+  return r2(out);
 }
 
-function updateDerivedRate() {
-  const rate = calcMachineRate({
-    watts:gv('cfg_watts'), kwh:gv('cfg_kwh'), printerCost:gv('cfg_printerCost'),
-    life:gv('cfg_life'), maintenance:gv('cfg_maintenance'), uptime:gv('cfg_uptime'), buffer:gv('cfg_buffer')
+/* Profit picture for a given sticker price */
+function breakdown(sticker, cost){
+  const t = taxRate() / 100, fp = feePct() / 100, ff = feeFixed();
+  const preTax = settings.taxIncluded ? sticker / (1 + t) : sticker;
+  const tax = preTax * t;
+  const customer = preTax + tax;
+  const fees = customer * fp + ff;
+  const profit = preTax - fees - cost;
+  return { ok:true, sticker, preTax, tax, customer, fees, cost, profit, margin: preTax > 0 ? profit / preTax * 100 : 0 };
+}
+/* Price needed for a target margin (margin = profit / pre-tax price) */
+function priceAt(cost, marginPct){
+  const t = taxRate() / 100, fp = feePct() / 100, ff = feeFixed(), m = marginPct / 100;
+  let P;
+  if (settings.feesInPrice) { const d = 1 - m - fp * (1 + t); P = d > 0.001 ? (cost + ff) / d : Infinity; }
+  else { const d = 1 - m; P = d > 0.001 ? cost / d : Infinity; }
+  if (!isFinite(P) || cost < 0) return { ok:false };
+  const raw = settings.taxIncluded ? P * (1 + t) : P;
+  return breakdown(applyRounding(raw), cost);
+}
+
+/* ===== PROFILES ===== */
+let printers = load('jb_printers_v2', null);
+if (!Array.isArray(printers) || !printers.length) {
+  const old = load('jakebitt_printers', []);
+  printers = [{ id:uid(), name:'Generic FDM printer', watts:150, cost:1000, life:3, maint:75, uptime:50 }]
+    .concat((Array.isArray(old) ? old : []).map(p => ({ id:uid(), name:String(p.name||'Printer'), watts:num(p.watts), cost:num(p.cost), life:num(p.life)||3, maint:num(p.maint), uptime:num(p.uptime)||50 })));
+  persist('jb_printers_v2', printers);
+}
+let filaments = load('jb_filaments_v2', null);
+if (!Array.isArray(filaments) || !filaments.length) {
+  const old = load('jakebitt_filaments', []);
+  filaments = [
+    { id:uid(), name:'Generic PLA',  material:'PLA',  color:'#38bdf8', spoolPrice:18, spoolG:1000, costKg:18 },
+    { id:uid(), name:'Generic PETG', material:'PETG', color:'#a78bfa', spoolPrice:20, spoolG:1000, costKg:20 },
+    { id:uid(), name:'Generic TPU',  material:'TPU',  color:'#34d399', spoolPrice:30, spoolG:1000, costKg:30 }
+  ].concat((Array.isArray(old) ? old : []).map(f => ({ id:uid(), name:String(f.name||'Filament'), material:String(f.material||''), color:'#fbbf24', spoolPrice:'', spoolG:1000, costKg:num(f.cost) })));
+  persist('jb_filaments_v2', filaments);
+}
+const getFilament = id => filaments.find(f => f.id === id);
+function getPrinter(id){
+  return printers.find(p => p.id === id) || printers.find(p => p.id === settings.defaultPrinter) || printers[0]
+    || { name:'None', watts:0, cost:0, life:1, maint:0, uptime:50 };
+}
+function wearRate(p){
+  const life = Math.max(0.5, num(p.life)), up = Math.min(100, Math.max(1, num(p.uptime))) / 100;
+  return (num(p.cost) + num(p.maint) * life) / (life * 8760 * up) * Math.max(1, num(settings.buffer) || 1);
+}
+
+/* ===== WORKING STATE ===== */
+function newFilRow(grams=''){
+  const f = getFilament(settings.defaultFilament) || filaments[0];
+  return { id:uid(), profileId: f ? f.id : '', grams, costKg: f ? f.costKg : 20 };
+}
+const defQuick = () => ({ name:'', printerId:'', filaments:[newFilRow(100)], copies:1, hrs:3, mins:30, laborMin:10, extra:0, margin:60 });
+const defFull = () => ({ name:'My Part', printerId:'', filaments:[newFilRow(100)], hrs:3, mins:30, plateLaborMin:5,
+  parts:[{ id:uid(), name:'Part 1', qty:1, grams:'', laborMin:10 }], hardware:[], packaging:[{ id:uid(), name:'', qty:'', unit:'', for:'all' }], customMargin:65 });
+const defBulk = () => ({ cost:5, margin:60, tiers:[{id:uid(),qty:10,disc:0},{id:uid(),qty:25,disc:5},{id:uid(),qty:50,disc:10}] });
+
+function fixModel(obj, def){
+  const out = Object.assign(def, obj && typeof obj === 'object' ? obj : {});
+  ['filaments','parts','hardware','packaging','tiers'].forEach(k => {
+    if (k in def && !Array.isArray(out[k])) out[k] = def[k];
+    if (Array.isArray(out[k])) out[k].forEach(r => { if (!r.id) r.id = uid(); });
   });
-  document.getElementById('derivedRate').textContent = '$' + rate.toFixed(4) + '/hr';
+  return out;
 }
+const draft = load('jb_draft_v2', {});
+let quick = fixModel(draft.quick, defQuick());
+let full  = fixModel(draft.full,  defFull());
+let bulk  = fixModel(draft.bulk,  defBulk());
+const saveDraft = () => persist('jb_draft_v2', { quick, full, bulk });
 
-function saveSettings() {
-  settings.watts       = gv('cfg_watts');
-  settings.kwh         = gv('cfg_kwh');
-  settings.printerCost = gv('cfg_printerCost');
-  settings.life        = gv('cfg_life');
-  settings.maintenance = gv('cfg_maintenance');
-  settings.uptime      = gv('cfg_uptime');
-  settings.laborRate   = gv('cfg_laborRate');
-  settings.effFactor   = gv('cfg_effFactor');
-  settings.buffer      = gv('cfg_buffer');
-  settings.m1          = Math.min(99, Math.max(1, gv('cfg_m1')));
-  settings.m2          = Math.min(99, Math.max(1, gv('cfg_m2')));
-  settings.m3          = Math.min(99, Math.max(1, gv('cfg_m3')));
-  settings.rounding    = document.getElementById('cfg_rounding').value;
-  settings.expFilament = document.getElementById('cfg_expFilament').checked;
-  settings.expPrinter  = document.getElementById('cfg_expPrinter').checked;
-  closeSettings();
-  applyExpFeatures();
-  showToast('Settings saved \u2713');
-  if (currentMode === 'simple') calcSimple();
-  else if (currentMode === 'advanced') calc();
-  else if (currentMode === 'bulk') calcBulk();
-}
+let currentMode = 'quick';
+let last = { quick:null, full:null };
 
-/* ===== EXPERIMENTAL FEATURES ===== */
-function applyExpFeatures() {
-  const ef = document.getElementById('cfg_expFilament') ? document.getElementById('cfg_expFilament').checked : settings.expFilament;
-  const ep = document.getElementById('cfg_expPrinter')  ? document.getElementById('cfg_expPrinter').checked  : settings.expPrinter;
-  // filament library
-  ['simple-filament-picker','filamentLibraryCard'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.classList.toggle('enabled', ef); }
+/* ===== TABS ===== */
+const MODES = ['quick','full','bulk','profiles','saves'];
+function setMode(m){
+  currentMode = m;
+  MODES.forEach(n => {
+    const tab = $('tab-content-' + n), on = n === m;
+    $('tab-' + n).classList.toggle('active', on);
+    tab.classList.toggle('active', on);
+    tab.classList.remove('visible');
+    if (on) requestAnimationFrame(() => requestAnimationFrame(() => tab.classList.add('visible')));
   });
-  // printer library
-  ['printerLibraryCard'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('enabled', ep);
-  });
-  // adv pickers (show if either enabled)
-  const advPickers = document.getElementById('adv-pickers');
-  if (advPickers) advPickers.classList.toggle('enabled', ef || ep);
-  refreshLibSelects();
+  if (m === 'saves') renderSaves();
+  if (m === 'profiles') renderProfiles();
+  recalcAll();
 }
+function toggleInstructions(){ $('instructionsPanel').classList.toggle('open'); }
 
-/* ===== LINE ITEMS ===== */
-function addLine(listId, arr) {
-  arr.push({ id: Date.now(), name:'', qty:'', unit:'' });
-  renderLines(listId, arr); calc();
+/* ===== RENDER: selects & rows ===== */
+function printerOptions(sel){
+  return printers.map(p => `<option value="${esc(p.id)}"${p.id === sel ? ' selected' : ''}>${esc(p.name)}${p.id === settings.defaultPrinter ? ' \u2605' : ''}</option>`).join('');
 }
-function removeLine(listId, arr, id) {
-  const idx = arr.findIndex(x => x.id === id);
-  if (idx !== -1) arr.splice(idx, 1);
-  renderLines(listId, arr); calc();
+function renderPrinterSelects(){
+  [['q_printer', quick], ['f_printer', full]].forEach(([id, model]) => {
+    if (!printers.some(p => p.id === model.printerId)) model.printerId = getPrinter('').id || '';
+    $(id).innerHTML = printerOptions(model.printerId);
+  });
 }
-function renderLines(listId, arr) {
-  const isHw = arr === hardwareItems;
-  const an = isHw ? 'hardwareItems' : 'packagingItems';
-  document.getElementById(listId).innerHTML = arr.map(item => `
-    <div class="line-item">
-      <input type="text" placeholder="Item name" value="${esc(item.name)}"
-        oninput="updateLine('${listId}',${an},${item.id},'name',this.value)">
-      <input type="number" placeholder="Qty" value="${item.qty}" min="0" step="1"
-        oninput="updateLine('${listId}',${an},${item.id},'qty',this.value)">
-      <input type="number" placeholder="Unit $" value="${item.unit}" min="0" step="0.01"
-        oninput="updateLine('${listId}',${an},${item.id},'unit',this.value)">
-      <button class="remove-btn" onclick="removeLine('${listId}',${an},${item.id})">&times;</button>
+function renderFils(which){
+  const model = which === 'q' ? quick : full;
+  $(which + '_fils').innerHTML = model.filaments.map(r => {
+    if (r.profileId && !getFilament(r.profileId)) r.profileId = '';
+    const f = getFilament(r.profileId);
+    return `<div class="line-item fil-grid" data-id="${esc(r.id)}">
+      <div class="sel-wrap"><span class="swatch" style="background:${f ? esc(f.color) : 'transparent'}"></span>
+        <select data-f="profileId" aria-label="Filament"><option value="">Custom</option>${filaments.map(x => `<option value="${esc(x.id)}"${x.id === r.profileId ? ' selected' : ''}>${esc(x.name)}${x.material && !x.name.includes(x.material) ? ' \u00b7 ' + esc(x.material) : ''}</option>`).join('')}</select></div>
+      <input type="number" data-f="grams" min="0" step="0.1" placeholder="grams" value="${esc(r.grams)}" aria-label="Grams">
+      <input type="number" data-f="costKg" min="0" step="0.01" placeholder="$/kg" value="${esc(r.costKg)}" aria-label="Cost per kg">
+      <span class="row-cost" data-cost>&#8212;</span>
+      <button class="remove-btn" data-act="del" title="Remove" aria-label="Remove">&times;</button>
+    </div>`;
+  }).join('');
+}
+function renderParts(){
+  $('f_parts').innerHTML = full.parts.map(p => `<div class="line-item part-grid" data-id="${esc(p.id)}">
+      <input type="text" data-f="name" placeholder="Part name" value="${esc(p.name)}" aria-label="Part name">
+      <input type="number" data-f="qty" min="0" step="1" placeholder="Qty" value="${esc(p.qty)}" aria-label="Quantity">
+      <input type="number" data-f="grams" min="0" step="0.1" placeholder="g (optional)" value="${esc(p.grams)}" aria-label="Grams each">
+      <input type="number" data-f="laborMin" min="0" step="1" placeholder="min" value="${esc(p.laborMin)}" aria-label="Labor minutes each">
+      <button class="remove-btn" data-act="del" title="Remove" aria-label="Remove">&times;</button>
     </div>`).join('');
 }
-function updateLine(listId, arr, id, field, val) {
-  const item = arr.find(x => x.id === id);
-  if (item) item[field] = val;
-  calc();
+function renderXtra(kind){
+  $('f_' + kind).innerHTML = full[kind].map(i => {
+    if (i.for !== 'all' && !full.parts.some(p => p.id === i.for)) i.for = 'all';
+    return `<div class="line-item xtra-grid" data-id="${esc(i.id)}">
+      <input type="text" data-f="name" placeholder="${kind === 'hardware' ? 'e.g. Keyring' : 'e.g. Poly bag'}" value="${esc(i.name)}" aria-label="Item">
+      <input type="number" data-f="qty" min="0" step="1" placeholder="Qty" value="${esc(i.qty)}" aria-label="Quantity">
+      <input type="number" data-f="unit" min="0" step="0.01" placeholder="Unit $" value="${esc(i.unit)}" aria-label="Unit cost">
+      <select data-f="for" aria-label="Applies to"><option value="all">All parts</option>${full.parts.map(p => `<option value="${esc(p.id)}"${p.id === i.for ? ' selected' : ''}>${esc(p.name || 'Unnamed')}</option>`).join('')}</select>
+      <button class="remove-btn" data-act="del" title="Remove" aria-label="Remove">&times;</button>
+    </div>`;
+  }).join('');
+}
+function renderTiers(){
+  $('b_tiers').innerHTML = bulk.tiers.map(t => `<div class="line-item tier-grid" data-id="${esc(t.id)}">
+      <input type="number" data-f="qty" min="1" step="1" placeholder="Qty (e.g. 10)" value="${esc(t.qty)}">
+      <input type="number" data-f="disc" min="0" max="90" step="1" placeholder="Discount %" value="${esc(t.disc)}">
+      <button class="remove-btn" data-act="del" title="Remove" aria-label="Remove">&times;</button>
+    </div>`).join('');
 }
 
-/* ===== SIMPLE CALC ===== */
-function calcSimple() {
-  const g  = parseFloat(document.getElementById('s_filamentG').value) || 0;
-  const fc = parseFloat(document.getElementById('s_filamentCost').value) || 0;
-  const pt = parseFloat(document.getElementById('s_printTime').value) || 0;
-  const lm = parseFloat(document.getElementById('s_laborMin').value) || 0;
-  const mp = parseInt(document.getElementById('s_margin').value) || 60;
-  document.getElementById('s_marginPct').textContent  = mp;
-  document.getElementById('s_marginPct2').textContent = mp;
-  const mr  = calcMachineRate();
-  const elec = (settings.watts/1000)*settings.kwh*pt;
-  const mat  = (fc/1000)*g*settings.effFactor;
-  const lab  = (lm/60)*settings.laborRate;
-  const mach = mr*pt;
-  const landed = mat + lab + elec + mach;
-  const priceAt = m => m < 100 ? landed/(1-m/100) : Infinity;
-  const p = priceAt(mp);
-  setVal('s_price50', fmt(priceAt(settings.m1)));
-  setVal('s_price60', fmt(priceAt(settings.m2)));
-  setVal('s_price70', fmt(priceAt(settings.m3)));
-  document.getElementById('s_lbl50').textContent = settings.m1 + '% Margin';
-  document.getElementById('s_lbl60').textContent = settings.m2 + '% Margin';
-  document.getElementById('s_lbl70').textContent = settings.m3 + '% Margin';
-  setVal('s_price',  fmt(p));
-  setVal('s_landed', '$' + landed.toFixed(2));
-  setVal('s_elec',   '$' + elec.toFixed(3));
-  setVal('s_profit', fmt(p - landed));
-  document.getElementById('s_note').textContent =
-    'Cost: $' + landed.toFixed(2) + ' \u2192 ' + mp + '% margin \u2192 ' + fmt(p) + ' sale price';
+function addFil(which){ (which === 'q' ? quick : full).filaments.push(newFilRow()); renderFils(which); recalcAll(); focusLast(which + '_fils', 'grams'); }
+function addPart(){ full.parts.push({ id:uid(), name:'Part ' + (full.parts.length + 1), qty:1, grams:'', laborMin:'' }); renderParts(); renderXtra('hardware'); renderXtra('packaging'); recalcAll(); focusLast('f_parts', 'name'); }
+function addXtra(kind){ full[kind].push({ id:uid(), name:'', qty:1, unit:'', for:'all' }); renderXtra(kind); recalcAll(); focusLast('f_' + kind, 'name'); }
+function addTier(){ bulk.tiers.push({ id:uid(), qty:'', disc:'' }); renderTiers(); recalcAll(); focusLast('b_tiers', 'qty'); }
+function focusLast(containerId, field){ const rows = $(containerId).querySelectorAll('[data-id]'); const r = rows[rows.length - 1]; const el = r && r.querySelector(`[data-f="${field}"]`); if (el) el.focus(); }
+
+/* Delegated list editing */
+function wireList(containerId, getArr, opts={}){
+  const el = $(containerId);
+  const itemFor = t => { const row = t.closest('[data-id]'); return row ? getArr().find(x => x.id === row.dataset.id) : null; };
+  el.addEventListener('input', e => {
+    const t = e.target, f = t.dataset.f; if (!f || t.tagName === 'SELECT') return;
+    const item = itemFor(t); if (!item) return;
+    item[f] = t.value; if (opts.onInput) opts.onInput(item, f, t); recalcAll();
+  });
+  el.addEventListener('change', e => {
+    const t = e.target, f = t.dataset.f; if (!f) return;
+    const item = itemFor(t); if (!item) return;
+    item[f] = t.value; if (opts.onChange) opts.onChange(item, f, t); recalcAll();
+  });
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-act="del"]'); if (!b) return;
+    const arr = getArr(), row = b.closest('[data-id]'), i = arr.findIndex(x => x.id === row.dataset.id);
+    if (i < 0) return;
+    if (opts.min && arr.length <= opts.min) { showToast('Keep at least one row'); return; }
+    arr.splice(i, 1); opts.render(); if (opts.after) opts.after(); recalcAll();
+  });
+}
+function filOnChange(which){
+  return (item, f) => {
+    if (f === 'profileId') {
+      const p = getFilament(item.profileId);
+      if (p) item.costKg = p.costKg;
+      renderFils(which);
+    } else if (f === 'costKg' && item.profileId) {
+      const p = getFilament(item.profileId);
+      if (p && num(item.costKg) !== num(p.costKg)) { item.profileId = ''; renderFils(which); }
+    }
+  };
+}
+
+/* Top-level fields bound with data-model / data-key */
+const MODELS = { quick: () => quick, full: () => full, bulk: () => bulk };
+function syncInputs(){
+  document.querySelectorAll('[data-model]').forEach(el => {
+    const v = MODELS[el.dataset.model]()[el.dataset.key];
+    if (el.tagName === 'SELECT') el.value = v || (el.options[0] ? el.options[0].value : '');
+    else el.value = v ?? '';
+  });
+}
+document.addEventListener('input', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.model) return;
+  MODELS[t.dataset.model]()[t.dataset.key] = t.value; recalcAll();
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.model || t.tagName !== 'SELECT') return;
+  MODELS[t.dataset.model]()[t.dataset.key] = t.value; recalcAll();
+});
+
+/* ===== SHARED COST MATH ===== */
+function filTotals(rows){
+  let grams = 0, raw = 0;
+  rows.forEach(r => { const g = Math.max(0, num(r.grams)); grams += g; raw += g * Math.max(0, num(r.costKg)) / 1000; });
+  return { grams, raw, cost: raw * (1 + Math.max(0, num(settings.wastePct)) / 100) };
+}
+function plateCosts(model){
+  const pr = getPrinter(model.printerId);
+  const hrs = Math.max(0, num(model.hrs)) + Math.max(0, num(model.mins)) / 60;
+  const fil = filTotals(model.filaments);
+  const elec = Math.max(0, num(pr.watts)) / 1000 * kwhRate() * hrs;
+  const mach = wearRate(pr) * hrs;
+  const base = fil.cost + elec + mach;
+  const fr = Math.min(90, Math.max(0, num(settings.failPct))) / 100;
+  const fail = base / (1 - fr) - base;
+  return { pr, hrs, fil, elec, mach, fail, print: base + fail };
+}
+function updateRowCosts(containerId, rows){
+  const w = 1 + Math.max(0, num(settings.wastePct)) / 100;
+  rows.forEach(r => {
+    const el = $(containerId).querySelector(`[data-id="${CSS.escape(r.id)}"] [data-cost]`);
+    if (el) el.textContent = m2(Math.max(0, num(r.grams)) * Math.max(0, num(r.costKg)) / 1000 * w);
+  });
+}
+function cardsHTML(cost){
+  const ms = [settings.m1, settings.m2, settings.m3], cls = ['m50','m60','m70'], subs = ['Entry','Recommended','Premium'];
+  return ms.map((m, i) => {
+    const r = priceAt(cost, m);
+    return `<div class="price-card ${cls[i]}"><div class="margin-label">${m}% Margin</div>
+      <div class="price-value">${r.ok ? money(r.sticker) : '\u2014'}</div>
+      <div class="price-sub">${subs[i]}${r.ok ? ' \u00b7 <span class="' + (r.profit < 0 ? 'neg' : '') + '">profit ' + m2(r.profit) + '</span>' : ''}</div></div>`;
+  }).join('');
+}
+function taxLabel(){
+  const t = taxRate();
+  if (!t) return 'no sales tax';
+  return pct(t, 3) + ' tax ' + (settings.taxIncluded ? 'included' : 'added at checkout');
+}
+
+/* ===== QUICK CALC ===== */
+function calcQuick(){
+  const pc = plateCosts(quick);
+  const copies = Math.max(1, Math.floor(num(quick.copies)) || 1);
+  const labor = Math.max(0, num(quick.laborMin)) / 60 * num(settings.laborRate);
+  const extra = Math.max(0, num(quick.extra));
+  const perItem = pc.print / copies + labor + extra;
+  const margin = Math.min(95, Math.max(1, num(quick.margin) || 60));
+  const r = priceAt(perItem, margin);
+  last.quick = { pc, copies, labor, extra, perItem, margin, r };
+
+  updateRowCosts('q_fils', quick.filaments);
+  setText('q_marginPct', margin); setText('q_marginPct2', margin);
+  $('q_cards').innerHTML = cardsHTML(perItem);
+  flash('q_price', r.ok ? money(r.sticker) : '\u2014');
+  setText('q_note', r.ok
+    ? `Cost ${m2(perItem)} \u2192 ${margin}% margin \u2192 ${money(r.sticker)} each \u00b7 ${taxLabel()}`
+    : 'Margin + fees are too high to reach \u2014 lower the margin or fees.');
+  setText('q_costItem', m2(perItem));
+  setText('q_fees', r.ok ? m2(r.fees) : '\u2014');
+  setText('q_tax', r.ok ? m2(r.tax) : '\u2014');
+  setText('q_customer', r.ok ? m2(r.customer) : '\u2014');
+  setText('q_profit', r.ok ? m2(r.profit) : '\u2014');
+  setText('q_profitPlate', r.ok ? m2(r.profit * copies) : '\u2014');
+  $('q_profit').classList.toggle('neg', r.ok && r.profit < 0);
+
+  const per = v => m2(v / copies);
+  $('q_chips').innerHTML = [
+    ['Filament', per(pc.fil.cost) + ` (${r2(pc.fil.grams / copies)}g)`],
+    ['Electricity', per(pc.elec)],
+    ['Machine wear', per(pc.mach)],
+    pc.fail > 0.0005 ? ['Failure allowance', per(pc.fail)] : null,
+    ['Labor', m2(labor)],
+    extra ? ['Extras', m2(extra)] : null,
+    copies > 1 ? ['Plate cost', m2(perItem * copies)] : null
+  ].filter(Boolean).map(([k, v]) => `<span class="chip">${k} <b>${v}</b></span>`).join('');
+
+  const warn = [];
+  if (!quick.filaments.some(f => num(f.grams) > 0)) warn.push('Add filament grams from your slicer.');
+  if (r.ok && r.profit < 0) warn.push('Rounding pushed this price below cost \u2014 try a different rounding mode.');
+  $('q_warn').style.display = warn.length ? 'block' : 'none';
+  $('q_warn').textContent = warn.map(w => '\u26a0 ' + w).join(' ');
 }
 
 /* ===== FULL CALC ===== */
-function calc() {
-  const fc = parseFloat(document.getElementById('filamentCost').value) || 0;
-  const g  = parseFloat(document.getElementById('filamentG').value) || 0;
-  const pt = parseFloat(document.getElementById('printTime').value) || 0;
-  const lm = parseFloat(document.getElementById('laborMin').value) || 0;
-  const mr = calcMachineRate();
-  const elec = (settings.watts/1000)*settings.kwh*pt;
-  const mat  = (fc/1000)*g*settings.effFactor;
-  const hw   = hardwareItems.reduce((s,i)=>s+(parseFloat(i.qty)||0)*(parseFloat(i.unit)||0),0);
-  const lab  = (lm/60)*settings.laborRate;
-  const pkg  = packagingItems.reduce((s,i)=>s+(parseFloat(i.qty)||0)*(parseFloat(i.unit)||0),0);
-  const mach = mr*pt;
-  const landed = mat + hw + lab + elec + mach + pkg;
-  dollar('outMaterials', mat);
-  dollar('outHardware',  hw);
-  dollar('outLabor',     lab);
-  dollar('outElec',      elec);
-  dollar('outMachine',   mach);
-  dollar('outPackaging', pkg);
-  dollar('outLanded',    landed);
-  const priceAt = m => m < 100 ? landed/(1-m/100) : Infinity;
-  price('price50', priceAt(settings.m1));
-  price('price60', priceAt(settings.m2));
-  price('price70', priceAt(settings.m3));
-  document.getElementById('adv_lbl50').textContent = settings.m1 + '% Margin';
-  document.getElementById('adv_lbl60').textContent = settings.m2 + '% Margin';
-  document.getElementById('adv_lbl70').textContent = settings.m3 + '% Margin';
-  document.getElementById('elecCost').textContent = '$' + elec.toFixed(4);
-  updateCustom(landed);
+function extrasFor(list, part){
+  return list.filter(i => i.for === 'all' || i.for === part.id)
+    .reduce((s, i) => s + Math.max(0, num(i.qty)) * Math.max(0, num(i.unit)), 0);
+}
+function calcFull(){
+  const pc = plateCosts(full);
+  const plateLabor = Math.max(0, num(full.plateLaborMin)) / 60 * num(settings.laborRate);
+  const shared = pc.print + plateLabor;
+  const parts = full.parts.map(p => ({ p, q: Math.max(0, Math.floor(num(p.qty))) })).filter(x => x.q > 0);
+  const byWeight = parts.length > 0 && parts.every(x => num(x.p.grams) > 0);
+  const totalW = parts.reduce((s, x) => s + (byWeight ? num(x.p.grams) : 1) * x.q, 0);
+  const cm = Math.min(95, Math.max(1, num(full.customMargin) || 65));
+
+  let laborT = plateLabor, hwT = 0, pkgT = 0, total = 0, rev = 0, profitT = 0, taxT = 0, anyBad = false;
+  const rows = parts.map(({ p, q }) => {
+    const share = totalW ? shared * (byWeight ? num(p.grams) : 1) / totalW : 0;
+    const labor = Math.max(0, num(p.laborMin)) / 60 * num(settings.laborRate);
+    const hw = extrasFor(full.hardware, p), pkg = extrasFor(full.packaging, p);
+    const cost = share + labor + hw + pkg;
+    const prices = [settings.m1, settings.m2, settings.m3].map(m => priceAt(cost, m));
+    const custom = priceAt(cost, cm);
+    laborT += labor * q; hwT += hw * q; pkgT += pkg * q; total += cost * q;
+    if (custom.ok) { rev += custom.sticker * q; profitT += custom.profit * q; taxT += custom.tax * q; if (custom.profit < 0) anyBad = true; }
+    return { p, q, cost, prices, custom };
+  });
+  last.full = { pc, rows, total, cm, rev, profitT, taxT, byWeight };
+
+  updateRowCosts('f_fils', full.filaments);
+  setText('f_derived', `\u26a1 ${pc.pr.name}: ${r2(pc.hrs)} hr \u00b7 electricity ${m2(pc.elec)} @ $${kwhRate().toFixed(3)}/kWh \u00b7 wear ${m2(pc.mach)} ($${wearRate(pc.pr).toFixed(3)}/hr)`);
+  setText('f_outFil', m2(pc.fil.cost)); setText('f_outElec', m2(pc.elec)); setText('f_outMach', m2(pc.mach));
+  setText('f_outFail', m2(pc.fail)); setText('f_outLabor', m2(laborT)); setText('f_outHw', m2(hwT)); setText('f_outPkg', m2(pkgT));
+  flash('f_outTotal', m2(total));
+  setText('f_customPct', cm);
+  setText('f_h1', settings.m1 + '%'); setText('f_h2', settings.m2 + '%'); setText('f_h3', settings.m3 + '%'); setText('f_hc', cm + '%');
+
+  const partG = parts.reduce((s, x) => s + num(x.p.grams) * x.q, 0);
+  let info = byWeight
+    ? `Shared plate costs split by weight (${r2(partG)}g of parts).`
+    : 'Shared plate costs split evenly per piece. Enter grams for every part to split by weight instead.';
+  if (byWeight && pc.fil.grams > 0 && Math.abs(partG - pc.fil.grams) / pc.fil.grams > 0.15)
+    info += ` Note: parts total ${r2(partG)}g but the filament list totals ${r2(pc.fil.grams)}g \u2014 that's fine if the difference is purge/supports.`;
+  setText('f_splitInfo', info);
+
+  const single = rows.length === 1;
+  $('f_single').style.display = single ? '' : 'none';
+  $('f_tableWrap').style.display = single ? 'none' : '';
+  $('f_multiTitle').style.display = single ? 'none' : '';
+  $('f_bulkBtn').style.display = single ? '' : 'none';
+  setText('f_totalLabel', single && rows[0].q === 1 ? 'Total Landed Cost' : 'Total Plate Cost');
+  if (single) {
+    const x = rows[0];
+    $('f_cards').innerHTML = cardsHTML(x.cost);
+    setText('f_customPrice', x.custom.ok ? money(x.custom.sticker) : '\u2014');
+    setText('f_customNote', x.custom.ok
+      ? `Cost ${m2(x.cost)} each${x.q > 1 ? ' (' + x.q + ' on plate)' : ''} \u00b7 profit ${m2(x.custom.profit)} \u00b7 fees ${m2(x.custom.fees)} \u00b7 tax ${m2(x.custom.tax)} \u00b7 customer pays ${m2(x.custom.customer)}`
+      : 'Margin + fees are too high to reach.');
+  } else { setText('f_customPrice', ''); setText('f_customNote', ''); }
+  $('f_partsBody').innerHTML = rows.length ? rows.map(x => `<tr>
+      <td class="unit-col">${esc(x.p.name || 'Unnamed')}</td>
+      <td class="qty-col">${x.q}</td>
+      <td>${m2(x.cost)}</td>
+      ${x.prices.map((r, i) => `<td class="c${[50,60,70][i]}">${r.ok ? money(r.sticker) : '\u2014'}</td>`).join('')}
+      <td class="ccu">${x.custom.ok ? money(x.custom.sticker) : '\u2014'}</td>
+      <td class="${x.custom.ok && x.custom.profit < 0 ? 'neg' : ''}" style="color:var(--green)">${x.custom.ok ? m2(x.custom.profit) : '\u2014'}</td>
+      <td><button class="save-action-btn" data-bulk="${esc(x.p.id)}" title="Send cost to Bulk Pricing">Bulk &rarr;</button></td>
+    </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:1rem">Add a part with a quantity above</td></tr>';
+
+  $('f_chips').innerHTML = rows.length ? [
+    ['Pieces on plate', parts.reduce((s, x) => s + x.q, 0)],
+    [`Plate revenue @ ${cm}%`, m2(rev)],
+    ['Plate profit', m2(profitT)],
+    taxT > 0.005 ? ['Tax collected', m2(taxT)] : null
+  ].filter(Boolean).map(([k, v]) => `<span class="chip">${k} <b>${v}</b></span>`).join('') : '';
+
+  const warn = [];
+  if (!full.filaments.some(f => num(f.grams) > 0)) warn.push('Add filament grams from your slicer.');
+  if (rows.some(x => !x.custom.ok)) warn.push('Margin + fees are too high to reach for some parts.');
+  if (anyBad) warn.push('Rounding pushed a price below cost.');
+  $('f_warn').style.display = warn.length ? 'block' : 'none';
+  $('f_warn').textContent = warn.map(w => '\u26a0 ' + w).join(' ');
 }
 
-function updateCustom(landed) {
-  const pct = parseInt(document.getElementById('customMargin').value);
-  document.getElementById('customPct').textContent = pct;
-  if (landed === undefined) {
-    const txt = document.getElementById('outLanded').textContent;
-    landed = parseFloat(txt.replace('$','')) || 0;
-  }
-  const p = pct < 100 ? landed/(1-pct/100) : Infinity;
-  setVal('customPrice', p === Infinity ? '\u221e' : fmt(p));
-  document.getElementById('marginWarning').style.display = pct >= 90 ? 'block' : 'none';
-}
-
-/* ===== BULK CALC ===== */
-function addBulkTier() {
-  bulkTiers.push({ id: Date.now(), qty: '', disc: '' });
-  renderBulkTiers(); calcBulk();
-}
-function removeBulkTier(id) {
-  bulkTiers = bulkTiers.filter(t => t.id !== id);
-  renderBulkTiers(); calcBulk();
-}
-function renderBulkTiers() {
-  document.getElementById('bulkTierList').innerHTML = bulkTiers.map(t => `
-    <div class="bulk-tier">
-      <div class="field"><input type="number" placeholder="Qty (e.g. 10)" value="${t.qty}" min="1" step="1"
-        oninput="updateBulkTier(${t.id},'qty',this.value)"></div>
-      <div class="field"><input type="number" placeholder="Discount %" value="${t.disc}" min="0" max="99" step="1"
-        oninput="updateBulkTier(${t.id},'disc',this.value)"></div>
-      <button class="remove-btn" onclick="removeBulkTier(${t.id})">&times;</button>
-    </div>`).join('');
-}
-function updateBulkTier(id, field, val) {
-  const t = bulkTiers.find(x => x.id === id);
-  if (t) t[field] = val;
-  calcBulk();
-}
-function calcBulk() {
-  const cost   = parseFloat(document.getElementById('bulk_cost').value) || 0;
-  const margin = parseInt(document.getElementById('bulk_margin').value) || 60;
-  const basePrice = margin < 100 ? cost/(1-margin/100) : cost*10;
-  const tbody = document.getElementById('bulkTableBody');
-  const sorted = [...bulkTiers]
-    .filter(t => parseInt(t.qty) > 0)
-    .sort((a,b) => parseInt(a.qty)-parseInt(b.qty));
-  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1rem">Add quantity tiers above</td></tr>'; return; }
-  tbody.innerHTML = sorted.map(t => {
-    const qty  = parseInt(t.qty) || 0;
-    const disc = parseFloat(t.disc) || 0;
-    const unit = basePrice * (1 - disc/100);
-    const rUnit = applyRounding(unit);
-    const total = rUnit * qty;
-    const saved = (basePrice - unit) * qty;
+/* ===== BULK ===== */
+function calcBulk(){
+  const cost = Math.max(0, num(bulk.cost));
+  const margin = Math.min(95, Math.max(1, num(bulk.margin) || 60));
+  const base = priceAt(cost, margin);
+  $('b_base').value = base.ok ? money(base.sticker) + ' (profit ' + m2(base.profit) + ')' : 'Not reachable';
+  const tiers = bulk.tiers.filter(t => Math.floor(num(t.qty)) > 0).sort((a, b) => num(a.qty) - num(b.qty));
+  const body = $('b_body');
+  if (!base.ok) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1rem">Margin + fees are too high to reach</td></tr>'; return; }
+  if (!tiers.length) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1rem">Add quantity tiers above</td></tr>'; return; }
+  body.innerHTML = tiers.map(t => {
+    const qty = Math.floor(num(t.qty)), disc = Math.min(90, Math.max(0, num(t.disc)));
+    const unit = applyRounding(base.sticker * (1 - disc / 100));
+    const b = breakdown(unit, cost);
+    const saved = (base.sticker - unit) * qty;
     return `<tr>
-      <td class="qty-col">${qty}x</td>
-      <td class="disc-col">${disc > 0 ? disc + '% off' : '&#8212;'}</td>
-      <td class="unit-col">${fmt(unit)}/ea</td>
-      <td class="total-col">${fmt(total)}</td>
-      <td class="save-col">${saved > 0.005 ? 'save ' + fmt(saved) : '&#8212;'}</td>
+      <td class="qty-col">${qty}\u00d7</td>
+      <td class="disc-col">${disc > 0 ? disc + '% off' : '\u2014'}</td>
+      <td class="unit-col">${money(unit)}/ea</td>
+      <td class="total-col">${money(unit * qty)}</td>
+      <td style="color:var(--green)" class="${b.profit < 0 ? 'neg' : ''}">${m2(b.profit)} <span style="color:var(--muted);font-size:.7rem">(${b.margin.toFixed(0)}%)</span></td>
+      <td class="save-col">${saved > 0.005 ? money(saved) : '\u2014'}</td>
     </tr>`;
   }).join('');
+  setText('b_info', `Prices ${settings.taxIncluded ? 'include' : 'exclude'} sales tax (${pct(taxRate(), 3)}). Profit is after fees.`);
 }
 
-function pushToBulk() {
-  let landed = 0;
-  if (currentMode === 'simple') {
-    const txt = document.getElementById('s_landed').textContent;
-    landed = parseFloat(txt.replace('$','')) || 0;
-  } else {
-    const txt = document.getElementById('outLanded').textContent;
-    landed = parseFloat(txt.replace('$','')) || 0;
-  }
-  if (!landed) { showToast('Calculate a cost first'); return; }
-  document.getElementById('bulk_cost').value = landed.toFixed(2);
-  setMode('bulk'); calcBulk();
+/* ===== RECALC ===== */
+function recalcAll(){
+  calcQuick(); calcFull(); calcBulk(); updateLocPill(); saveDraft();
+}
+function updateLocPill(){
+  const s = STATES[settings.state];
+  $('locPill').textContent = s
+    ? `\uD83D\uDCCD ${settings.state} \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`
+    : `\uD83D\uDCCD Set location \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`;
+}
+
+/* ===== BULK HANDOFF ===== */
+function sendToBulk(cost){
+  if (!(cost > 0)) { showToast('Calculate a cost first'); return; }
+  bulk.cost = r2(cost); syncInputs(); setMode('bulk');
   showToast('Cost sent to Bulk Pricing \u2713');
 }
+function sendFullToBulk(){ if (last.full && last.full.rows[0]) { bulk.margin = last.full.cm; sendToBulk(last.full.rows[0].cost); } }
+function sendQuickToBulk(){ if (last.quick) { bulk.margin = last.quick.margin; sendToBulk(last.quick.perItem); } }
+$('f_partsBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-bulk]'); if (!b || !last.full) return;
+  const row = last.full.rows.find(x => x.p.id === b.dataset.bulk);
+  if (row) { bulk.margin = last.full.cm; sendToBulk(row.cost); }
+});
 
-/* ===== SAVE/LOAD PRINTS ===== */
-function currentSnapshot(mode) {
-  if (mode === 'simple') {
-    const landed = parseFloat(document.getElementById('s_landed').textContent.replace('$','')) || 0;
-    const p      = parseFloat(document.getElementById('s_price').textContent.replace('$','')) || 0;
-    return { mode:'simple', name:'Quick Print',
-      filamentG:parseFloat(document.getElementById('s_filamentG').value)||0,
-      filamentCost:parseFloat(document.getElementById('s_filamentCost').value)||0,
-      printTime:parseFloat(document.getElementById('s_printTime').value)||0,
-      laborMin:parseFloat(document.getElementById('s_laborMin').value)||0,
-      margin:parseInt(document.getElementById('s_margin').value)||60, landed, price:p };
-  } else {
-    const landed = parseFloat(document.getElementById('outLanded').textContent.replace('$','')) || 0;
-    const p      = parseFloat(document.getElementById('price60').textContent.replace('$','')) || 0;
-    return { mode:'advanced', name:document.getElementById('partName').value||'Unnamed Part',
-      material:document.getElementById('material').value,
-      filamentG:parseFloat(document.getElementById('filamentG').value)||0,
-      filamentCost:parseFloat(document.getElementById('filamentCost').value)||0,
-      printTime:parseFloat(document.getElementById('printTime').value)||0,
-      laborMin:parseFloat(document.getElementById('laborMin').value)||0,
-      hardware:[...hardwareItems], packaging:[...packagingItems],
-      margin:settings.m2, landed, price:p };
+/* ===== COPY SUMMARY ===== */
+function copySummary(mode){
+  let txt = '';
+  if (mode === 'quick' && last.quick) {
+    const q = last.quick;
+    txt = `${quick.name || 'Item'}\nCost per item: ${m2(q.perItem)}\n` +
+      [settings.m1, settings.m2, settings.m3].map(m => { const r = priceAt(q.perItem, m); return `${m}% margin: ${r.ok ? money(r.sticker) : 'n/a'}`; }).join('\n') +
+      (q.r.ok ? `\nChosen (${q.margin}%): ${money(q.r.sticker)} \u2014 profit ${m2(q.r.profit)}, fees ${m2(q.r.fees)}, tax ${m2(q.r.tax)}` : '');
+  } else if (mode === 'full' && last.full) {
+    txt = `${full.name || 'Plate'} \u2014 plate cost ${m2(last.full.total)}\n` + last.full.rows.map(x =>
+      `${x.p.name || 'Part'} \u00d7${x.q}: cost ${m2(x.cost)}, price ${x.custom.ok ? money(x.custom.sticker) : 'n/a'} (${last.full.cm}%)`).join('\n');
   }
+  if (!txt) return;
+  const done = () => showToast('Summary copied \u2713');
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done));
+  else fallbackCopy(txt, done);
 }
-function savePrint(mode) {
-  const snap = currentSnapshot(mode);
-  snap.id = Date.now(); snap.savedAt = new Date().toLocaleDateString();
-  savedPrints.unshift(snap); persist('jakebitt_prints', savedPrints);
-  showToast('Print saved \u2713');
+function fallbackCopy(txt, done){
+  const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch { showToast('Copy failed'); }
+  ta.remove();
 }
-function renderSaves() {
-  const list = document.getElementById('savesList');
-  if (!savedPrints.length) { list.innerHTML = '<div class="empty-saves">No saved prints yet. Calculate a price and hit "Save This Print".</div>'; return; }
-  list.innerHTML = savedPrints.map(p => `
-    <div class="save-row">
-      <div><div class="save-row-name">${esc(p.name)}</div><div class="save-row-date">${p.savedAt} \u00b7 ${p.mode==='simple'?'Quick':'Full'} \u00b7 ${p.filamentG}g \u00b7 ${p.printTime}hr</div></div>
-      <div class="save-row-price">$${p.price.toFixed(2)}<br><span style="font-size:.65rem;color:var(--muted)">${p.margin}% margin</span></div>
-      <button class="save-action-btn" onclick="loadSave(${p.id})">Load</button>
-      <button class="save-action-btn del" onclick="deleteSave(${p.id})">&times;</button>
-    </div>`).join('');
-  renderFilamentLib(); renderPrinterLib();
-}
-function deleteSave(id) { savedPrints=savedPrints.filter(p=>p.id!==id); persist('jakebitt_prints',savedPrints); renderSaves(); showToast('Deleted'); }
-function clearAllSaves() { if(!confirm('Clear all saved prints?'))return; savedPrints=[]; persist('jakebitt_prints',savedPrints); renderSaves(); showToast('All saves cleared'); }
-function loadSave(id) {
-  const p = savedPrints.find(x=>x.id===id); if(!p)return;
-  if (p.mode==='simple') {
-    document.getElementById('s_filamentG').value    = p.filamentG;
-    document.getElementById('s_filamentCost').value = p.filamentCost;
-    document.getElementById('s_printTime').value    = p.printTime;
-    document.getElementById('s_laborMin').value     = p.laborMin;
-    document.getElementById('s_margin').value       = p.margin;
-    setMode('simple'); calcSimple();
-  } else {
-    document.getElementById('partName').value     = p.name;
-    document.getElementById('material').value     = p.material||'';
-    document.getElementById('filamentG').value    = p.filamentG;
-    document.getElementById('filamentCost').value = p.filamentCost;
-    document.getElementById('printTime').value    = p.printTime;
-    document.getElementById('laborMin').value     = p.laborMin;
-    hardwareItems.length=0; if(p.hardware)p.hardware.forEach(i=>hardwareItems.push({...i}));
-    packagingItems.length=0; if(p.packaging)p.packaging.forEach(i=>packagingItems.push({...i}));
-    renderLines('hardwareList',hardwareItems); renderLines('packagingList',packagingItems);
-    setMode('advanced'); calc();
+
+/* ===== SAVES ===== */
+function migrateSave(p){
+  if (p && p.data && (p.mode === 'quick' || p.mode === 'full')) return p;
+  if (!p || typeof p !== 'object') return null;
+  const t = num(p.printTime), hrs = Math.floor(t), mins = Math.round((t - hrs) * 60);
+  const fil = { id:uid(), profileId:'', grams:num(p.filamentG), costKg:num(p.filamentCost) || 20 };
+  const savedAt = p.savedAt || new Date().toISOString();
+  if (p.mode === 'advanced') {
+    const mapX = arr => (Array.isArray(arr) ? arr : []).map(i => ({ id:uid(), name:String(i.name||''), qty:i.qty ?? '', unit:i.unit ?? '', for:'all' }));
+    const partId = uid();
+    return { id:uid(), mode:'full', name:String(p.name || 'Imported part'), savedAt,
+      data: fixModel({ name:String(p.name||''), filaments:[fil], hrs, mins, plateLaborMin:0,
+        parts:[{ id:partId, name:String(p.name||'Part'), qty:1, grams:'', laborMin:num(p.laborMin) }],
+        hardware:mapX(p.hardware), packaging:mapX(p.packaging), customMargin:num(p.margin) || 65 }, defFull()) };
   }
-  showToast('Loaded: ' + p.name);
+  return { id:uid(), mode:'quick', name:String(p.name || 'Quick Print'), savedAt,
+    data: fixModel({ name:String(p.name||''), filaments:[fil], copies:1, hrs, mins, laborMin:num(p.laborMin), extra:0, margin:num(p.margin) || 60 }, defQuick()) };
 }
-function exportSaves() {
-  if(!savedPrints.length){showToast('No saves to export');return;}
-  const blob=new Blob([JSON.stringify(savedPrints,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='jakebitt_prints_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
-  showToast('Exported \u2713');
+let savedPrints = load('jb_prints_v2', null);
+if (!Array.isArray(savedPrints)) {
+  savedPrints = (load('jakebitt_prints', []) || []).map(migrateSave).filter(Boolean);
+  persist('jb_prints_v2', savedPrints);
 }
-function importSaves(e) {
-  const file=e.target.files[0]; if(!file)return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    try{const d=JSON.parse(ev.target.result);if(!Array.isArray(d))throw 0;
-      savedPrints=[...d,...savedPrints];persist('jakebitt_prints',savedPrints);renderSaves();
-      showToast('Imported '+d.length+' print(s) \u2713');
-    }catch{showToast('Invalid file');}
+const persistSaves = () => persist('jb_prints_v2', savedPrints);
+
+function savePrint(mode){
+  const data = clone(mode === 'quick' ? quick : full);
+  let name = (data.name || '').trim();
+  if (!name) {
+    name = prompt('Name this print:', mode === 'quick' ? 'Quick Print' : 'My Part') || '';
+    name = name.trim(); if (!name) return;
+    data.name = name; (mode === 'quick' ? quick : full).name = name; syncInputs();
+  }
+  savedPrints.unshift({ id:uid(), mode, name, savedAt:new Date().toISOString(), data });
+  persistSaves(); renderSaves(); saveDraft();
+  showToast('Saved: ' + name + ' \u2713');
+}
+function saveSummary(s){
+  try {
+    const keepQ = quick, keepF = full;
+    if (s.mode === 'quick') {
+      quick = fixModel(clone(s.data), defQuick());
+      const pc = plateCosts(quick), copies = Math.max(1, Math.floor(num(quick.copies)) || 1);
+      const cost = pc.print / copies + num(quick.laborMin) / 60 * num(settings.laborRate) + num(quick.extra);
+      const r = priceAt(cost, num(quick.margin) || 60);
+      quick = keepQ;
+      return { price: r.ok ? money(r.sticker) + ' ea' : '\u2014', sub: `cost ${m2(cost)} \u00b7 ${num(s.data.margin) || 60}% margin` };
+    }
+    full = fixModel(clone(s.data), defFull());
+    const pc = plateCosts(full);
+    full = keepF;
+    const n = (s.data.parts || []).reduce((a, p) => a + Math.max(0, Math.floor(num(p.qty))), 0);
+    return { price: (s.data.parts || []).length + ' part' + ((s.data.parts || []).length === 1 ? '' : 's'), sub: `${n} pcs \u00b7 print cost ${m2(pc.print)}` };
+  } catch { return { price:'', sub:'' }; }
+}
+function renderSaves(){
+  const list = $('savesList');
+  const q = ($('saveSearch').value || '').toLowerCase().trim();
+  const items = savedPrints.filter(s => !q || String(s.name).toLowerCase().includes(q));
+  if (!savedPrints.length) { list.innerHTML = '<div class="empty-saves">No saved prints yet. Calculate a price and hit \u201cSave This Print\u201d.</div>'; return; }
+  if (!items.length) { list.innerHTML = '<div class="empty-saves">No matches.</div>'; return; }
+  list.innerHTML = items.map(s => {
+    const sum = saveSummary(s);
+    const d = new Date(s.savedAt); const ds = isNaN(d) ? String(s.savedAt || '') : d.toLocaleDateString();
+    return `<div class="save-row">
+      <div><div class="save-row-name">${esc(s.name)} <span class="badge">${s.mode === 'quick' ? 'Quick' : 'Full'}</span></div>
+        <div class="save-row-date">${esc(ds)} \u00b7 ${esc(sum.sub)}</div></div>
+      <div class="save-row-price">${esc(sum.price)}</div>
+      <button class="save-action-btn" onclick="loadSave('${esc(s.id)}')">Load</button>
+      <button class="save-action-btn" onclick="dupSave('${esc(s.id)}')">Duplicate</button>
+      <button class="save-action-btn del" onclick="deleteSave('${esc(s.id)}')" aria-label="Delete">&times;</button>
+    </div>`;
+  }).join('');
+}
+function loadSave(id){
+  const s = savedPrints.find(x => x.id === id); if (!s) return;
+  if (s.mode === 'quick') { quick = fixModel(clone(s.data), defQuick()); renderFils('q'); }
+  else { full = fixModel(clone(s.data), defFull()); renderFils('f'); renderParts(); renderXtra('hardware'); renderXtra('packaging'); }
+  renderPrinterSelects(); syncInputs();
+  setMode(s.mode);
+  showToast('Loaded: ' + s.name);
+}
+function dupSave(id){
+  const s = savedPrints.find(x => x.id === id); if (!s) return;
+  const c = clone(s); c.id = uid(); c.name = s.name + ' (copy)'; c.data.name = c.name; c.savedAt = new Date().toISOString();
+  savedPrints.splice(savedPrints.indexOf(s), 0, c); persistSaves(); renderSaves(); showToast('Duplicated');
+}
+function deleteSave(id){
+  const s = savedPrints.find(x => x.id === id); if (!s) return;
+  if (!confirm('Delete "' + s.name + '"?')) return;
+  savedPrints = savedPrints.filter(x => x.id !== id); persistSaves(); renderSaves(); showToast('Deleted');
+}
+function clearAllSaves(){
+  if (!savedPrints.length) return;
+  if (!confirm('Delete all ' + savedPrints.length + ' saved prints? This can\u2019t be undone.')) return;
+  savedPrints = []; persistSaves(); renderSaves(); showToast('All saves cleared');
+}
+function exportAll(){
+  const payload = { app:'jakebitt-price-calculator', version:2, exportedAt:new Date().toISOString(), settings, printers, filaments, saves:savedPrints };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'jakebitt_calculator_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  showToast('Backup exported \u2713');
+}
+function importAll(e){
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      let nSaves = 0, nP = 0, nF = 0;
+      if (Array.isArray(d)) {
+        const m = d.map(migrateSave).filter(Boolean); m.forEach(s => s.id = uid());
+        savedPrints = m.concat(savedPrints); nSaves = m.length;
+      } else if (d && typeof d === 'object') {
+        if (Array.isArray(d.saves)) {
+          const m = d.saves.map(migrateSave).filter(Boolean); m.forEach(s => s.id = uid());
+          savedPrints = m.concat(savedPrints); nSaves = m.length;
+        }
+        if (Array.isArray(d.printers)) d.printers.forEach(p => { if (p && p.name && !printers.some(x => x.id === p.id)) { printers.push({ id:p.id || uid(), name:String(p.name), watts:num(p.watts), cost:num(p.cost), life:num(p.life)||3, maint:num(p.maint), uptime:num(p.uptime)||50 }); nP++; } });
+        if (Array.isArray(d.filaments)) d.filaments.forEach(f => { if (f && f.name && !filaments.some(x => x.id === f.id)) { filaments.push({ id:f.id || uid(), name:String(f.name), material:String(f.material||''), color:/^#[0-9a-f]{6}$/i.test(f.color) ? f.color : '#38bdf8', spoolPrice:f.spoolPrice ?? '', spoolG:num(f.spoolG)||1000, costKg:num(f.costKg) }); nF++; } });
+        if (d.settings && typeof d.settings === 'object' && confirm('Also replace your current settings with the ones in this backup?')) {
+          settings = Object.assign({}, DEFAULT_SETTINGS, d.settings); saveSettingsStore();
+        }
+      } else throw 0;
+      persistSaves(); persist('jb_printers_v2', printers); persist('jb_filaments_v2', filaments);
+      afterProfilesChanged(); renderSaves();
+      showToast(`Imported ${nSaves} print(s), ${nP} printer(s), ${nF} filament(s) \u2713`);
+    } catch { showToast('That file isn\u2019t a valid backup'); }
   };
-  r.readAsText(file); e.target.value='';
+  rd.readAsText(file); e.target.value = '';
 }
 
-/* ===== FILAMENT LIBRARY ===== */
-function saveFilament() {
-  const name=document.getElementById('fl_name').value.trim();
-  const mat =document.getElementById('fl_material').value.trim();
-  const cost=parseFloat(document.getElementById('fl_cost').value)||0;
-  if (!name||!cost){showToast('Name and cost required');return;}
-  filamentLib.push({id:Date.now(),name,material:mat,cost});
-  persist('jakebitt_filaments',filamentLib);
-  closeSubModal('addFilamentModal');
-  document.getElementById('fl_name').value='';document.getElementById('fl_material').value='';document.getElementById('fl_cost').value='';
-  renderFilamentLib(); refreshLibSelects();
-  showToast('Filament saved \u2713');
+/* ===== PROFILES UI ===== */
+function renderProfiles(){
+  $('printerList').innerHTML = printers.map(p => {
+    const isDef = p.id === (settings.defaultPrinter || printers[0].id);
+    return `<div class="lib-row">
+      <div><div class="lib-name">${esc(p.name)} ${isDef ? '<span class="badge star">Default</span>' : ''}</div>
+        <div class="lib-sub">${num(p.watts)}W \u00b7 $${num(p.cost)} \u00b7 ${num(p.life)} yr \u00b7 $${num(p.maint)}/yr maint \u00b7 ${num(p.uptime)}% uptime \u00b7 wear $${wearRate(p).toFixed(3)}/hr</div></div>
+      <button class="save-action-btn ${isDef ? 'on' : ''}" onclick="setDefaultPrinter('${esc(p.id)}')" title="Make default">\u2605</button>
+      <button class="save-action-btn" onclick="openPrinterForm('${esc(p.id)}')">Edit</button>
+      <button class="save-action-btn del" onclick="deletePrinter('${esc(p.id)}')" aria-label="Delete">&times;</button>
+    </div>`;
+  }).join('');
+  $('filamentList').innerHTML = filaments.length ? filaments.map(f => {
+    const isDef = f.id === (settings.defaultFilament || (filaments[0] && filaments[0].id));
+    return `<div class="lib-row">
+      <div><div class="lib-name"><span class="swatch" style="background:${esc(f.color)}"></span>${esc(f.name)} ${isDef ? '<span class="badge star">Default</span>' : ''}</div>
+        <div class="lib-sub">${esc(f.material || '\u2014')} \u00b7 $${num(f.costKg).toFixed(2)}/kg${num(f.spoolPrice) ? ` \u00b7 $${num(f.spoolPrice).toFixed(2)} per ${num(f.spoolG)}g spool` : ''}</div></div>
+      <button class="save-action-btn ${isDef ? 'on' : ''}" onclick="setDefaultFilament('${esc(f.id)}')" title="Make default">\u2605</button>
+      <button class="save-action-btn" onclick="openFilamentForm('${esc(f.id)}')">Edit</button>
+      <button class="save-action-btn del" onclick="deleteFilament('${esc(f.id)}')" aria-label="Delete">&times;</button>
+    </div>`;
+  }).join('') : '<div class="empty-saves">No filaments yet.</div>';
 }
-function deleteFilament(id) { filamentLib=filamentLib.filter(f=>f.id!==id); persist('jakebitt_filaments',filamentLib); renderFilamentLib(); refreshLibSelects(); showToast('Deleted'); }
-function renderFilamentLib() {
-  const list=document.getElementById('filamentLibList');
-  if(!filamentLib.length){list.innerHTML='<div class="empty-saves">No filaments saved yet.</div>';return;}
-  list.innerHTML=filamentLib.map(f=>`
-    <div class="lib-row">
-      <div><div class="lib-name">${esc(f.name)}</div><div class="lib-sub">${esc(f.material)} &middot; $${f.cost}/kg</div></div>
-      <button class="save-action-btn" onclick="applyFilament(${f.id},'simple')">Load</button>
-      <button class="save-action-btn del" onclick="deleteFilament(${f.id})">&times;</button>
-    </div>`).join('');
+function afterProfilesChanged(){
+  renderProfiles(); renderPrinterSelects(); renderFils('q'); renderFils('f'); syncInputs(); recalcAll();
 }
-function applyFilament(id, tab) {
-  const f=filamentLib.find(x=>x.id===id); if(!f)return;
-  if(tab==='simple'){document.getElementById('s_filamentCost').value=f.cost;calcSimple();}
-  else{document.getElementById('filamentCost').value=f.cost;document.getElementById('material').value=f.material;calc();}
-  showToast('Loaded: '+f.name);
+function closeForm(id){ $(id).classList.remove('open'); }
+function openPrinterForm(id){
+  const p = id ? printers.find(x => x.id === id) : null;
+  $('pf_title').textContent = p ? 'Edit Printer' : 'Add Printer';
+  $('pf_id').value = p ? p.id : '';
+  $('pf_name').value = p ? p.name : ''; $('pf_watts').value = p ? p.watts : '';
+  $('pf_cost').value = p ? p.cost : ''; $('pf_life').value = p ? p.life : '';
+  $('pf_maint').value = p ? p.maint : ''; $('pf_uptime').value = p ? p.uptime : '';
+  $('printerForm').classList.add('open'); $('pf_name').focus();
 }
-function loadFilamentSimple() {
-  const id=parseInt(document.getElementById('s_filamentPicker').value); if(!id)return;
-  applyFilament(id,'simple'); document.getElementById('s_filamentPicker').value='';
+function savePrinterForm(){
+  const name = $('pf_name').value.trim();
+  if (!name) { showToast('Give the printer a name'); return; }
+  const data = { name, watts:num($('pf_watts').value) || 150, cost:num($('pf_cost').value), life:num($('pf_life').value) || 3,
+    maint:num($('pf_maint').value), uptime:Math.min(100, num($('pf_uptime').value) || 50) };
+  const id = $('pf_id').value;
+  const ex = id && printers.find(x => x.id === id);
+  if (ex) Object.assign(ex, data); else printers.push(Object.assign({ id:uid() }, data));
+  persist('jb_printers_v2', printers); closeForm('printerForm'); afterProfilesChanged();
+  showToast(ex ? 'Printer updated \u2713' : 'Printer added \u2713');
 }
-function loadFilamentAdv() {
-  const id=parseInt(document.getElementById('a_filamentPicker').value); if(!id)return;
-  applyFilament(id,'adv'); document.getElementById('a_filamentPicker').value='';
+function deletePrinter(id){
+  if (printers.length <= 1) { showToast('Keep at least one printer'); return; }
+  const p = printers.find(x => x.id === id); if (!p || !confirm('Delete printer "' + p.name + '"?')) return;
+  printers = printers.filter(x => x.id !== id);
+  if (settings.defaultPrinter === id) { settings.defaultPrinter = ''; saveSettingsStore(); }
+  persist('jb_printers_v2', printers); afterProfilesChanged();
 }
+function setDefaultPrinter(id){ settings.defaultPrinter = id; saveSettingsStore(); afterProfilesChanged(); showToast('Default printer set'); }
 
-/* ===== PRINTER LIBRARY ===== */
-function savePrinter() {
-  const name =document.getElementById('pr_name').value.trim();
-  const watts=parseFloat(document.getElementById('pr_watts').value)||0;
-  const cost =parseFloat(document.getElementById('pr_cost').value)||0;
-  const life =parseFloat(document.getElementById('pr_life').value)||3;
-  const maint=parseFloat(document.getElementById('pr_maint').value)||0;
-  const uptime=parseFloat(document.getElementById('pr_uptime').value)||50;
-  if(!name||!watts){showToast('Name and wattage required');return;}
-  printerLib.push({id:Date.now(),name,watts,cost,life,maint,uptime});
-  persist('jakebitt_printers',printerLib);
-  closeSubModal('addPrinterModal');
-  ['pr_name','pr_watts','pr_cost','pr_life','pr_maint','pr_uptime'].forEach(id=>document.getElementById(id).value='');
-  renderPrinterLib(); refreshLibSelects();
-  showToast('Printer saved \u2713');
+function openFilamentForm(id){
+  const f = id ? filaments.find(x => x.id === id) : null;
+  $('ff_title').textContent = f ? 'Edit Filament' : 'Add Filament';
+  $('ff_id').value = f ? f.id : '';
+  $('ff_name').value = f ? f.name : ''; $('ff_material').value = f ? f.material : '';
+  $('ff_color').value = f && /^#[0-9a-f]{6}$/i.test(f.color) ? f.color : '#38bdf8';
+  $('ff_spoolPrice').value = f ? f.spoolPrice : ''; $('ff_spoolG').value = f ? (f.spoolG || 1000) : 1000;
+  $('ff_costKg').value = f ? f.costKg : '';
+  $('filamentForm').classList.add('open'); $('ff_name').focus();
 }
-function deletePrinter(id) { printerLib=printerLib.filter(p=>p.id!==id); persist('jakebitt_printers',printerLib); renderPrinterLib(); refreshLibSelects(); showToast('Deleted'); }
-function renderPrinterLib() {
-  const list=document.getElementById('printerLibList');
-  if(!printerLib.length){list.innerHTML='<div class="empty-saves">No printers saved yet.</div>';return;}
-  list.innerHTML=printerLib.map(p=>`
-    <div class="lib-row">
-      <div><div class="lib-name">${esc(p.name)}</div><div class="lib-sub">${p.watts}W &middot; $${p.cost} &middot; ${p.uptime}% uptime</div></div>
-      <button class="save-action-btn" onclick="loadPrinterById(${p.id})">Load</button>
-      <button class="save-action-btn del" onclick="deletePrinter(${p.id})">&times;</button>
-    </div>`).join('');
+function ffAutoCost(){
+  const p = num($('ff_spoolPrice').value), g = num($('ff_spoolG').value);
+  if (p > 0 && g > 0) $('ff_costKg').value = r2(p / g * 1000);
 }
-function loadPrinterById(id) {
-  const p=printerLib.find(x=>x.id===id); if(!p)return;
-  settings.watts=p.watts; settings.printerCost=p.cost; settings.life=p.life;
-  settings.maintenance=p.maint; settings.uptime=p.uptime;
-  if(currentMode==='simple')calcSimple(); else calc();
-  showToast('Printer loaded: '+p.name);
+function saveFilamentForm(){
+  const name = $('ff_name').value.trim();
+  let costKg = num($('ff_costKg').value);
+  const sp = num($('ff_spoolPrice').value), sg = num($('ff_spoolG').value) || 1000;
+  if (!costKg && sp) costKg = r2(sp / sg * 1000);
+  if (!name || !costKg) { showToast('Name and a price are required'); return; }
+  const data = { name, material:$('ff_material').value.trim(), color:$('ff_color').value, spoolPrice: sp || '', spoolG: sg, costKg };
+  const id = $('ff_id').value;
+  const ex = id && filaments.find(x => x.id === id);
+  if (ex) {
+    Object.assign(ex, data);
+    [quick, full].forEach(m => m.filaments.forEach(r => { if (r.profileId === ex.id) r.costKg = ex.costKg; }));
+  } else filaments.push(Object.assign({ id:uid() }, data));
+  persist('jb_filaments_v2', filaments); closeForm('filamentForm'); afterProfilesChanged();
+  showToast(ex ? 'Filament updated \u2713' : 'Filament added \u2713');
 }
-function loadPrinterAdv() {
-  const id=parseInt(document.getElementById('a_printerPicker').value); if(!id)return;
-  loadPrinterById(id); document.getElementById('a_printerPicker').value='';
+function deleteFilament(id){
+  const f = filaments.find(x => x.id === id); if (!f || !confirm('Delete filament "' + f.name + '"?')) return;
+  filaments = filaments.filter(x => x.id !== id);
+  if (settings.defaultFilament === id) { settings.defaultFilament = ''; saveSettingsStore(); }
+  persist('jb_filaments_v2', filaments); afterProfilesChanged();
 }
+function setDefaultFilament(id){ settings.defaultFilament = id; saveSettingsStore(); afterProfilesChanged(); showToast('Default filament set'); }
 
-function refreshLibSelects() {
-  ['s_filamentPicker','a_filamentPicker'].forEach(pid=>{
-    const sel=document.getElementById(pid); if(!sel)return;
-    const cur=sel.value;
-    sel.innerHTML='<option value="">&#8212; Choose from library &#8212;</option>' +
-      filamentLib.map(f=>`<option value="${f.id}">${esc(f.name)} ($${f.cost}/kg)</option>`).join('');
-    sel.value=cur;
-  });
-  const ap=document.getElementById('a_printerPicker'); if(ap){
-    ap.innerHTML='<option value="">&#8212; Choose from library &#8212;</option>' +
-      printerLib.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+/* ===== SETTINGS UI ===== */
+function fillStateSelect(){
+  $('cfg_state').innerHTML = '<option value="">\u2014 Choose your state \u2014</option>' +
+    Object.entries(STATES).sort((a, b) => a[1][0].localeCompare(b[1][0])).map(([k, v]) => `<option value="${k}">${esc(v[0])}</option>`).join('');
+}
+function openSettings(){
+  const s = settings;
+  $('cfg_state').value = s.state; $('cfg_taxMode').value = s.taxMode; $('cfg_customTax').value = s.customTax;
+  $('cfg_taxIncluded').checked = !!s.taxIncluded; $('cfg_kwhAuto').checked = !!s.kwhAuto; $('cfg_kwh').value = s.kwh;
+  $('cfg_feePreset').value = s.feePreset; $('cfg_payPct').value = s.payPct; $('cfg_payFixed').value = s.payFixed;
+  $('cfg_platformPct').value = s.platformPct; $('cfg_otherPct').value = s.otherPct; $('cfg_perItemFee').value = s.perItemFee;
+  $('cfg_feesInPrice').checked = !!s.feesInPrice;
+  $('cfg_laborRate').value = s.laborRate; $('cfg_wastePct').value = s.wastePct; $('cfg_failPct').value = s.failPct; $('cfg_buffer').value = s.buffer;
+  $('cfg_rounding').value = s.rounding; $('cfg_m1').value = s.m1; $('cfg_m2').value = s.m2; $('cfg_m3').value = s.m3;
+  updateCfgPreview();
+  $('settingsModal').classList.add('open');
+}
+function closeSettings(){ $('settingsModal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('settingsModal').classList.contains('open')) closeSettings(); });
+function updateCfgPreview(){
+  const code = $('cfg_state').value, s = STATES[code], mode = $('cfg_taxMode').value, auto = $('cfg_kwhAuto').checked;
+  $('cfg_customTaxWrap').style.visibility = mode === 'custom' ? 'visible' : 'hidden';
+  $('cfg_kwh').disabled = auto && !!s;
+  if (auto && s) $('cfg_kwh').value = (s[3] / 100).toFixed(3);
+  else if (auto && !s && !num($('cfg_kwh').value)) $('cfg_kwh').value = settings.kwh;
+  let tax = mode === 'custom' ? num($('cfg_customTax').value) : (s ? (mode === 'state' ? s[1] : s[1] + s[2]) : 0);
+  tax = Math.max(0, tax);
+  $('cfg_preview').innerHTML = s
+    ? `<span>${esc(s[0])}: state ${pct(s[1], 3)} \u00b7 with avg local ${pct(Math.max(0, s[1] + s[2]), 3)} \u00b7 avg power ${s[3].toFixed(1)}\u00a2/kWh</span><span style="color:var(--muted)">Using ${pct(tax, 3)} tax \u00b7 ${DATA_NOTE}</span>`
+    : `<span>No state chosen \u2014 tax ${pct(tax, 3)}${mode === 'custom' ? '' : ' (pick a state or use a custom rate)'}; power uses the rate below. US avg is ${(US_AVG_KWH * 100).toFixed(1)}\u00a2/kWh.</span>`;
+}
+function applyFeePreset(){
+  const p = FEE_PRESETS[$('cfg_feePreset').value]; if (!p) return;
+  $('cfg_payPct').value = p[0]; $('cfg_payFixed').value = p[1]; $('cfg_platformPct').value = p[2];
+}
+function feeEdited(){
+  const cur = [num($('cfg_payPct').value), num($('cfg_payFixed').value), num($('cfg_platformPct').value)];
+  const match = Object.entries(FEE_PRESETS).find(([, v]) => v.every((x, i) => Math.abs(x - cur[i]) < 1e-9));
+  $('cfg_feePreset').value = match ? match[0] : 'custom';
+}
+async function detectState(){
+  const btn = $('detectBtn'); btn.disabled = true; btn.textContent = 'Detecting\u2026';
+  let code = null;
+  const byName = n => Object.keys(STATES).find(k => STATES[k][0].toLowerCase() === String(n || '').toLowerCase());
+  try {
+    const r = await fetch('https://ipapi.co/json/'); const j = await r.json();
+    if (j && j.country_code === 'US') code = STATES[j.region_code] ? j.region_code : byName(j.region);
+    else if (j && j.country_code) code = 'nonUS';
+  } catch {}
+  if (!code) {
+    try {
+      const r = await fetch('https://get.geojs.io/v1/ip/geo.json'); const j = await r.json();
+      if (j && j.country_code === 'US') code = byName(j.region) || null;
+      else if (j && j.country_code) code = 'nonUS';
+    } catch {}
   }
+  btn.disabled = false; btn.innerHTML = '&#128205; Detect';
+  if (code === 'nonUS') { showToast('Looks like you\u2019re outside the US \u2014 use a custom tax and power rate'); return; }
+  if (!code) { showToast('Couldn\u2019t detect \u2014 pick your state from the list'); return; }
+  $('cfg_state').value = code; updateCfgPreview();
+  showToast('Detected: ' + STATES[code][0] + ' \u2014 tap Save to apply');
 }
-
-/* ===== SUB MODALS ===== */
-function openSubModal(id) { document.getElementById(id).classList.add('open'); }
-function closeSubModal(id) { document.getElementById(id).classList.remove('open'); }
-
-/* ===== UTILS ===== */
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function saveSettings(){
+  const clampM = v => Math.min(95, Math.max(1, Math.round(num(v)) || 50));
+  Object.assign(settings, {
+    state:$('cfg_state').value, taxMode:$('cfg_taxMode').value, customTax:Math.max(0, num($('cfg_customTax').value)),
+    taxIncluded:$('cfg_taxIncluded').checked, kwhAuto:$('cfg_kwhAuto').checked,
+    feePreset:$('cfg_feePreset').value, payPct:Math.max(0, num($('cfg_payPct').value)), payFixed:Math.max(0, num($('cfg_payFixed').value)),
+    platformPct:Math.max(0, num($('cfg_platformPct').value)), otherPct:Math.max(0, num($('cfg_otherPct').value)),
+    perItemFee:Math.max(0, num($('cfg_perItemFee').value)), feesInPrice:$('cfg_feesInPrice').checked,
+    laborRate:Math.max(0, num($('cfg_laborRate').value)), wastePct:Math.max(0, num($('cfg_wastePct').value)),
+    failPct:Math.min(90, Math.max(0, num($('cfg_failPct').value))), buffer:Math.max(1, num($('cfg_buffer').value) || 1),
+    rounding:$('cfg_rounding').value, m1:clampM($('cfg_m1').value), m2:clampM($('cfg_m2').value), m3:clampM($('cfg_m3').value)
+  });
+  if (!($('cfg_kwhAuto').checked && STATES[settings.state])) settings.kwh = Math.max(0, num($('cfg_kwh').value));
+  saveSettingsStore(); closeSettings(); renderProfiles(); recalcAll();
+  showToast('Settings saved \u2713');
+}
 
 /* ===== INIT ===== */
-addLine('packagingList', packagingItems);
-renderBulkTiers();
-applyExpFeatures();
-renderFilamentLib();
-renderPrinterLib();
-refreshLibSelects();
-requestAnimationFrame(() => requestAnimationFrame(() => {
-  document.getElementById('tab-content-simple').classList.add('visible');
-}));
-calcSimple();
+fillStateSelect();
+wireList('q_fils', () => quick.filaments, { min:1, render:() => renderFils('q'), onChange:filOnChange('q') });
+wireList('f_fils', () => full.filaments,  { min:1, render:() => renderFils('f'), onChange:filOnChange('f') });
+wireList('f_parts', () => full.parts, { min:1, render:renderParts, after:() => { renderXtra('hardware'); renderXtra('packaging'); },
+  onChange:(item, f) => { if (f === 'name') { renderXtra('hardware'); renderXtra('packaging'); } } });
+wireList('f_hardware', () => full.hardware, { render:() => renderXtra('hardware') });
+wireList('f_packaging', () => full.packaging, { render:() => renderXtra('packaging') });
+wireList('b_tiers', () => bulk.tiers, { render:renderTiers });
+
+renderPrinterSelects();
+renderFils('q'); renderFils('f'); renderParts(); renderXtra('hardware'); renderXtra('packaging'); renderTiers();
+syncInputs(); renderProfiles(); renderSaves();
+recalcAll();
+requestAnimationFrame(() => requestAnimationFrame(() => $('tab-content-quick').classList.add('visible')));
+if (!settings.state && !load('jb_seen_v2', false)) {
+  persist('jb_seen_v2', true);
+  setTimeout(() => showToast('Tip: set your state in Settings for automatic tax & power rates'), 800);
+}
 </script>
 </body>
 </html>
