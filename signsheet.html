@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Resize images and PDFs to exact sizes like 4x6 and pack them onto letter paper for printing.">
+<title>Sign Sheet Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: tool panel on the left, a green self-healing cutting mat on the right where sheets lie at true proportion */
+:root{
+  --bg:#0f172a; --panel:#1e293b; --ink:#f8fafc; --muted:rgba(248,250,252,.55); --line:rgba(56,189,248,.18);
+  --accent:#38bdf8; --accent-ink:#0f172a;
+  --mat:#1f5a43; --mat-grid:rgba(255,255,255,.08); --mat-major:rgba(255,255,255,.18);
+  --chip:rgba(56,189,248,.07); --warn:#fbbf24;
+  --f-display:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --f-body:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}}
+header.top{max-width:1280px;margin:0 auto 16px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 span{background:linear-gradient(to right,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.back-link{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:600;padding:.4rem .75rem;border:1px solid var(--line);border-radius:.5rem;background:var(--chip);margin-bottom:14px}
+.back-link:hover{color:var(--accent);border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}.btnrow .btn{flex:1 1 140px}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.sub{color:var(--muted);margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.sec{display:flex;flex-direction:column;gap:8px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--f-mono);border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 90px;min-width:0}
+.field span{font-size:12px;color:var(--muted)}
+input[type=number],select{font:500 14px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 9px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,.drop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.drop b{font-family:var(--f-display);font-weight:700;font-size:17px;display:block}
+.drop small{color:var(--muted)}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px}
+.item img{width:52px;height:52px;object-fit:contain;background:var(--chip);border-radius:6px}
+.item .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .ex{font-size:11px;color:var(--warn);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.item .ctl{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.item select{padding:3px 5px;font-size:12px;width:auto}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.qty button{border:0;background:var(--chip);color:var(--ink);width:26px;height:26px;cursor:pointer;font-size:15px}
+.qty output{font:500 12px var(--f-mono);min-width:26px;text-align:center}
+.x{border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;width:30px;height:30px;border-radius:6px}
+.x:hover{color:var(--accent)}
+.btn{font:700 15px var(--f-body);border:0;border-radius:10px;padding:12px 16px;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ghost{font:700 13px var(--f-body);background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.note{font-size:13px;color:var(--muted)}
+.tip{font-size:13px;background:var(--chip);border-radius:10px;padding:10px 12px}
+.tip strong{color:var(--ink)}
+.status{font-size:13px;min-height:1.2em}
+.status.err{color:var(--accent)}
+/* the cutting mat */
+.mat{border-radius:14px;min-width:0;padding:18px;background-color:var(--mat);
+  background-image:
+   linear-gradient(var(--mat-major) 1px,transparent 1px),linear-gradient(90deg,var(--mat-major) 1px,transparent 1px),
+   linear-gradient(var(--mat-grid) 1px,transparent 1px),linear-gradient(90deg,var(--mat-grid) 1px,transparent 1px);
+  background-size:96px 96px,96px 96px,24px 24px,24px 24px}
+.matbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;color:#fff;margin-bottom:14px;font-size:14px}
+.matbar .big{font-family:var(--f-display);font-weight:800;font-size:20px}
+.matbar .mono{font-family:var(--f-mono);font-size:13px;opacity:.85}
+.sheets{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.sheet{display:flex;flex-direction:column;gap:6px;max-width:100%}
+.sheet canvas{background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35);max-width:100%;height:auto;display:block}
+.sheet span{font:500 12px var(--f-mono);color:#fff;opacity:.85}
+.empty{color:#fff;opacity:.85;padding:40px 10px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div style="flex-basis:100%"><a class="back-link" href="/">&larr; Back to JakeBitt</a></div>
+  <h1>Sign Sheet <span>Maker</span></h1>
+  <p class="sub">Exact-size signs packed onto paper, ready to print and trim.</p>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <div class="sec">
+      <div class="lbl">Sign size (inches)</div>
+      <div class="chips" id="presets"></div>
+      <div class="row">
+        <label class="field"><span>Width</span><input id="cw" type="number" step="0.05" min="0.5" value="4"></label>
+        <label class="field"><span>Height</span><input id="ch" type="number" step="0.05" min="0.5" value="6"></label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lbl">Images &amp; PDFs</div>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add images or PDFs">
+        <b>Drop files here</b>
+        <small>or click to choose · PNG, JPG, WebP, PDF · paste works too</small>
+      </div>
+      <input id="file" type="file" accept="image/*,application/pdf" multiple hidden>
+      <div class="items" id="items"></div>
+    </div>
+
+    <div class="sec">
+      <div class="lbl">Paper &amp; spacing</div>
+      <div class="row">
+        <label class="field"><span>Paper</span>
+          <select id="paper">
+            <option value="8.5x11">Letter 8.5 × 11</option>
+            <option value="8.5x14">Legal 8.5 × 14</option>
+            <option value="11x17">Tabloid 11 × 17</option>
+            <option value="8.27x11.69">A4 8.27 × 11.69</option>
+          </select></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Page margin</span><input id="margin" type="number" step="0.05" min="0" value="0.2"></label>
+        <label class="field"><span>Gap between</span><input id="gap" type="number" step="0.025" min="0" value="0.1"></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Cut guides</span>
+          <select id="cut">
+            <option value="marks">Corner marks</option>
+            <option value="outline">Thin outline</option>
+            <option value="none">None</option>
+          </select></label>
+      </div>
+      <label class="check"><input id="mixed" type="checkbox" checked> Turn some signs sideways to fit more per sheet</label>
+    </div>
+
+    <div class="sec">
+      <div class="btnrow"><button class="btn" id="save">Download PDF</button><button class="btn alt" id="open">Open to print</button></div>
+      <div class="status" id="status" aria-live="polite"></div>
+      <div class="tip"><strong>Printing:</strong> choose <strong>Actual size</strong> (100%), not "Fit to page". Measure one sign after printing; it should read exactly the size above.</div>
+    </div>
+  </aside>
+
+  <main class="mat">
+    <div class="matbar">
+      <div class="big" id="summary"></div>
+      <div class="mono" id="detail"></div>
+    </div>
+    <div class="sheets" id="sheets"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const PRESETS = [[4,6],[5,7],[3,5],[2.5,3.5],[2,3],[8,10],[8.5,11]];
+const PREVIEW_PPI = 48, EXPORT_DPI = 300;
+const state = { items: [], cw: 4, ch: 6, paper: "8.5x11", margin: .2, gap: .1, cut: "marks", mixed: true };
+let uid = 0;
+
+/* ---------- presets ---------- */
+function drawPresets(){
+  $("presets").innerHTML = "";
+  PRESETS.forEach(([w,h]) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button";
+    b.textContent = `${w}×${h}`;
+    b.setAttribute("aria-pressed", w===state.cw && h===state.ch);
+    b.onclick = () => { state.cw = w; state.ch = h; $("cw").value = w; $("ch").value = h; drawPresets(); render(); };
+    $("presets").appendChild(b);
+  });
+}
+
+/* ---------- sample signs (examples until real files are added) ---------- */
+function sampleCanvas(i){
+  const land = i === 3;
+  const c = document.createElement("canvas"); c.width = land?1500:1000; c.height = land?1000:1500;
+  const g = c.getContext("2d");
+  const hues = ["#2f6b4f","#e2542b","#3a5ba8","#7a3fa0"];
+  g.fillStyle = hues[i]; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle = "rgba(255,255,255,.12)";
+  for(let k=0;k<8;k++){ g.beginPath(); g.arc(Math.random()*c.width,Math.random()*c.height,80+Math.random()*220,0,7); g.fill(); }
+  g.strokeStyle = "#fff"; g.lineWidth = 14; g.strokeRect(40,40,c.width-80,c.height-80);
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.font = "800 120px 'DM Sans', sans-serif";
+  g.fillText(["Keychains","Ornaments","Fidgets","Custom Orders"][i], c.width/2, c.height/2 - 60);
+  g.font = "700 64px 'DM Sans', sans-serif";
+  g.fillText(["$5 each","$8 each","3 for $20","Ask me!"][i], c.width/2, c.height/2 + 80);
+  g.font = "500 36px 'JetBrains Mono', monospace";
+  g.fillText("EXAMPLE", c.width/2, c.height - 110);
+  return c;
+}
+function addSamples(){
+  for(let i=0;i<4;i++){ const c = sampleCanvas(i); addItem(c, c.width, c.height, `Example sign ${i+1}`, true); }
+}
+
+/* ---------- items ---------- */
+function thumb(src, sw, sh){
+  const c = document.createElement("canvas"), s = 104/Math.max(sw,sh);
+  c.width = Math.max(1,Math.round(sw*s)); c.height = Math.max(1,Math.round(sh*s));
+  c.getContext("2d").drawImage(src,0,0,c.width,c.height);
+  return c.toDataURL("image/png");
+}
+function addItem(src, sw, sh, name, example=false){
+  state.items.push({ id: ++uid, src, sw, sh, name, example, orient: "auto", fit: "fill", copies: 1, thumb: thumb(src,sw,sh), cache: {} });
+}
+const itemOrient = it => it.orient === "auto" ? (it.sw > it.sh ? "L" : "P") : it.orient;
+
+function drawItems(){
+  const box = $("items"); box.innerHTML = "";
+  if (state.items.some(i=>i.example)) {
+    const n = document.createElement("div"); n.className = "note";
+    n.textContent = "Showing example signs. They disappear as soon as you add your own files.";
+    box.appendChild(n);
+  }
+  state.items.forEach(it => {
+    const row = document.createElement("div"); row.className = "item";
+    row.innerHTML = `<img alt="">
+      <div style="min-width:0">
+        ${it.example?'<div class="ex">Example</div>':''}
+        <div class="nm"></div>
+        <div class="ctl">
+          <select aria-label="Orientation" data-k="orient" id="o${it.id}">
+            <option value="auto">Auto</option><option value="P">Portrait</option><option value="L">Landscape</option></select>
+          <select aria-label="Fit" data-k="fit" id="f${it.id}">
+            <option value="fill">Fill (crop edges)</option><option value="fit">Fit (white bars)</option><option value="stretch">Stretch</option></select>
+          <div class="qty"><button type="button" data-d="-1" aria-label="Fewer copies">−</button><output>${it.copies}</output><button type="button" data-d="1" aria-label="More copies">+</button></div>
+        </div>
+      </div>
+      <button class="x" type="button" aria-label="Remove">×</button>`;
+    row.querySelector("img").src = it.thumb;
+    row.querySelector(".nm").textContent = it.name;
+    row.querySelectorAll("select").forEach(s => { s.value = it[s.dataset.k]; s.onchange = () => { it[s.dataset.k] = s.value; it.cache = {}; render(); }; });
+    row.querySelectorAll(".qty button").forEach(b => b.onclick = () => {
+      it.copies = Math.max(1, Math.min(99, it.copies + +b.dataset.d)); row.querySelector("output").textContent = it.copies; render(); });
+    row.querySelector(".x").onclick = () => { state.items = state.items.filter(x=>x!==it); drawItems(); render(); };
+    box.appendChild(row);
+  });
+}
+
+/* ---------- file loading ---------- */
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("load")); document.head.appendChild(s); }); }
+let pdfReady;
+function ensurePdf(){
+  if(!pdfReady){
+    const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+    // loading the worker as a plain script lets pdf.js run on the page itself
+    pdfReady = loadScript(base+"pdf.worker.min.js").then(()=>loadScript(base+"pdf.min.js"))
+      .then(()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc = base+"pdf.worker.min.js"; });
+  }
+  return pdfReady;
+}
+function status(msg, err=false){ const s=$("status"); s.textContent = msg; s.className = "status"+(err?" err":""); }
+
+async function addFiles(files){
+  files = [...files].filter(f => f.type.startsWith("image/") || f.type === "application/pdf" || /\.pdf$/i.test(f.name));
+  if(!files.length) return;
+  if(state.items.some(i=>i.example)) state.items = state.items.filter(i=>!i.example);
+  for(const f of files){
+    try{
+      if(f.type === "application/pdf" || /\.pdf$/i.test(f.name)){
+        status(`Reading ${f.name}…`);
+        await ensurePdf();
+        const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise;
+        for(let p=1;p<=pdf.numPages;p++){
+          const page = await pdf.getPage(p);
+          const v1 = page.getViewport({scale:1});
+          const scale = 3000/Math.max(v1.width,v1.height);
+          const vp = page.getViewport({scale});
+          const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+          const g = c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height);
+          await page.render({canvasContext:g, viewport:vp}).promise;
+          addItem(c, c.width, c.height, pdf.numPages>1 ? `${f.name} · page ${p}` : f.name);
+        }
+      } else {
+        const url = URL.createObjectURL(f);
+        const img = new Image(); img.src = url; await img.decode();
+        addItem(img, img.naturalWidth, img.naturalHeight, f.name);
+      }
+    } catch(e){ status(`Couldn't read ${f.name}. Try saving it as a PNG or JPG.`, true); console.error(e); continue; }
+  }
+  status(""); drawItems(); render();
+}
+const drop = $("drop");
+drop.onclick = () => $("file").click();
+drop.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("file").click(); } };
+$("file").onchange = e => { addFiles(e.target.files); e.target.value=""; };
+["dragenter","dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); if(e.target!==drop && !drop.contains(e.target)) addFiles(e.dataTransfer.files); });
+document.addEventListener("paste", e => { const f=[...(e.clipboardData?.files||[])]; if(f.length) addFiles(f); });
+
+/* ---------- packing ---------- */
+// Signs are w×h with w ≤ h. Slots are "P" (w wide, h tall) or "L" (h wide, w tall).
+function bestLayout(W, H, w, h, g, mixed){
+  const fit = (len, s) => len + 1e-9 >= s ? Math.floor((len + g + 1e-9) / (s + g)) : 0;
+  let best = { count: 0, slots: [], mixed: false };
+  // rows stacked down the page
+  for(const axis of ["rows","cols"]){
+    const A = axis==="rows" ? W : H, B = axis==="rows" ? H : W;   // A = along band, B = stack direction
+    // band of type P: in rows, P slot is w along, h thick. in cols, P slot is h along (height), w thick.
+    const pAlong = axis==="rows" ? w : h, pThick = axis==="rows" ? h : w;
+    const lAlong = axis==="rows" ? h : w, lThick = axis==="rows" ? w : h;
+    const perP = fit(A, pAlong), perL = fit(A, lAlong);
+    for(let n=0; n<=50; n++){
+      const usedP = n ? n*pThick + (n-1)*g : 0;
+      if(usedP > B + 1e-9) break;
+      for(let m=0; m<=50; m++){
+        if(!mixed && n && m) break;
+        const used = usedP + (m ? m*lThick + (m-1)*g : 0) + (n&&m ? g : 0);
+        if(used > B + 1e-9) break;
+        const count = n*perP + m*perL;
+        const isMixed = !!(n && m);
+        if(count > best.count || (count === best.count && best.mixed && !isMixed)){
+          const slots = []; let pos = 0;
+          const band = (k, per, along, thick, o) => {
+            for(let r=0;r<k;r++){
+              for(let i=0;i<per;i++){
+                const a = i*(along+g), b = pos;
+                slots.push(axis==="rows" ? {x:a,y:b,o} : {x:b,y:a,o});
+              }
+              pos += thick + g;
+            }
+          };
+          band(n, perP, pAlong, pThick, "P"); band(m, perL, lAlong, lThick, "L");
+          best = { count, slots, mixed: isMixed };
+        }
+      }
+    }
+  }
+  return best;
+}
+function layout(){
+  const [pw, ph] = state.paper.split("x").map(Number);
+  const w = Math.min(state.cw, state.ch), h = Math.max(state.cw, state.ch);
+  const m = state.margin, g = state.gap;
+  const L = bestLayout(pw - 2*m, ph - 2*m, w, h, g, state.mixed);
+  // center the block on the page
+  let maxX = 0, maxY = 0;
+  L.slots.forEach(s => { const sw = s.o==="P"?w:h, sh = s.o==="P"?h:w; maxX = Math.max(maxX, s.x+sw); maxY = Math.max(maxY, s.y+sh); });
+  const ox = (pw - maxX)/2, oy = (ph - maxY)/2;
+  L.slots = L.slots.map(s => ({ x: s.x+ox, y: s.y+oy, o: s.o, w: s.o==="P"?w:h, h: s.o==="P"?h:w }));
+  return { pw, ph, w, h, ...L };
+}
+function paginate(L){
+  const cards = []; state.items.forEach(it => { for(let i=0;i<it.copies;i++) cards.push(it); });
+  const pages = [];
+  for(let i=0; i<cards.length && L.count; i+=L.count){
+    const batch = cards.slice(i, i+L.count), free = L.slots.map((s,k)=>k), placed = [];
+    // first pass: put each sign in a slot that matches its orientation
+    const left = [];
+    batch.forEach(it => { const k = free.findIndex(j => L.slots[j].o === itemOrient(it));
+      if(k>=0){ placed.push({it, s:L.slots[free[k]]}); free.splice(k,1); } else left.push(it); });
+    left.forEach(it => { const j = free.shift(); placed.push({it, s:L.slots[j]}); });
+    placed.sort((a,b)=> a.s.y-b.s.y || a.s.x-b.s.x);
+    pages.push(placed);
+  }
+  return pages;
+}
+
+/* ---------- drawing ---------- */
+// Draw a sign at its own orientation, then rotate it 90° if the slot is turned.
+function cardCanvas(it, slot, ppi){
+  const o = itemOrient(it), rot = o !== slot.o;
+  const key = `${ppi}|${slot.o}|${slot.w}|${slot.h}`;
+  if(it.cache[key]) return it.cache[key];
+  const cwIn = rot ? slot.h : slot.w, chIn = rot ? slot.w : slot.h;
+  const cw = Math.round(cwIn*ppi), ch = Math.round(chIn*ppi);
+  const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,cw,ch);
+  g.imageSmoothingQuality = "high";
+  if(it.fit === "stretch") g.drawImage(it.src, 0, 0, cw, ch);
+  else {
+    const s = it.fit === "fill" ? Math.max(cw/it.sw, ch/it.sh) : Math.min(cw/it.sw, ch/it.sh);
+    const dw = it.sw*s, dh = it.sh*s;
+    g.drawImage(it.src, (cw-dw)/2, (ch-dh)/2, dw, dh);
+  }
+  let out = c;
+  if(rot){
+    out = document.createElement("canvas"); out.width = ch; out.height = cw;
+    const r = out.getContext("2d"); r.translate(ch, 0); r.rotate(Math.PI/2); r.drawImage(c, 0, 0);
+  }
+  if(ppi === PREVIEW_PPI*Math.ceil(window.devicePixelRatio||1)) it.cache[key] = out;
+  return out;
+}
+function marks(slot, len){
+  const L = [], {x,y,w,h} = slot;
+  [[x,y,-1,-1],[x+w,y,1,-1],[x,y+h,-1,1],[x+w,y+h,1,1]].forEach(([cx,cy,dx,dy]) => {
+    L.push([cx, cy, cx + dx*len, cy]); L.push([cx, cy, cx, cy + dy*len]);
+  });
+  return L;
+}
+
+function render(){
+  const L = layout(), pages = paginate(L);
+  const total = state.items.reduce((a,i)=>a+i.copies,0);
+  const fmt = n => +n.toFixed(3);
+  $("summary").textContent = !L.count ? "Sign is bigger than the paper"
+    : total ? `${total} sign${total>1?"s":""} → ${pages.length} sheet${pages.length>1?"s":""}` : "Add some images";
+  $("detail").textContent = L.count ? `${fmt(state.cw)}″ × ${fmt(state.ch)}″ · ${L.count} per sheet${L.mixed?" (some turned sideways)":""}` : "";
+  $("save").disabled = $("open").disabled = !pages.length;
+  const box = $("sheets"); box.innerHTML = "";
+  if(!pages.length){ const e=document.createElement("div"); e.className="empty"; e.textContent = L.count ? "Drop images or PDFs on the left to lay out your sheets." : "Make the sign smaller, use bigger paper, or reduce the margin."; box.appendChild(e); return; }
+  const dpr = Math.ceil(window.devicePixelRatio||1), ppi = PREVIEW_PPI*dpr;
+  pages.forEach((pg, i) => {
+    const c = document.createElement("canvas");
+    c.width = Math.round(L.pw*ppi); c.height = Math.round(L.ph*ppi);
+    c.style.width = (L.pw*PREVIEW_PPI)+"px";
+    const g = c.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0,0,c.width,c.height);
+    g.strokeStyle = "#999"; g.lineWidth = Math.max(1, dpr*.75);
+    if(state.cut === "marks"){ g.beginPath(); pg.forEach(({s}) => marks(s, .14).forEach(([a,b,cc,d]) => { g.moveTo(a*ppi,b*ppi); g.lineTo(cc*ppi,d*ppi); })); g.stroke(); }
+    pg.forEach(({it, s}) => g.drawImage(cardCanvas(it, s, ppi), s.x*ppi, s.y*ppi, s.w*ppi, s.h*ppi));
+    if(state.cut === "outline") pg.forEach(({s}) => g.strokeRect(s.x*ppi, s.y*ppi, s.w*ppi, s.h*ppi));
+    const wrap = document.createElement("div"); wrap.className = "sheet";
+    const cap = document.createElement("span"); cap.textContent = `Sheet ${i+1} · ${fmt(L.pw)}″ × ${fmt(L.ph)}″`;
+    wrap.append(c, cap); box.appendChild(wrap);
+  });
+}
+
+/* ---------- PDF export ---------- */
+async function exportPdf(mode){
+  const btns=[$("save"),$("open")]; let win=null;
+  if(mode==="open") win = window.open("", "_blank");
+  const L = layout(), pages = paginate(L);
+  if(!pages.length) return;
+  btns.forEach(b=>b.disabled=true); status("Building PDF at 300 dpi…");
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:"in", format:[L.pw, L.ph], orientation: L.pw > L.ph ? "landscape" : "portrait", compress:true });
+    pages.forEach((pg, i) => {
+      if(i) doc.addPage([L.pw, L.ph], L.pw > L.ph ? "landscape" : "portrait");
+      doc.setDrawColor(150); doc.setLineWidth(0.006);
+      if(state.cut === "marks") pg.forEach(({s}) => marks(s, .14).forEach(([a,b,c,d]) => doc.line(a,b,c,d)));
+      pg.forEach(({it, s}) => {
+        const cv = cardCanvas(it, s, EXPORT_DPI);
+        doc.addImage(cv.toDataURL("image/jpeg", .93), "JPEG", s.x, s.y, s.w, s.h, undefined, "FAST");
+      });
+      if(state.cut === "outline") pg.forEach(({s}) => doc.rect(s.x, s.y, s.w, s.h));
+    });
+    const blob = doc.output("blob");
+    const name = `signs-${+state.cw.toFixed(2)}x${+state.ch.toFixed(2)}.pdf`;
+    const url = URL.createObjectURL(blob);
+    if(mode==="open"){
+      if(win){ win.location.href = url; } else { window.open(url, "_blank"); }
+      status("PDF opened in a new tab. Print it at Actual size.");
+    } else {
+      const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      status(`Downloaded ${name}. Print at Actual size.`);
+    }
+    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  } catch(e){
+    if(win) win.close();
+    status("Couldn't build the PDF. Try fewer or smaller images.", true);
+    console.error(e);
+  } finally { btns.forEach(b=>b.disabled=false); }
+}
+$("save").onclick = () => exportPdf("download");
+$("open").onclick = () => exportPdf("open");
+
+/* ---------- settings ---------- */
+const num = (id, key, min) => $(id).addEventListener("input", () => { const v = parseFloat($(id).value); if(!isNaN(v) && v >= min){ state[key] = v; if(key==="cw"||key==="ch") drawPresets(); state.items.forEach(i=>i.cache={}); render(); }});
+num("cw","cw",.5); num("ch","ch",.5); num("margin","margin",0); num("gap","gap",0);
+$("paper").onchange = e => { state.paper = e.target.value; render(); };
+$("cut").onchange = e => { state.cut = e.target.value; render(); };
+$("mixed").onchange = e => { state.mixed = e.target.checked; state.items.forEach(i=>i.cache={}); render(); };
+
+drawPresets(); addSamples(); drawItems(); render();
+document.fonts?.ready.then(() => { state.items.filter(i=>i.example).forEach((it,k)=>{ const c=sampleCanvas(k); it.src=c; it.thumb=thumb(c,c.width,c.height); it.cache={}; }); drawItems(); render(); });
+})();
+</script>
+</body>
+</html>
