@@ -1,0 +1,2824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Layer Art Studio</title>
+<meta name="description" content="Design two-color layer prints — black base, white detail on top — for ornaments, bookmarks, keychains and more, and export slicer-ready files.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@500;700&family=Fredoka:wght@700&family=Luckiest+Guy&family=Mountains+of+Christmas:wght@700&family=Pacifico&family=Lobster&family=Dancing+Script:wght@700&family=Great+Vibes&family=Bebas+Neue&family=Cinzel:wght@700&family=Alfa+Slab+One&family=Permanent+Marker&family=Righteous&family=Archivo+Black&family=Baloo+2:wght@800&display=swap">
+<style>
+/* Layout: three-pane workshop — template & add rail | print-bed stage with layer-stack ribbon | inspector */
+:root {
+  --bg: #0d0f12;
+  --panel: #14171c;
+  --raised: #1b1f26;
+  --raised-2: #222731;
+  --line: #2a303a;
+  --line-soft: #20252d;
+  --fg: #e9edf2;
+  --muted: #8d97a6;
+  --faint: #5f6876;
+  --ice: #9bd7ff;
+  --ice-strong: #5fbef7;
+  --ice-ink: #06263a;
+  --gold: #e8c46b;
+  --warn: #f2a65a;
+  --danger: #ff7b7b;
+  --ok: #7ddc9f;
+  --bed: #1a1c1f;
+  --font-display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+  --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--font-ui); overflow: hidden; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- top bar ---------- */
+.topbar { display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--panel); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--fg); flex-shrink: 0; }
+.brand-mark { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(180deg, #f3f3ee 0 46%, #121315 46% 100%); box-shadow: inset 0 0 0 1px #ffffff22; position: relative; }
+.brand-mark::after { content: ""; position: absolute; left: 0; right: 0; top: 44%; height: 3px; background: var(--ice); opacity: .9; }
+.brand-name { font: 800 17px/1 var(--font-display); letter-spacing: -0.01em; }
+.brand-sub { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; font-weight: 500; }
+.proj-name { flex: 1; min-width: 0; display: flex; justify-content: center; }
+.proj-name input { background: transparent; border: 1px solid transparent; border-radius: var(--r-sm); padding: 6px 10px; text-align: center; font-weight: 600; width: min(320px, 100%); }
+.proj-name input:hover { border-color: var(--line); }
+.proj-name input:focus { border-color: var(--ice-strong); background: var(--raised); outline: none; }
+.tb-group { display: flex; gap: 4px; align-items: center; }
+.icon-btn { width: 34px; height: 34px; display: inline-grid; place-items: center; border-radius: var(--r-sm); border: 1px solid transparent; background: transparent; color: var(--muted); }
+.icon-btn:hover:not(:disabled) { background: var(--raised); color: var(--fg); }
+.icon-btn:disabled { opacity: .35; cursor: default; }
+.icon-btn svg, .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--raised); color: var(--fg); font-weight: 600; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: var(--raised-2); border-color: #3a4250; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.primary { background: var(--ice); border-color: var(--ice); color: var(--ice-ink); }
+.btn.primary:hover:not(:disabled) { background: #b6e3ff; border-color: #b6e3ff; }
+.btn.ghost { background: transparent; }
+.btn.small { height: 28px; padding: 0 10px; font-size: 12.5px; }
+.btn.danger:hover { color: var(--danger); border-color: #5a2b2b; }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+
+/* ---------- app grid ---------- */
+.app { display: grid; grid-template-columns: 300px minmax(0, 1fr) 320px; height: calc(100% - 54px); }
+.rail { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.inspector { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-height: 0; }
+.tabs { display: flex; gap: 2px; padding: 8px; border-bottom: 1px solid var(--line); }
+.tab { flex: 1; height: 32px; border-radius: var(--r-sm); border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 13px; }
+.tab[aria-selected="true"] { background: var(--raised-2); color: var(--fg); }
+.tab .count { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-left: 4px; }
+.tabpanel { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+.sec-title { font: 700 11px/1 var(--font-ui); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card { background: var(--raised); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tcard { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--raised); text-align: left; }
+.tcard:hover { border-color: #3a4250; }
+.tcard[aria-pressed="true"] { border-color: var(--ice); box-shadow: 0 0 0 1px var(--ice) inset; }
+.tcard canvas { width: 100%; aspect-ratio: 1.25; display: block; border-radius: 7px; background: var(--bed); }
+.tcard .tname { font-weight: 600; font-size: 12.5px; line-height: 1.2; }
+.tcard .tsize { font: 500 11px var(--font-mono); color: var(--muted); }
+
+/* form controls */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.val { font: 500 12px var(--font-mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 20px; background: transparent; margin: 0; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(90deg, var(--ice-strong) var(--p, 50%), var(--line) var(--p, 50%)); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--line); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--ice-strong); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--fg); margin-top: -6px; border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--line); }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
+.num, select.sel, textarea.txt { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 8px; min-width: 0; }
+.num { width: 76px; font: 500 12.5px var(--font-mono); text-align: right; }
+.num:focus, select.sel:focus, textarea.txt:focus { border-color: var(--ice-strong); outline: none; }
+select.sel { width: 100%; }
+textarea.txt { width: 100%; resize: vertical; min-height: 58px; line-height: 1.35; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.unit-in { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 8px; }
+.unit-in:focus-within { border-color: var(--ice-strong); }
+.unit-in input { background: transparent; border: 0; width: 100%; min-width: 0; padding: 6px 0; font: 500 12.5px var(--font-mono); outline: none; }
+.unit-in span { font-size: 11px; color: var(--faint); }
+.seg { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+.seg button { flex: 1; white-space: nowrap; border: 0; background: transparent; color: var(--muted); border-radius: 4px; height: 28px; font-size: 12.5px; font-weight: 600; padding: 0 6px; }
+.seg button[aria-pressed="true"] { background: var(--raised-2); color: var(--fg); box-shadow: 0 0 0 1px var(--line) inset; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
+.switch input { appearance: none; -webkit-appearance: none; width: 34px; height: 20px; border-radius: 20px; background: var(--line); position: relative; flex-shrink: 0; cursor: pointer; transition: background .15s; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); transition: transform .15s; }
+.switch input:checked { background: var(--ice-strong); }
+.switch input:checked::after { transform: translateX(14px); }
+.hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.hint b { color: var(--fg); font-weight: 600; }
+
+/* stepper */
+.stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); overflow: hidden; }
+.stepper button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; }
+.stepper button:hover { background: var(--raised-2); color: var(--fg); }
+.stepper output { min-width: 38px; text-align: center; font: 700 15px var(--font-mono); }
+.layer-row { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; }
+.swatch-dot { width: 22px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px #ffffff2a; }
+.layer-row .lname { font-weight: 600; font-size: 13px; }
+.layer-row .lsub { font: 500 11px var(--font-mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.layer-row > span:nth-child(2) { min-width: 0; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ice); }
+.sw-custom { position: relative; width: 26px; height: 26px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1px var(--line); background: conic-gradient(#f66, #fd5, #6e8, #5cf, #a7f, #f6c, #f66); }
+.sw-custom input { position: absolute; inset: -8px; width: 44px; height: 44px; opacity: 0; cursor: pointer; }
+
+/* ---------- stage ---------- */
+.stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); }
+.stage-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+.stage-bar .spacer { flex: 1; }
+.zoom-label { font: 500 12px var(--font-mono); color: var(--muted); min-width: 46px; text-align: center; }
+.viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.viewport canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#view2d { cursor: default; }
+.drop-hint { position: absolute; inset: 14px; border: 2px dashed var(--ice); border-radius: var(--r-lg); background: #0d0f12cc; display: grid; place-items: center; font: 700 18px var(--font-display); color: var(--ice); pointer-events: none; }
+.busy { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); background: var(--raised-2); border: 1px solid var(--line); border-radius: 99px; padding: 6px 14px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--ice); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.clip3d { position: absolute; right: 14px; top: 14px; width: 220px; background: #14171ce6; border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; backdrop-filter: blur(6px); }
+
+/* layer stack ribbon */
+.stack { border-top: 1px solid var(--line-soft); padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--panel); }
+.stack-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.stack-title { font: 700 11px var(--font-ui); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.stack-meta { font: 500 12px var(--font-mono); color: var(--muted); }
+.stack-meta b { color: var(--fg); font-weight: 700; }
+.ribbon { display: flex; height: 26px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px #ffffff14; }
+.ribbon i { display: block; flex: 1 1 0; border-right: 1px solid #00000040; min-width: 0; }
+.ribbon i.w { border-right-color: #00000022; }
+.ribbon i.swap { box-shadow: inset 3px 0 0 var(--ice); }
+.stack-legend { display: flex; gap: 14px; flex-wrap: wrap; font: 500 11.5px var(--font-mono); color: var(--muted); }
+.stack-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.stack-legend .k { width: 10px; height: 10px; border-radius: 3px; box-shadow: inset 0 0 0 1px #ffffff30; }
+.stack-legend .swapk { color: var(--ice); }
+
+/* element list */
+.el-list { display: flex; flex-direction: column; gap: 6px; }
+.el-item { display: grid; grid-template-columns: 30px 1fr auto auto; align-items: center; gap: 8px; padding: 6px 6px 6px 8px; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--raised); text-align: left; }
+.el-item[aria-selected="true"] { border-color: var(--ice); }
+.el-item .ico { width: 30px; height: 30px; border-radius: 6px; background: var(--bg); display: grid; place-items: center; color: var(--muted); }
+.el-item .ico svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.el-item .nm { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.el-item .sub { font-size: 11.5px; color: var(--muted); }
+.el-item .icon-btn { width: 28px; height: 28px; }
+.el-item.is-hidden .nm, .el-item.is-hidden .ico { opacity: .45; }
+
+/* add tab */
+.dropzone { border: 1.5px dashed #3a4250; border-radius: var(--r-md); padding: 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; background: var(--raised); cursor: pointer; }
+.dropzone:hover, .dropzone.over { border-color: var(--ice); background: #182230; }
+.dropzone svg { width: 26px; height: 26px; stroke: var(--ice); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dropzone strong { font-size: 14px; }
+.shape-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.shape-btn { aspect-ratio: 1; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--raised); display: grid; place-items: center; padding: 6px; }
+.shape-btn:hover { border-color: #3a4250; background: var(--raised-2); }
+.shape-btn[aria-pressed="true"] { border-color: var(--ice); }
+.shape-btn canvas { width: 100%; height: 100%; display: block; }
+.font-list { display: flex; flex-direction: column; gap: 4px; max-height: 196px; overflow-y: auto; padding-right: 2px; }
+.font-opt { flex-shrink: 0; text-align: left; padding: 7px 10px; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--bg); font-size: 18px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.font-opt[aria-pressed="true"] { border-color: var(--ice); background: #15212c; }
+
+.empty { display: flex; flex-direction: column; gap: 10px; padding: 18px 16px; }
+.empty h3 { margin: 0; font: 700 15px var(--font-display); }
+.insp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px 0; }
+.insp-head h2 { margin: 0; font: 800 16px/1.2 var(--font-display); letter-spacing: -0.01em; }
+.insp-body { padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+.insp-section { display: flex; flex-direction: column; gap: 12px; }
+.divider { height: 1px; background: var(--line-soft); }
+.warn-note { font-size: 12px; color: var(--warn); background: #2b2117; border: 1px solid #4a3622; border-radius: var(--r-sm); padding: 8px 10px; line-height: 1.4; }
+
+/* dialogs */
+dialog { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); color: var(--fg); padding: 0; max-width: min(960px, calc(100vw - 24px)); width: 100%; max-height: calc(100vh - 24px); box-shadow: 0 30px 80px #000a; }
+dialog::backdrop { background: #05070acc; backdrop-filter: blur(3px); }
+.dlg-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.dlg-head h2 { margin: 0; font: 800 20px/1.1 var(--font-display); letter-spacing: -0.01em; }
+.dlg-body { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0; max-height: calc(100vh - 160px); overflow: auto; }
+.dlg-col { padding: 18px 20px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.dlg-col + .dlg-col { border-left: 1px solid var(--line); background: #11141a; }
+.dlg-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.dlg-foot .status { margin-right: auto; font-size: 12.5px; color: var(--muted); min-width: 0; }
+.presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.preset { position: relative; text-align: left; padding: 10px 11px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--raised); display: flex; flex-direction: column; gap: 5px; }
+.preset:hover { border-color: #3a4250; }
+.preset[aria-pressed="true"] { border-color: var(--ice); box-shadow: 0 0 0 1px var(--ice) inset; }
+.preset .pn { font-weight: 700; font-size: 13px; }
+.preset .ph { font: 500 11px var(--font-mono); color: var(--muted); }
+.preset .pd { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.meter { display: flex; gap: 3px; }
+.meter i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.meter i.on { background: var(--ice-strong); }
+.meter.q i.on { background: var(--gold); }
+.mrow { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 6px; font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; }
+.badge { position: absolute; top: -8px; right: 8px; font: 700 10px var(--font-ui); text-transform: uppercase; letter-spacing: .08em; background: var(--gold); color: #2a1f00; border-radius: 99px; padding: 2px 7px; }
+.opt-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opt { text-align: left; padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--raised); display: flex; flex-direction: column; gap: 4px; }
+.opt[aria-pressed="true"] { border-color: var(--ice); box-shadow: 0 0 0 1px var(--ice) inset; }
+.opt .on { font-weight: 700; font-size: 13px; }
+.opt .od { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.formats { display: flex; flex-direction: column; gap: 6px; }
+.fmt { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; padding: 9px 11px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--raised); cursor: pointer; }
+.fmt:has(input:checked) { border-color: var(--ice); }
+.fmt input { margin: 3px 0 0; accent-color: var(--ice-strong); }
+.fmt .fn { font-weight: 700; font-size: 13px; }
+.fmt .fd { font-size: 11.5px; color: var(--muted); }
+details.adv { border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--raised); }
+details.adv summary { padding: 10px 12px; cursor: pointer; font-weight: 600; font-size: 13px; list-style: none; display: flex; justify-content: space-between; }
+details.adv summary::after { content: "+"; color: var(--muted); font-family: var(--font-mono); }
+details.adv[open] summary::after { content: "−"; }
+details.adv .adv-body { padding: 4px 12px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sum-table { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 12.5px; }
+.sum-table dt { color: var(--muted); }
+.sum-table dd { margin: 0; text-align: right; font: 500 12.5px var(--font-mono); }
+.guide { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px; font: 500 12px/1.55 var(--font-mono); white-space: pre-wrap; color: #cfd6df; max-height: 230px; overflow: auto; }
+.vstack { display: flex; height: 150px; gap: 14px; align-items: stretch; }
+.vbar { width: 46px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column-reverse; box-shadow: inset 0 0 0 1px #ffffff1a; }
+.vbar i { display: block; border-top: 1px solid #00000035; }
+.vlabels { position: relative; flex: 1; font: 500 11.5px var(--font-mono); color: var(--muted); }
+.vlabels div { position: absolute; left: 0; transform: translateY(50%); white-space: nowrap; }
+.vlabels div b { color: var(--fg); }
+.vlabels .swapl { color: var(--ice); }
+.progress { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; width: 160px; }
+.progress i { display: block; height: 100%; width: 0; background: var(--ice); transition: width .15s; }
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); opacity: 0; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 13px; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 100; max-width: calc(100vw - 32px); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.confirm-dlg { max-width: 400px; }
+.confirm-dlg .dlg-body { display: block; padding: 18px 20px; }
+
+/* responsive */
+@media (max-width: 1180px) {
+  .app { grid-template-columns: 270px minmax(0, 1fr) 290px; }
+  .presets { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  .app { display: flex; flex-direction: column; height: auto; }
+  .stage { order: 1; height: 72vh; min-height: 420px; }
+  .inspector { order: 2; border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .rail { order: 3; border-right: 0; border-top: 1px solid var(--line); }
+  .tabpanel { overflow: visible; }
+  .brand-sub, .tb-label { display: none; }
+  .dlg-body { grid-template-columns: 1fr; }
+  .dlg-col + .dlg-col { border-left: 0; border-top: 1px solid var(--line); }
+  .clip3d { width: 180px; }
+}
+@media (max-width: 520px) {
+  .proj-name { display: none; }
+  .brand > span:last-child { display: none; }
+  .topbar { gap: 4px; justify-content: space-between; }
+  .tb-group .icon-btn { width: 32px; }
+  .presets, .opt-cards { grid-template-columns: 1fr; }
+  details.adv .adv-body { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" title="Back to jakebitt.com">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span><span class="brand-name">Layer Art Studio</span><span class="brand-sub">two-color layer prints</span></span>
+  </a>
+  <div class="proj-name"><input id="projName" aria-label="Project name" maxlength="60"></div>
+  <div class="tb-group">
+    <button class="icon-btn" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></svg></button>
+    <button class="icon-btn" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/></svg></button>
+    <span class="sep"></span>
+    <button class="icon-btn" id="newBtn" title="New design" aria-label="New design"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg></button>
+    <button class="icon-btn" id="openBtn" title="Open project file" aria-label="Open project file"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></button>
+    <button class="icon-btn" id="saveBtn" title="Save project file" aria-label="Save project file"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M7 3v5h8V3M7 21v-7h10v7"/></svg></button>
+    <span class="sep"></span>
+    <button class="btn primary" id="exportBtn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span class="tb-label">Export for printing</span></button>
+  </div>
+  <input type="file" id="projFile" accept=".json,application/json" hidden>
+  <input type="file" id="imgFile" accept="image/*,.svg" hidden>
+</header>
+
+<main class="app">
+  <aside class="rail" aria-label="Templates and design elements">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-templates" aria-selected="true" aria-controls="panel-templates">Templates</button>
+      <button class="tab" role="tab" id="tab-add" aria-selected="false" aria-controls="panel-add">Add</button>
+      <button class="tab" role="tab" id="tab-design" aria-selected="false" aria-controls="panel-design">Design<span class="count" id="elCount">0</span></button>
+    </div>
+    <section class="tabpanel" id="panel-templates" role="tabpanel" aria-labelledby="tab-templates">
+      <div class="chips" id="catChips"></div>
+      <div class="tgrid" id="tplGrid"></div>
+    </section>
+    <section class="tabpanel" id="panel-add" role="tabpanel" aria-labelledby="tab-add" hidden>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload an image">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        <strong>Upload an image or SVG</strong>
+        <span class="hint">Drop it here, click to browse, or paste with Ctrl+V. Logos turn into crisp two-tone art; photos turn into shaded layer art.</span>
+      </div>
+      <button class="btn" id="samplePhotoBtn">Try a sample photo</button>
+      <div class="divider"></div>
+      <div class="sec-title">Text</div>
+      <button class="btn" id="addTextBtn"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Add text</button>
+      <div class="divider"></div>
+      <div class="sec-title">Shapes &amp; icons</div>
+      <div class="shape-grid" id="shapeGrid"></div>
+      <p class="hint">Panels (circle, rounded square, banner) work well with <b>Cut out</b> text on top: white panel, black letters.</p>
+    </section>
+    <section class="tabpanel" id="panel-design" role="tabpanel" aria-labelledby="tab-design" hidden>
+      <div class="el-list" id="elList"></div>
+      <p class="hint" id="elEmpty">Nothing on this piece yet. Use <b>Add</b> to place an image, text or a shape.</p>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Design preview">
+    <div class="stage-bar">
+      <div class="seg" role="group" aria-label="View">
+        <button id="v2dBtn" aria-pressed="true">Design</button>
+        <button id="v3dBtn" aria-pressed="false">3D preview</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="icon-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="btn small ghost" id="fitBtn">Fit</button>
+    </div>
+    <div class="viewport" id="viewport">
+      <canvas id="view2d" tabindex="0" aria-label="Design canvas. Drag items to move them."></canvas>
+      <canvas id="view3d" hidden></canvas>
+      <div class="clip3d" id="clip3d" hidden>
+        <div class="field-row"><span class="label">Show up to layer</span><span class="val" id="clipVal">all</span></div>
+        <input type="range" id="clipRange" min="1" max="10" value="10" aria-label="Show up to layer">
+        <span class="hint" id="clipHint">Drag to watch the print build up layer by layer.</span>
+      </div>
+      <div class="drop-hint" id="dropHint" hidden>Drop to add to your piece</div>
+      <div class="busy" id="busy" hidden><span class="spin"></span><span id="busyText">Building 3D preview…</span></div>
+    </div>
+    <div class="stack">
+      <div class="stack-head">
+        <span class="stack-title">Layer stack</span>
+        <span class="stack-meta" id="stackMeta"></span>
+      </div>
+      <div class="ribbon" id="ribbon" aria-hidden="true"></div>
+      <div class="stack-legend" id="stackLegend"></div>
+    </div>
+  </section>
+
+  <aside class="inspector" id="inspector" aria-label="Settings"></aside>
+</main>
+
+<dialog id="exportDlg" aria-labelledby="exportTitle">
+  <div class="dlg-head">
+    <h2 id="exportTitle">Export for printing</h2>
+    <button class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="dlg-body">
+    <div class="dlg-col">
+      <div class="field">
+        <div class="sec-title">Print profile</div>
+        <div class="presets" id="presetGrid"></div>
+      </div>
+      <div class="field">
+        <div class="sec-title">How the color changes</div>
+        <div class="opt-cards" id="swapCards"></div>
+      </div>
+      <div class="field">
+        <div class="sec-title">File</div>
+        <div class="formats" id="formatList"></div>
+      </div>
+      <details class="adv" id="advBox">
+        <summary>Advanced settings</summary>
+        <div class="adv-body" id="advBody"></div>
+      </details>
+    </div>
+    <div class="dlg-col">
+      <div class="field">
+        <div class="sec-title">Layer plan</div>
+        <div class="vstack"><div class="vbar" id="vbar"></div><div class="vlabels" id="vlabels"></div></div>
+      </div>
+      <dl class="sum-table" id="sumTable"></dl>
+      <div class="field">
+        <div class="sec-title">Print guide <button class="btn small ghost" id="copyGuide">Copy</button></div>
+        <div class="guide" id="guideText"></div>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <div class="status" id="exportStatus"></div>
+    <div class="progress" id="exportProg" hidden><i></i></div>
+    <button class="btn" data-close>Close</button>
+    <button class="btn primary" id="doExport"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download</button>
+  </div>
+</dialog>
+
+<dialog id="confirmDlg" class="confirm-dlg" aria-labelledby="confirmTitle">
+  <div class="dlg-head"><h2 id="confirmTitle">Are you sure?</h2></div>
+  <div class="dlg-body"><p class="hint" id="confirmMsg" style="margin:0;font-size:13.5px"></p></div>
+  <div class="dlg-foot"><button class="btn" id="confirmNo">Cancel</button><button class="btn primary" id="confirmYes">OK</button></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/earcut@2.2.4/dist/earcut.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+<script>
+/* Layer Art Studio — geometry core (raster fields -> contours -> watertight meshes -> STL / 3MF) */
+const LACore = (() => {
+  'use strict';
+  const _earcut = (typeof earcut !== 'undefined') ? earcut : (typeof require !== 'undefined' ? require('earcut') : null);
+
+  /* ---------- Euclidean distance transform (Felzenszwalb) ----------
+     inside: Uint8Array (1 = inside). Returns Float32Array: distance (px) from each pixel
+     centre to the nearest outside pixel centre; 0 for outside pixels. */
+  function edt(inside, W, H) {
+    const INF = 1e12, N = Math.max(W, H);
+    const f = new Float64Array(N), d = new Float64Array(N), v = new Int32Array(N), z = new Float64Array(N + 1);
+    const g = new Float64Array(W * H);
+    const out = new Float32Array(W * H);
+    function dt(n) {
+      let k = 0; v[0] = 0; z[0] = -Infinity; z[1] = Infinity;
+      for (let q = 1; q < n; q++) {
+        let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+        while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+        k++; v[k] = q; z[k] = s; z[k + 1] = Infinity;
+      }
+      k = 0;
+      for (let q = 0; q < n; q++) { while (z[k + 1] < q) k++; const t = q - v[k]; d[q] = t * t + f[v[k]]; }
+    }
+    for (let x = 0; x < W; x++) {
+      for (let y = 0; y < H; y++) f[y] = inside[y * W + x] ? INF : 0;
+      dt(H);
+      for (let y = 0; y < H; y++) g[y * W + x] = d[y];
+    }
+    for (let y = 0; y < H; y++) {
+      const o = y * W;
+      for (let x = 0; x < W; x++) f[x] = g[o + x];
+      dt(W);
+      for (let x = 0; x < W; x++) out[o + x] = Math.sqrt(d[x]);
+    }
+    return out;
+  }
+
+  /* separable box blur, 3 passes ~ gaussian. r in px (float ok). In place on Float32Array */
+  function blur(a, W, H, r) {
+    if (!(r > 0.25)) return a;
+    const R = Math.max(1, Math.round(r / 1.6));
+    const tmp = new Float32Array(Math.max(W, H));
+    for (let pass = 0; pass < 3; pass++) {
+      for (let y = 0; y < H; y++) {
+        const o = y * W; let acc = 0;
+        for (let x = -R; x <= R; x++) acc += a[o + Math.min(W - 1, Math.max(0, x))];
+        for (let x = 0; x < W; x++) {
+          tmp[x] = acc / (2 * R + 1);
+          acc += a[o + Math.min(W - 1, x + R + 1)] - a[o + Math.max(0, x - R)];
+        }
+        for (let x = 0; x < W; x++) a[o + x] = tmp[x];
+      }
+      for (let x = 0; x < W; x++) {
+        let acc = 0;
+        for (let y = -R; y <= R; y++) acc += a[Math.min(H - 1, Math.max(0, y)) * W + x];
+        for (let y = 0; y < H; y++) {
+          tmp[y] = acc / (2 * R + 1);
+          acc += a[Math.min(H - 1, y + R + 1) * W + x] - a[Math.max(0, y - R) * W + x];
+        }
+        for (let y = 0; y < H; y++) a[y * W + x] = tmp[y];
+      }
+    }
+    return a;
+  }
+
+  /* ---------- Marching squares ----------
+     F: Float32Array W*H (values sampled at pixel centres). Out-of-range = 0.
+     Returns loops as arrays of [x,y,x,y,...] in canvas pixel coordinates (pixel centre i -> i+0.5).
+     Orientation: inside region on the LEFT in screen coordinates (y down). */
+  function contours(F, W, H, iso) {
+    iso = iso == null ? 0.5 : iso;
+    const GW = W + 2, GH = H + 2;
+    const next = new Int32Array(GW * GH * 2).fill(-1);
+    const val = (I, J) => (I < 1 || J < 1 || I > W || J > H) ? 0 : F[(J - 1) * W + (I - 1)];
+    const Hk = (I, J) => (J * GW + I) * 2;
+    const Vk = (I, J) => (J * GW + I) * 2 + 1;
+    let count = 0;
+    // fast skip: precompute inside bits per row lazily
+    for (let J = 0; J < GH - 1; J++) {
+      for (let I = 0; I < GW - 1; I++) {
+        const tl = val(I, J), tr = val(I + 1, J), br = val(I + 1, J + 1), bl = val(I, J + 1);
+        const idx = (tl >= iso ? 8 : 0) | (tr >= iso ? 4 : 0) | (br >= iso ? 2 : 0) | (bl >= iso ? 1 : 0);
+        if (idx === 0 || idx === 15) continue;
+        const T = Hk(I, J), B = Hk(I, J + 1), L = Vk(I, J), R = Vk(I + 1, J);
+        switch (idx) {
+          case 1: next[B] = L; break;
+          case 2: next[R] = B; break;
+          case 3: next[R] = L; break;
+          case 4: next[T] = R; break;
+          case 6: next[T] = B; break;
+          case 7: next[T] = L; break;
+          case 8: next[L] = T; break;
+          case 9: next[B] = T; break;
+          case 11: next[R] = T; break;
+          case 12: next[L] = R; break;
+          case 13: next[B] = R; break;
+          case 14: next[L] = B; break;
+          case 5: { // TR + BL
+            const c = (tl + tr + br + bl) * 0.25;
+            if (c >= iso) { next[T] = L; next[B] = R; } else { next[T] = R; next[B] = L; }
+            break;
+          }
+          case 10: { // TL + BR
+            const c = (tl + tr + br + bl) * 0.25;
+            if (c >= iso) { next[R] = T; next[L] = B; } else { next[L] = T; next[R] = B; }
+            break;
+          }
+        }
+        count++;
+      }
+    }
+    const loops = [];
+    if (!count) return loops;
+    const pos = (key) => {
+      const isV = key & 1, cell = key >> 1, I = cell % GW, J = (cell / GW) | 0;
+      let a, b;
+      if (!isV) { a = val(I, J); b = val(I + 1, J); } else { a = val(I, J); b = val(I, J + 1); }
+      let t = (iso - a) / (b - a);
+      if (!(t >= 0.001)) t = 0.001; else if (t > 0.999) t = 0.999;
+      // grid point (I,J) == pixel (I-1,J-1) whose centre is at (I-0.5, J-0.5)
+      return isV ? [I - 0.5, J - 0.5 + t] : [I - 0.5 + t, J - 0.5];
+    };
+    const total = next.length;
+    for (let k0 = 0; k0 < total; k0++) {
+      if (next[k0] < 0) continue;
+      const pts = [];
+      let k = k0, guard = 0;
+      while (k >= 0 && next[k] >= 0) {
+        const p = pos(k); pts.push(p[0], p[1]);
+        const n = next[k]; next[k] = -2; k = n;
+        if (++guard > 50000000) break;
+      }
+      if (pts.length >= 6) loops.push(pts);
+    }
+    return loops;
+  }
+
+  /* Douglas–Peucker on a closed loop (flat array). tol in same units. */
+  function simplifyClosed(pts, tol) {
+    const n = pts.length / 2;
+    if (n <= 8 || tol <= 0) return pts;
+    // split at index 0 and the farthest point from it
+    let far = 0, fd = -1;
+    for (let i = 1; i < n; i++) {
+      const dx = pts[2 * i] - pts[0], dy = pts[2 * i + 1] - pts[1], d = dx * dx + dy * dy;
+      if (d > fd) { fd = d; far = i; }
+    }
+    const keep = new Uint8Array(n);
+    keep[0] = 1; keep[far] = 1;
+    const tol2 = tol * tol;
+    const stack = [0, far, far, n]; // index n means wrap to 0
+    while (stack.length) {
+      const e = stack.pop(), s = stack.pop();
+      if (e - s < 2) continue;
+      const ax = pts[2 * s], ay = pts[2 * s + 1];
+      const ei = e % n, bx = pts[2 * ei], by = pts[2 * ei + 1];
+      const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy;
+      let md = -1, mi = -1;
+      for (let i = s + 1; i < e; i++) {
+        const px = pts[2 * i] - ax, py = pts[2 * i + 1] - ay;
+        let d;
+        if (L2 < 1e-12) d = px * px + py * py;
+        else { const c = px * dy - py * dx; d = c * c / L2; }
+        if (d > md) { md = d; mi = i; }
+      }
+      if (md > tol2) { keep[mi] = 1; stack.push(s, mi, mi, e); }
+    }
+    const out = [];
+    for (let i = 0; i < n; i++) if (keep[i]) out.push(pts[2 * i], pts[2 * i + 1]);
+    return out.length >= 6 ? out : pts;
+  }
+
+  function area(p) {
+    let a = 0; const n = p.length;
+    for (let i = 0, j = n - 2; i < n; j = i, i += 2) a += (p[j] * p[i + 1] - p[i] * p[j + 1]);
+    return a / 2;
+  }
+  function bbox(p) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < p.length; i += 2) {
+      const x = p[i], y = p[i + 1];
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    return [x0, y0, x1, y1];
+  }
+  function pointInPoly(x, y, p) {
+    let inside = false; const n = p.length;
+    for (let i = 0, j = n - 2; i < n; j = i, i += 2) {
+      const xi = p[i], yi = p[i + 1], xj = p[j], yj = p[j + 1];
+      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+    }
+    return inside;
+  }
+  function dedupe(p) {
+    const out = [];
+    for (let i = 0; i < p.length; i += 2) {
+      const x = p[i], y = p[i + 1], m = out.length;
+      if (m && Math.abs(out[m - 2] - x) < 1e-7 && Math.abs(out[m - 1] - y) < 1e-7) continue;
+      out.push(x, y);
+    }
+    while (out.length >= 4 && Math.abs(out[0] - out[out.length - 2]) < 1e-7 && Math.abs(out[1] - out[out.length - 1]) < 1e-7) out.length -= 2;
+    return out;
+  }
+
+  /* field -> polygons with holes, in mm (x right, y up). Outer rings CCW, holes CW.
+     tf: {sx, tx, sy, ty}: X = x*sx+tx, Y = y*sy+ty   (sy negative to flip image y)
+     opts: {tolPx, minArea (mm^2)} */
+  function fieldToPolygons(F, W, H, tf, opts) {
+    opts = opts || {};
+    const tolPx = opts.tolPx == null ? 0.2 : opts.tolPx;
+    const minArea = opts.minArea == null ? 0.05 : opts.minArea;
+    const raw = contours(F, W, H, 0.5);
+    const outers = [], holes = [];
+    for (const lp of raw) {
+      const s = simplifyClosed(lp, tolPx);
+      const m = new Array(s.length);
+      for (let i = 0; i < s.length; i += 2) { m[i] = s[i] * tf.sx + tf.tx; m[i + 1] = s[i + 1] * tf.sy + tf.ty; }
+      let ring = dedupe(m);
+      if (ring.length < 6) continue;
+      let a = area(ring);
+      // contours() returns outer rings with negative shoelace area in screen (y-down) coords; a y flip negates it
+      const flipped = (tf.sy < 0) !== (tf.sx < 0);
+      const isOuter = flipped ? a > 0 : a < 0;
+      if (Math.abs(a) < minArea) continue;
+      // normalise: outers CCW (a>0), holes CW (a<0)
+      if (isOuter && a < 0) { ring = reverseRing(ring); a = -a; }
+      if (!isOuter && a > 0) { ring = reverseRing(ring); a = -a; }
+      const item = { ring, area: Math.abs(a), bb: bbox(ring) };
+      (isOuter ? outers : holes).push(item);
+    }
+    outers.sort((p, q) => p.area - q.area);
+    const polys = outers.map(o => ({ outer: o.ring, holes: [], bb: o.bb, area: o.area }));
+    for (const h of holes) {
+      const hb = h.bb;
+      for (const P of polys) {
+        const b = P.bb;
+        if (P.area < h.area) continue;
+        if (hb[0] < b[0] || hb[1] < b[1] || hb[2] > b[2] || hb[3] > b[3]) continue;
+        if (pointInPoly(h.ring[0], h.ring[1], P.outer)) { P.holes.push(h.ring); break; }
+      }
+    }
+    return polys;
+  }
+  function reverseRing(r) {
+    const out = new Array(r.length);
+    for (let i = 0, n = r.length; i < n; i += 2) { out[n - 2 - i] = r[i]; out[n - 1 - i] = r[i + 1]; }
+    return out;
+  }
+
+  /* ---------- Mesh builder ---------- */
+  class MeshBuilder {
+    constructor() { this.pos = []; this.idx = []; }
+    get vcount() { return this.pos.length / 3; }
+    addSlab(poly, z0, z1) {
+      if (!(z1 > z0 + 1e-6)) return;
+      const rings = [poly.outer].concat(poly.holes);
+      const flat = []; const holeIdx = []; let n = 0;
+      for (let r = 0; r < rings.length; r++) {
+        if (r > 0) holeIdx.push(n);
+        const ring = rings[r];
+        for (let i = 0; i < ring.length; i++) flat.push(ring[i]);
+        n += ring.length / 2;
+      }
+      const tris = _earcut(flat, holeIdx.length ? holeIdx : null, 2);
+      const base = this.vcount;
+      for (let i = 0; i < n; i++) this.pos.push(flat[2 * i], flat[2 * i + 1], z0);
+      for (let i = 0; i < n; i++) this.pos.push(flat[2 * i], flat[2 * i + 1], z1);
+      const idx = this.idx;
+      for (let t = 0; t < tris.length; t += 3) {
+        let a = tris[t], b = tris[t + 1], c = tris[t + 2];
+        const cr = (flat[2 * b] - flat[2 * a]) * (flat[2 * c + 1] - flat[2 * a + 1]) - (flat[2 * b + 1] - flat[2 * a + 1]) * (flat[2 * c] - flat[2 * a]);
+        if (cr < 0) { const tmp = b; b = c; c = tmp; }
+        idx.push(base + n + a, base + n + b, base + n + c); // top, CCW
+        idx.push(base + a, base + c, base + b);             // bottom, CW
+      }
+      let off = 0;
+      for (const ring of rings) {
+        const m = ring.length / 2;
+        for (let i = 0; i < m; i++) {
+          const a = off + i, b = off + (i + 1) % m;
+          const a0 = base + a, b0 = base + b, a1 = base + n + a, b1 = base + n + b;
+          idx.push(a0, b0, b1, a0, b1, a1);
+        }
+        off += m;
+      }
+    }
+    addPolys(polys, z0, z1) { for (const p of polys) this.addSlab(p, z0, z1); }
+    finish() { return { positions: new Float32Array(this.pos), indices: new Uint32Array(this.idx) }; }
+  }
+
+  function meshVolume(m) {
+    const p = m.positions, ix = m.indices; let v = 0;
+    for (let t = 0; t < ix.length; t += 3) {
+      const a = ix[t] * 3, b = ix[t + 1] * 3, c = ix[t + 2] * 3;
+      v += p[a] * (p[b + 1] * p[c + 2] - p[b + 2] * p[c + 1])
+         - p[a + 1] * (p[b] * p[c + 2] - p[b + 2] * p[c])
+         + p[a + 2] * (p[b] * p[c + 1] - p[b + 1] * p[c]);
+    }
+    return v / 6;
+  }
+  function meshBounds(meshes) {
+    const b = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+    for (const m of meshes) {
+      const p = m.positions;
+      for (let i = 0; i < p.length; i += 3) {
+        for (let k = 0; k < 3; k++) { const v = p[i + k]; if (v < b[k]) b[k] = v; if (v > b[k + 3]) b[k + 3] = v; }
+      }
+    }
+    return b;
+  }
+
+  /* ---------- writers ---------- */
+  function stlBinary(meshes, offset) {
+    offset = offset || [0, 0, 0];
+    let tri = 0; for (const m of meshes) tri += m.indices.length / 3;
+    const buf = new ArrayBuffer(84 + tri * 50), dv = new DataView(buf);
+    const head = 'Layer Art Studio - jakebitt.com';
+    for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i));
+    dv.setUint32(80, tri, true);
+    let o = 84;
+    for (const m of meshes) {
+      const p = m.positions, ix = m.indices;
+      for (let t = 0; t < ix.length; t += 3) {
+        const a = ix[t] * 3, b = ix[t + 1] * 3, c = ix[t + 2] * 3;
+        const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
+        const vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+        let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+        dv.setFloat32(o, nx, true); dv.setFloat32(o + 4, ny, true); dv.setFloat32(o + 8, nz, true); o += 12;
+        for (const q of [a, b, c]) {
+          dv.setFloat32(o, p[q] + offset[0], true); dv.setFloat32(o + 4, p[q + 1] + offset[1], true); dv.setFloat32(o + 8, p[q + 2] + offset[2], true); o += 12;
+        }
+        dv.setUint16(o, 0, true); o += 2;
+      }
+    }
+    return new Uint8Array(buf);
+  }
+
+  // weld duplicate positions (exact match on 1e-5 grid) for 3MF
+  function weld(m) {
+    const p = m.positions, map = new Map(), np = [], remap = new Uint32Array(p.length / 3);
+    for (let i = 0; i < p.length / 3; i++) {
+      const x = Math.round(p[3 * i] * 1e5), y = Math.round(p[3 * i + 1] * 1e5), z = Math.round(p[3 * i + 2] * 1e5);
+      const key = x + ',' + y + ',' + z;
+      let id = map.get(key);
+      if (id === undefined) { id = np.length / 3; map.set(key, id); np.push(p[3 * i], p[3 * i + 1], p[3 * i + 2]); }
+      remap[i] = id;
+    }
+    const ix = m.indices, out = [];
+    for (let t = 0; t < ix.length; t += 3) {
+      const a = remap[ix[t]], b = remap[ix[t + 1]], c = remap[ix[t + 2]];
+      if (a === b || b === c || a === c) continue;
+      out.push(a, b, c);
+    }
+    return { positions: new Float32Array(np), indices: new Uint32Array(out) };
+  }
+  const fmt = (v) => { const r = Math.round(v * 10000) / 10000; return (Object.is(r, -0) ? 0 : r).toString(); };
+  function meshXML(m) {
+    const p = m.positions, ix = m.indices, parts = ['<mesh><vertices>'];
+    for (let i = 0; i < p.length; i += 3) parts.push('<vertex x="' + fmt(p[i]) + '" y="' + fmt(p[i + 1]) + '" z="' + fmt(p[i + 2]) + '"/>');
+    parts.push('</vertices><triangles>');
+    for (let t = 0; t < ix.length; t += 3) parts.push('<triangle v1="' + ix[t] + '" v2="' + ix[t + 1] + '" v3="' + ix[t + 2] + '"/>');
+    parts.push('</triangles></mesh>');
+    return parts.join('');
+  }
+  const xesc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  /* Build a 3MF package as a {path: string|Uint8Array} map.
+     o = { parts:[{name, mesh, color, extruder}], name, center:[x,y], bambu:bool,
+           objectSettings:{k:v}, layerRanges:[{min,max,settings}], pauseZ:number|null, topColor, thumbnail:Uint8Array|null } */
+  function build3MF(o) {
+    const files = {};
+    const app = o.bambu ? 'BambuStudio-01.10.00.00' : 'JakeBitt Layer Art Studio';
+    files['[Content_Types].xml'] =
+      '<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n' +
+      ' <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n' +
+      ' <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>\n' +
+      ' <Default Extension="png" ContentType="image/png"/>\n' +
+      ' <Default Extension="config" ContentType="text/xml"/>\n' +
+      ' <Default Extension="xml" ContentType="text/xml"/>\n</Types>\n';
+    files['_rels/.rels'] =
+      '<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
+      ' <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n' +
+      (o.thumbnail ? ' <Relationship Target="/Metadata/plate_1.png" Id="rel-2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"/>\n' : '') +
+      '</Relationships>\n';
+    const parts = o.parts.filter(p => p.mesh && p.mesh.indices.length);
+    const mats = parts.map(p => '  <base name="' + xesc(p.name) + '" displaycolor="' + p.color.toUpperCase() + 'FF"/>').join('\n');
+    let objs = '';
+    parts.forEach((p, i) => {
+      objs += '  <object id="' + (i + 1) + '" name="' + xesc(p.name) + '" type="model" pid="100" pindex="' + i + '">' + meshXML(p.mesh) + '</object>\n';
+    });
+    const asmId = parts.length + 1;
+    objs += '  <object id="' + asmId + '" name="' + xesc(o.name) + '" type="model"><components>' +
+      parts.map((p, i) => '<component objectid="' + (i + 1) + '"/>').join('') + '</components></object>\n';
+    const [cx, cy] = o.center;
+    files['3D/3dmodel.model'] =
+      '<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"' +
+      (o.bambu ? ' xmlns:BambuStudio="http://schemas.bambulab.com/package/2021"' : '') + '>\n' +
+      ' <metadata name="Application">' + app + '</metadata>\n' +
+      (o.bambu ? ' <metadata name="BambuStudio:3mfVersion">1</metadata>\n' : '') +
+      ' <metadata name="Title">' + xesc(o.name) + '</metadata>\n' +
+      ' <metadata name="Designer">JakeBitt Layer Art Studio</metadata>\n' +
+      ' <resources>\n  <basematerials id="100">\n' + mats + '\n  </basematerials>\n' + objs + ' </resources>\n' +
+      ' <build>\n  <item objectid="' + asmId + '" transform="1 0 0 0 1 0 0 0 1 ' + fmt(cx) + ' ' + fmt(cy) + ' 0" printable="1"/>\n </build>\n</model>\n';
+    if (o.bambu) {
+      let cfg = '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n  <object id="' + asmId + '">\n' +
+        '    <metadata key="name" value="' + xesc(o.name) + '"/>\n' +
+        '    <metadata key="extruder" value="1"/>\n';
+      for (const k in (o.objectSettings || {})) cfg += '    <metadata key="' + xesc(k) + '" value="' + xesc(o.objectSettings[k]) + '"/>\n';
+      parts.forEach((p, i) => {
+        cfg += '    <part id="' + (i + 1) + '" subtype="normal_part">\n' +
+          '      <metadata key="name" value="' + xesc(p.name) + '"/>\n' +
+          '      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n' +
+          '      <metadata key="extruder" value="' + p.extruder + '"/>\n' +
+          '      <mesh_stat edges_fixed="0" degenerate_facets="0" facets_removed="0" facets_reversed="0" backwards_edges="0"/>\n' +
+          '    </part>\n';
+      });
+      cfg += '  </object>\n  <plate>\n    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value=""/>\n    <metadata key="locked" value="false"/>\n' +
+        (o.thumbnail ? '    <metadata key="thumbnail_file" value="Metadata/plate_1.png"/>\n' : '') +
+        '    <model_instance>\n      <metadata key="object_id" value="' + asmId + '"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="' + (100 + asmId) + '"/>\n    </model_instance>\n  </plate>\n' +
+        '  <assemble>\n   <assemble_item object_id="' + asmId + '" instance_id="0" transform="1 0 0 0 1 0 0 0 1 ' + fmt(cx) + ' ' + fmt(cy) + ' 0" offset="0 0 0" />\n  </assemble>\n</config>\n';
+      files['Metadata/model_settings.config'] = cfg;
+      if (o.layerRanges && o.layerRanges.length) {
+        let x = '<?xml version="1.0" encoding="utf-8"?>\n<objects>\n <object id="1">\n';
+        for (const r of o.layerRanges) {
+          x += '  <range min_z="' + fmt(r.min) + '" max_z="' + fmt(r.max) + '">\n';
+          for (const k in r.settings) x += '   <option opt_key="' + xesc(k) + '">' + xesc(r.settings[k]) + '</option>\n';
+          x += '  </range>\n';
+        }
+        x += ' </object>\n</objects>\n';
+        files['Metadata/layer_config_ranges.xml'] = x;
+      }
+      if (o.pauseZ != null) {
+        files['Metadata/custom_gcode_per_layer.xml'] =
+          '<?xml version="1.0" encoding="utf-8"?>\n<custom_gcodes_per_layer>\n<plate>\n<plate_info id="1"/>\n' +
+          '<layer top_z="' + fmt(o.pauseZ) + '" type="1" extruder="1" color="' + (o.topColor || '#FFFFFF').toUpperCase() + '" extra="" gcode="M400 U1"/>\n' +
+          '<mode value="SingleExtruder"/>\n</plate>\n</custom_gcodes_per_layer>\n';
+      }
+    }
+    if (o.thumbnail) files['Metadata/plate_1.png'] = o.thumbnail;
+    return files;
+  }
+
+  /* Edge-manifold check: every directed edge appears exactly once and its reverse exactly once. */
+  function checkManifold(m) {
+    const w = weld(m), ix = w.indices, map = new Map();
+    for (let t = 0; t < ix.length; t += 3) {
+      for (let e = 0; e < 3; e++) {
+        const a = ix[t + e], b = ix[t + (e + 1) % 3];
+        const k = a + '>' + b; map.set(k, (map.get(k) || 0) + 1);
+      }
+    }
+    let bad = 0;
+    for (const [k, c] of map) {
+      const [a, b] = k.split('>');
+      if (c !== 1 || map.get(b + '>' + a) !== 1) bad++;
+    }
+    return { triangles: ix.length / 3, badEdges: bad };
+  }
+
+  return { edt, blur, contours, simplifyClosed, area, fieldToPolygons, MeshBuilder, meshVolume, meshBounds, stlBinary, weld, build3MF, checkManifold, pointInPoly };
+})();
+
+
+</script>
+<script>
+(() => {
+'use strict';
+/* ====================================================================
+   Layer Art Studio — jakebitt.com
+   Two-color layer prints: N black layers, then up to M white layers whose
+   height varies per spot to draw the design / shade the photo.
+   ==================================================================== */
+
+const TAU = Math.PI * 2;
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const uid = () => Math.random().toString(36).slice(2, 9);
+const r2 = (v) => Math.round(v * 100) / 100;
+const fmtMM = (v) => (Math.round(v * 100) / 100).toFixed(2);
+const tick = () => new Promise(r => setTimeout(r, 0));
+const hexToRgb = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(h || ''); const n = m ? parseInt(m[1], 16) : 0; return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const slug = (s) => (s || 'layer-art').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'layer-art';
+
+/* ---------------- constants ---------------- */
+const PRESETS = [
+  { id: 'smart', name: 'Smart Detail', lb: 0.24, lw: 0.08, speed: 4, quality: 5, desc: 'Thick, fast black base. Fine white layers for detail.', badge: 'Best' },
+  { id: 'ultra', name: 'Ultra Detail', lb: 0.08, lw: 0.08, speed: 1, quality: 5, desc: 'Finest everything. Slowest.' },
+  { id: 'detail', name: 'Detail', lb: 0.12, lw: 0.12, speed: 2, quality: 4, desc: 'Smooth sides and shading.' },
+  { id: 'balanced', name: 'Balanced', lb: 0.16, lw: 0.16, speed: 3, quality: 3, desc: 'Good everyday quality.' },
+  { id: 'fast', name: 'Fast', lb: 0.20, lw: 0.20, speed: 4, quality: 2, desc: 'Quick bold two-tone pieces.' },
+  { id: 'speed', name: 'Max Speed', lb: 0.28, lw: 0.20, speed: 5, quality: 1, desc: 'Thickest layers. Simple designs only.' },
+];
+const presetById = (id) => PRESETS.find(p => p.id === id) || PRESETS[0];
+
+const FONTS = [
+  { n: 'Fredoka', w: 700 }, { n: 'Mountains of Christmas', w: 700 }, { n: 'Luckiest Guy', w: 400 },
+  { n: 'Pacifico', w: 400 }, { n: 'Lobster', w: 400 }, { n: 'Dancing Script', w: 700 },
+  { n: 'Great Vibes', w: 400 }, { n: 'Bebas Neue', w: 400 }, { n: 'Cinzel', w: 700 },
+  { n: 'Alfa Slab One', w: 400 }, { n: 'Permanent Marker', w: 400 }, { n: 'Righteous', w: 400 },
+  { n: 'Archivo Black', w: 400 }, { n: 'Baloo 2', w: 800 },
+];
+const fontByName = (n) => FONTS.find(f => f.n === n) || FONTS[0];
+
+const BASE_COLORS = [
+  { n: 'Black', c: '#161616' }, { n: 'Charcoal', c: '#3a3e44' }, { n: 'Navy', c: '#1c2b5c' },
+  { n: 'Forest', c: '#1e5838' }, { n: 'Red', c: '#b0242d' }, { n: 'Purple', c: '#5a2c8c' }, { n: 'White', c: '#f2f2ee' },
+];
+const TOP_COLORS = [
+  { n: 'White', c: '#f4f4ef', td: 5 }, { n: 'Ivory', c: '#efe5cc', td: 6 }, { n: 'Silver', c: '#b8bdc4', td: 3 },
+  { n: 'Gold', c: '#d6b058', td: 3 }, { n: 'Yellow', c: '#f3d13a', td: 4 }, { n: 'Pink', c: '#f2a5c3', td: 4 },
+  { n: 'Sky', c: '#8ccff4', td: 4 }, { n: 'Black', c: '#161616', td: 0.4 },
+];
+const BEDS = [
+  { id: 'bbl256', n: 'Bambu X1 / P1 / A1', w: 256, h: 256 },
+  { id: 'a1mini', n: 'Bambu A1 mini', w: 180, h: 180 },
+  { id: 'h2d', n: 'Bambu H2D', w: 325, h: 320 },
+  { id: 'prusa', n: 'Prusa MK4 / Core One', w: 250, h: 210 },
+  { id: 'generic', n: 'Other printer (220 × 220)', w: 220, h: 220 },
+];
+const RES = [
+  { id: 'standard', n: 'Standard (0.15 mm)', pxmm: 1 / 0.15 },
+  { id: 'fine', n: 'Fine (0.10 mm)', pxmm: 10 },
+  { id: 'ultra', n: 'Ultra (0.07 mm)', pxmm: 1 / 0.07 },
+];
+
+/* ---------------- Path helpers ---------------- */
+function rrectPath(x, y, w, h, r, p) {
+  p = p || new Path2D(); r = Math.max(0, Math.min(r, w / 2, h / 2));
+  if (r <= 0) { p.rect(x, y, w, h); return p; }
+  p.moveTo(x + r, y); p.lineTo(x + w - r, y); p.arcTo(x + w, y, x + w, y + r, r);
+  p.lineTo(x + w, y + h - r); p.arcTo(x + w, y + h, x + w - r, y + h, r);
+  p.lineTo(x + r, y + h); p.arcTo(x, y + h, x, y + h - r, r);
+  p.lineTo(x, y + r); p.arcTo(x, y, x + r, y, r); p.closePath(); return p;
+}
+function circlePath(cx, cy, r, p) { p = p || new Path2D(); p.moveTo(cx + r, cy); p.arc(cx, cy, r, 0, TAU); p.closePath(); return p; }
+function polyPath(pts, r, p) {
+  p = p || new Path2D(); const n = pts.length;
+  if (!r) { p.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < n; i++) p.lineTo(pts[i][0], pts[i][1]); p.closePath(); return p; }
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const s = mid(pts[n - 1], pts[0]); p.moveTo(s[0], s[1]);
+  for (let i = 0; i < n; i++) {
+    const a = pts[i], b = pts[(i + 1) % n], m = mid(a, b);
+    const e1 = Math.hypot(a[0] - pts[(i - 1 + n) % n][0], a[1] - pts[(i - 1 + n) % n][1]) / 2, e2 = Math.hypot(b[0] - a[0], b[1] - a[1]) / 2;
+    p.arcTo(a[0], a[1], m[0], m[1], Math.min(r, e1 * 0.9, e2 * 0.9));
+  }
+  p.closePath(); return p;
+}
+function starPts(cx, cy, R, ri, n, rot) {
+  const pts = []; rot = rot == null ? -Math.PI / 2 : rot;
+  for (let i = 0; i < n * 2; i++) { const a = rot + i * Math.PI / n, rr = i % 2 ? ri : R; pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
+  return pts;
+}
+function heartPts(w, cx, cy) {
+  const raw = [];
+  for (let i = 0; i < 120; i++) {
+    const t = i / 120 * TAU;
+    raw.push([16 * Math.pow(Math.sin(t), 3), -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))]);
+  }
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  raw.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+  const s = w / (x1 - x0), my = (y0 + y1) / 2;
+  return { pts: raw.map(([x, y]) => [cx + x * s, cy + (y - my) * s]), h: (y1 - y0) * s, topDip: cy + (-5 - my) * s };
+}
+function treePts(W, H) {
+  const y0 = -H / 2, y1 = y0 + 0.36 * H, y2 = y0 + 0.62 * H, y3 = y0 + 0.86 * H, y4 = H / 2;
+  return [[0, y0], [0.27 * W, y1], [0.15 * W, y1], [0.39 * W, y2], [0.25 * W, y2], [0.5 * W, y3], [0.1 * W, y3], [0.1 * W, y4],
+    [-0.1 * W, y4], [-0.1 * W, y3], [-0.5 * W, y3], [-0.25 * W, y2], [-0.39 * W, y2], [-0.15 * W, y1], [-0.27 * W, y1]];
+}
+
+/* ---------------- Icons (unit box -0.5..0.5) ---------------- */
+function crescent(c) {
+  const ra = 0.5, bx = 0.22, by = -0.12, rb = 0.44, d = Math.hypot(bx, by);
+  const a = (ra * ra - rb * rb + d * d) / (2 * d), h = Math.sqrt(ra * ra - a * a);
+  const px = a * bx / d, py = a * by / d, ox = -by / d * h, oy = bx / d * h;
+  const P1 = [px + ox, py + oy], P2 = [px - ox, py - oy];
+  const aA1 = Math.atan2(P1[1], P1[0]), aA2 = Math.atan2(P2[1], P2[0]);
+  const aB1 = Math.atan2(P1[1] - by, P1[0] - bx), aB2 = Math.atan2(P2[1] - by, P2[0] - bx);
+  c.beginPath(); c.moveTo(P1[0], P1[1]);
+  c.arc(0, 0, ra, aA1, aA2, false);
+  c.arc(bx, by, rb, aB2, aB1, true);
+  c.closePath(); c.fill();
+}
+const ICONS = {
+  circle: { n: 'Circle panel', panel: true, draw(c) { c.beginPath(); c.arc(0, 0, 0.5, 0, TAU); c.fill(); } },
+  panel: { n: 'Rounded panel', panel: true, draw(c) { c.fill(rrectPath(-0.5, -0.5, 1, 1, 0.14)); } },
+  banner: { n: 'Banner', panel: true, aspect: 3.4, draw(c) { c.fill(polyPath([[-0.5, -0.5], [0.5, -0.5], [0.42, 0], [0.5, 0.5], [-0.5, 0.5], [-0.42, 0]], 0)); } },
+  ring: { n: 'Ring', draw(c) { c.beginPath(); c.arc(0, 0, 0.5, 0, TAU); c.moveTo(0.4, 0); c.arc(0, 0, 0.4, 0, TAU, true); c.fill(); } },
+  scallop: { n: 'Badge', panel: true, draw(c) { c.beginPath(); c.arc(0, 0, 0.42, 0, TAU); c.fill(); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; c.beginPath(); c.arc(Math.cos(a) * 0.41, Math.sin(a) * 0.41, 0.09, 0, TAU); c.fill(); } } },
+  hex: { n: 'Hexagon', panel: true, draw(c) { const p = []; for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + i * TAU / 6; p.push([Math.cos(a) * 0.5, Math.sin(a) * 0.5]); } c.fill(polyPath(p, 0.04)); } },
+  star: { n: 'Star', draw(c) { c.fill(polyPath(starPts(0, 0.04, 0.5, 0.21, 5), 0.02)); } },
+  heart: { n: 'Heart', draw(c) { c.fill(polyPath(heartPts(1, 0, 0).pts, 0)); } },
+  snowflake: {
+    n: 'Snowflake', draw(c) {
+      c.lineWidth = 0.075; c.lineCap = 'round'; c.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = i * TAU / 6 - Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+        c.moveTo(0, 0); c.lineTo(ca * 0.44, sa * 0.44);
+        for (const [r, l] of [[0.22, 0.13], [0.34, 0.1]]) {
+          for (const s of [-1, 1]) { const b = a + s * 0.75; c.moveTo(ca * r, sa * r); c.lineTo(ca * r + Math.cos(b) * l, sa * r + Math.sin(b) * l); }
+        }
+      }
+      c.stroke(); c.beginPath(); c.arc(0, 0, 0.09, 0, TAU); c.fill();
+    }
+  },
+  sparkle: { n: 'Sparkle', draw(c) { c.beginPath(); c.moveTo(0, -0.5); c.quadraticCurveTo(0.07, -0.07, 0.5, 0); c.quadraticCurveTo(0.07, 0.07, 0, 0.5); c.quadraticCurveTo(-0.07, 0.07, -0.5, 0); c.quadraticCurveTo(-0.07, -0.07, 0, -0.5); c.fill(); } },
+  tree: { n: 'Tree', draw(c) { c.fill(polyPath(treePts(0.92, 1), 0.02)); } },
+  gift: {
+    n: 'Gift', draw(c) {
+      const g = 0.035;
+      c.fillRect(-0.42, -0.08, 0.42 - g, 0.56); c.fillRect(g, -0.08, 0.42 - g, 0.56);
+      c.fillRect(-0.48, -0.26, 0.48 - g, 0.14); c.fillRect(g, -0.26, 0.48 - g, 0.14);
+      c.lineWidth = 0.06; c.beginPath(); c.ellipse(-0.13, -0.37, 0.12, 0.075, -0.3, 0, TAU); c.moveTo(0.25, -0.37); c.ellipse(0.13, -0.37, 0.12, 0.075, 0.3, 0, TAU); c.stroke();
+    }
+  },
+  bauble: { n: 'Bauble', draw(c) { c.beginPath(); c.arc(0, 0.1, 0.38, 0, TAU); c.fill(); c.fillRect(-0.1, -0.36, 0.2, 0.1); c.lineWidth = 0.05; c.beginPath(); c.arc(0, -0.42, 0.06, 0, TAU); c.stroke(); } },
+  holly: {
+    n: 'Holly', draw(c) {
+      for (const s of [-1, 1]) { c.save(); c.translate(s * 0.22, -0.12); c.rotate(-s * 0.6); c.beginPath(); c.ellipse(0, 0, 0.27, 0.12, 0, 0, TAU); c.fill(); c.restore(); }
+      for (const [x, y] of [[-0.1, 0.16], [0.1, 0.16], [0, 0.32]]) { c.beginPath(); c.arc(x, y, 0.1, 0, TAU); c.fill(); }
+    }
+  },
+  candy: { n: 'Candy cane', draw(c) { c.lineWidth = 0.15; c.lineCap = 'round'; c.beginPath(); c.moveTo(0.1, 0.44); c.lineTo(0.1, -0.16); c.arc(-0.08, -0.16, 0.18, 0, Math.PI, true); c.lineTo(-0.26, -0.06); c.stroke(); } },
+  paw: {
+    n: 'Paw', draw(c) {
+      c.beginPath(); c.ellipse(0, 0.2, 0.25, 0.2, 0, 0, TAU); c.fill();
+      for (const [x, y, r] of [[-0.31, -0.08, -0.4], [-0.12, -0.3, -0.15], [0.12, -0.3, 0.15], [0.31, -0.08, 0.4]]) { c.beginPath(); c.ellipse(x, y, 0.1, 0.135, r, 0, TAU); c.fill(); }
+    }
+  },
+  moon: { n: 'Moon', draw: crescent },
+};
+
+/* ---------------- Templates (mm, y down, design centre at 0,0) ---------------- */
+const CATS = [['all', 'All'], ['ornament', 'Ornaments'], ['bookmark', 'Bookmarks'], ['keychain', 'Keychains'], ['sign', 'Tags & Signs'], ['coaster', 'Coasters'], ['custom', 'Custom']];
+const P_HOLE = { k: 'hole', label: 'Hanging hole', type: 'toggle' };
+const P_HOLED = { k: 'holeD', label: 'Hole size', type: 'range', min: 3, max: 8, step: 0.5, unit: 'mm', when: (p) => p.hole };
+const TEMPLATES = [
+  {
+    id: 'orn-round', cat: 'ornament', name: 'Round Ornament', base: 2.0,
+    defaults: { d: 80, hole: true, holeD: 4.5 },
+    params: [{ k: 'd', label: 'Diameter', type: 'range', min: 40, max: 140, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const R = p.d / 2, s = [circlePath(0, 0, R)], h = [];
+      if (p.hole) { const tr = Math.max(5.5, p.holeD / 2 + 3), ty = -R - tr + 3.2; s.push(circlePath(0, ty, tr)); h.push(circlePath(0, ty, p.holeD / 2)); }
+      return { solids: s, holes: h, close: 2.2, area: [p.d, p.d] };
+    }
+  },
+  {
+    id: 'orn-bauble', cat: 'ornament', name: 'Classic Bauble', base: 2.0,
+    defaults: { d: 76, hole: true, holeD: 4.5 },
+    params: [{ k: 'd', label: 'Diameter', type: 'range', min: 40, max: 140, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const R = p.d / 2, cw = Math.max(14, R * 0.5), s = [circlePath(0, 0, R), rrectPath(-cw / 2, -R - 6, cw, 9, 1.6)], h = [];
+      if (p.hole) { const lr = Math.max(4.8, p.holeD / 2 + 2.6), ly = -R - 6 - lr + 2.2; s.push(circlePath(0, ly, lr)); h.push(circlePath(0, ly, p.holeD / 2)); }
+      return { solids: s, holes: h, close: 1.6, area: [p.d, p.d] };
+    }
+  },
+  {
+    id: 'orn-star', cat: 'ornament', name: 'Star Ornament', base: 2.2,
+    defaults: { d: 90, hole: true, holeD: 4.5 },
+    params: [{ k: 'd', label: 'Size', type: 'range', min: 50, max: 150, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const R = p.d / 2, cy = R * 0.1, s = [polyPath(starPts(0, cy, R, R * 0.5, 5), 3.5)], h = [];
+      if (p.hole) { const tr = Math.max(5.2, p.holeD / 2 + 2.8), ty = cy - R + tr * 0.6; s.push(circlePath(0, ty, tr)); h.push(circlePath(0, ty, p.holeD / 2)); }
+      return { solids: s, holes: h, close: 2.5, area: [p.d * 0.62, p.d * 0.6] };
+    }
+  },
+  {
+    id: 'orn-heart', cat: 'ornament', name: 'Heart Ornament', base: 2.0,
+    defaults: { d: 82, hole: true, holeD: 4.5 },
+    params: [{ k: 'd', label: 'Width', type: 'range', min: 40, max: 150, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const hp = heartPts(p.d, 0, 0), s = [polyPath(hp.pts, 0)], h = [];
+      if (p.hole) { const tr = Math.max(5.5, p.holeD / 2 + 3), ty = hp.topDip - tr * 0.35; s.push(circlePath(0, ty, tr)); h.push(circlePath(0, ty, p.holeD / 2)); }
+      return { solids: s, holes: h, close: 2.5, area: [p.d * 0.72, hp.h * 0.6] };
+    }
+  },
+  {
+    id: 'orn-tree', cat: 'ornament', name: 'Tree Ornament', base: 2.2,
+    defaults: { d: 70, hole: true, holeD: 4.5 },
+    params: [{ k: 'd', label: 'Width', type: 'range', min: 40, max: 140, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const W = p.d, H = p.d * 1.25, s = [polyPath(treePts(W, H), 2.4)], h = [];
+      if (p.hole) { const tr = Math.max(5.2, p.holeD / 2 + 2.8), ty = -H / 2 + tr * 0.55; s.push(circlePath(0, ty, tr)); h.push(circlePath(0, ty, p.holeD / 2)); }
+      return { solids: s, holes: h, close: 2, area: [W * 0.55, H * 0.5] };
+    }
+  },
+  {
+    id: 'bm-classic', cat: 'bookmark', name: 'Classic Bookmark', base: 1.2,
+    defaults: { w: 50, h: 160, r: 5, hole: true, holeD: 5 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 30, max: 80, step: 1, unit: 'mm' }, { k: 'h', label: 'Length', type: 'range', min: 100, max: 220, step: 1, unit: 'mm' }, { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 15, step: 0.5, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const s = [rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.r)], h = [];
+      if (p.hole) h.push(circlePath(0, -p.h / 2 + Math.max(7, p.holeD / 2 + 4.5), p.holeD / 2));
+      return { solids: s, holes: h, close: 0, area: [p.w, p.h] };
+    }
+  },
+  {
+    id: 'bm-ribbon', cat: 'bookmark', name: 'Ribbon Bookmark', base: 1.2,
+    defaults: { w: 45, h: 160, hole: true, holeD: 5 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 30, max: 80, step: 1, unit: 'mm' }, { k: 'h', label: 'Length', type: 'range', min: 100, max: 220, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const w = p.w, H = p.h, n = Math.min(14, w * 0.32);
+      const s = [polyPath([[-w / 2, -H / 2], [w / 2, -H / 2], [w / 2, H / 2], [0, H / 2 - n], [-w / 2, H / 2]], 2.5)], h = [];
+      if (p.hole) h.push(circlePath(0, -H / 2 + Math.max(7, p.holeD / 2 + 4.5), p.holeD / 2));
+      return { solids: s, holes: h, close: 0, area: [w, H - n] };
+    }
+  },
+  {
+    id: 'bm-arch', cat: 'bookmark', name: 'Arch Bookmark', base: 1.2,
+    defaults: { w: 50, h: 160, hole: true, holeD: 5 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 30, max: 80, step: 1, unit: 'mm' }, { k: 'h', label: 'Length', type: 'range', min: 100, max: 220, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const w = p.w, H = p.h, s = [circlePath(0, -H / 2 + w / 2, w / 2), rrectPath(-w / 2, -H / 2 + w / 2, w, H - w / 2, 4)], h = [];
+      if (p.hole) h.push(circlePath(0, -H / 2 + Math.max(9, p.holeD / 2 + 6), p.holeD / 2));
+      return { solids: s, holes: h, close: 0, area: [w, H] };
+    }
+  },
+  {
+    id: 'kc-tag', cat: 'keychain', name: 'Tag Keychain', base: 2.4,
+    defaults: { w: 32, h: 52, r: 6, holeD: 5 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 20, max: 60, step: 1, unit: 'mm' }, { k: 'h', label: 'Height', type: 'range', min: 30, max: 90, step: 1, unit: 'mm' }, { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 15, step: 0.5, unit: 'mm' }, { k: 'holeD', label: 'Ring hole', type: 'range', min: 3, max: 8, step: 0.5, unit: 'mm' }],
+    build(p) {
+      return { solids: [rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.r)], holes: [circlePath(0, -p.h / 2 + p.holeD / 2 + 3.2, p.holeD / 2)], close: 0, area: [p.w, p.h] };
+    }
+  },
+  {
+    id: 'kc-round', cat: 'keychain', name: 'Round Keychain', base: 2.4,
+    defaults: { d: 42, holeD: 5 },
+    params: [{ k: 'd', label: 'Diameter', type: 'range', min: 25, max: 70, step: 1, unit: 'mm' }, { k: 'holeD', label: 'Ring hole', type: 'range', min: 3, max: 8, step: 0.5, unit: 'mm' }],
+    build(p) {
+      const R = p.d / 2, tr = Math.max(5.5, p.holeD / 2 + 3), ty = -R - tr + 3;
+      return { solids: [circlePath(0, 0, R), circlePath(0, ty, tr)], holes: [circlePath(0, ty, p.holeD / 2)], close: 2, area: [p.d, p.d] };
+    }
+  },
+  {
+    id: 'kc-name', cat: 'keychain', name: 'Name Keychain', base: 2.4,
+    defaults: { w: 70, h: 22, holeD: 5 },
+    params: [{ k: 'w', label: 'Length', type: 'range', min: 40, max: 120, step: 1, unit: 'mm' }, { k: 'h', label: 'Height', type: 'range', min: 14, max: 40, step: 1, unit: 'mm' }, { k: 'holeD', label: 'Ring hole', type: 'range', min: 3, max: 8, step: 0.5, unit: 'mm' }],
+    build(p) {
+      const hx = -p.w / 2 + Math.max(p.h / 2, p.holeD / 2 + 3.5);
+      return { solids: [rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.h / 2)], holes: [circlePath(hx, 0, p.holeD / 2)], close: 0, area: [p.w, p.h], designOffset: [p.h * 0.32, 0] };
+    }
+  },
+  {
+    id: 'tag-gift', cat: 'sign', name: 'Gift Tag', base: 1.6,
+    defaults: { w: 50, h: 80, hole: true, holeD: 5 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 30, max: 90, step: 1, unit: 'mm' }, { k: 'h', label: 'Height', type: 'range', min: 40, max: 140, step: 1, unit: 'mm' }, P_HOLE, P_HOLED],
+    build(p) {
+      const w = p.w, H = p.h, c = w * 0.3;
+      const s = [polyPath([[-w / 2 + c, -H / 2], [w / 2 - c, -H / 2], [w / 2, -H / 2 + c], [w / 2, H / 2], [-w / 2, H / 2], [-w / 2, -H / 2 + c]], 3)], h = [];
+      if (p.hole) h.push(circlePath(0, -H / 2 + Math.max(7, p.holeD / 2 + 4.5), p.holeD / 2));
+      return { solids: s, holes: h, close: 0, area: [w, H] };
+    }
+  },
+  {
+    id: 'sign-plaque', cat: 'sign', name: 'Plaque', base: 3.0,
+    defaults: { w: 150, h: 100, r: 6, holes: true, holeD: 4 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 60, max: 240, step: 1, unit: 'mm' }, { k: 'h', label: 'Height', type: 'range', min: 40, max: 200, step: 1, unit: 'mm' }, { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 20, step: 0.5, unit: 'mm' }, { k: 'holes', label: 'Two hanging holes', type: 'toggle' }, { k: 'holeD', label: 'Hole size', type: 'range', min: 3, max: 8, step: 0.5, unit: 'mm', when: (p) => p.holes }],
+    build(p) {
+      const h = [];
+      if (p.holes) { const o = Math.max(7, p.holeD / 2 + 4); h.push(circlePath(-p.w / 2 + o, -p.h / 2 + o, p.holeD / 2), circlePath(p.w / 2 - o, -p.h / 2 + o, p.holeD / 2)); }
+      return { solids: [rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.r)], holes: h, close: 0, area: [p.w, p.h] };
+    }
+  },
+  {
+    id: 'sign-name', cat: 'sign', name: 'Name Plate', base: 3.0,
+    defaults: { w: 160, h: 45, r: 6 },
+    params: [{ k: 'w', label: 'Width', type: 'range', min: 60, max: 240, step: 1, unit: 'mm' }, { k: 'h', label: 'Height', type: 'range', min: 20, max: 90, step: 1, unit: 'mm' }, { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 20, step: 0.5, unit: 'mm' }],
+    build(p) { return { solids: [rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.r)], holes: [], close: 0, area: [p.w, p.h] }; }
+  },
+  {
+    id: 'co-round', cat: 'coaster', name: 'Round Coaster', base: 3.0,
+    defaults: { d: 95 },
+    params: [{ k: 'd', label: 'Diameter', type: 'range', min: 70, max: 130, step: 1, unit: 'mm' }],
+    build(p) { return { solids: [circlePath(0, 0, p.d / 2)], holes: [], close: 0, area: [p.d, p.d] }; }
+  },
+  {
+    id: 'co-square', cat: 'coaster', name: 'Square Coaster', base: 3.0,
+    defaults: { w: 95, r: 10 },
+    params: [{ k: 'w', label: 'Size', type: 'range', min: 70, max: 130, step: 1, unit: 'mm' }, { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 30, step: 0.5, unit: 'mm' }],
+    build(p) { return { solids: [rrectPath(-p.w / 2, -p.w / 2, p.w, p.w, p.r)], holes: [], close: 0, area: [p.w, p.w] }; }
+  },
+  {
+    id: 'co-hex', cat: 'coaster', name: 'Hexagon Coaster', base: 3.0,
+    defaults: { d: 100 },
+    params: [{ k: 'd', label: 'Point to point', type: 'range', min: 70, max: 140, step: 1, unit: 'mm' }],
+    build(p) {
+      const pts = []; for (let i = 0; i < 6; i++) { const a = i * TAU / 6; pts.push([Math.cos(a) * p.d / 2, Math.sin(a) * p.d / 2]); }
+      return { solids: [polyPath(pts, 6)], holes: [], close: 0, area: [p.d * 0.8, p.d * 0.8] };
+    }
+  },
+  {
+    id: 'custom', cat: 'custom', name: 'Custom Shape', base: 2.0,
+    defaults: { shape: 'rect', w: 80, h: 60, r: 8, holePos: 'none', holeD: 5 },
+    params: [
+      { k: 'shape', label: 'Shape', type: 'select', options: [['rect', 'Rounded rectangle'], ['oval', 'Circle / oval'], ['hex', 'Hexagon'], ['star', 'Star'], ['heart', 'Heart']] },
+      { k: 'w', label: 'Width', type: 'range', min: 15, max: 240, step: 1, unit: 'mm' },
+      { k: 'h', label: 'Height', type: 'range', min: 15, max: 240, step: 1, unit: 'mm', when: (p) => p.shape === 'rect' || p.shape === 'oval' },
+      { k: 'r', label: 'Corner radius', type: 'range', min: 0, max: 40, step: 0.5, unit: 'mm', when: (p) => p.shape === 'rect' },
+      { k: 'holePos', label: 'Hole', type: 'select', options: [['none', 'No hole'], ['top', 'Top center'], ['topleft', 'Top left corner'], ['left', 'Left side']] },
+      { k: 'holeD', label: 'Hole size', type: 'range', min: 3, max: 10, step: 0.5, unit: 'mm', when: (p) => p.holePos !== 'none' },
+    ],
+    build(p) {
+      let s, hh = p.h, ww = p.w;
+      if (p.shape === 'oval') { s = new Path2D(); s.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, TAU); s.closePath(); }
+      else if (p.shape === 'hex') { const pts = []; for (let i = 0; i < 6; i++) { const a = i * TAU / 6; pts.push([Math.cos(a) * p.w / 2, Math.sin(a) * p.w / 2]); } s = polyPath(pts, 3); hh = p.w * 0.866; }
+      else if (p.shape === 'star') { s = polyPath(starPts(0, p.w * 0.05, p.w / 2, p.w * 0.25, 5), 2.5); hh = p.w * 0.95; }
+      else if (p.shape === 'heart') { const hp = heartPts(p.w, 0, 0); s = polyPath(hp.pts, 0); hh = hp.h; }
+      else s = rrectPath(-p.w / 2, -p.h / 2, p.w, p.h, p.r);
+      const h = [], o = Math.max(6, p.holeD / 2 + 4);
+      if (p.holePos === 'top') h.push(circlePath(0, -hh / 2 + o, p.holeD / 2));
+      else if (p.holePos === 'topleft') h.push(circlePath(-ww / 2 + o, -hh / 2 + o, p.holeD / 2));
+      else if (p.holePos === 'left') h.push(circlePath(-ww / 2 + o, 0, p.holeD / 2));
+      return { solids: [s], holes: h, close: 0, area: [ww * 0.8, hh * 0.8] };
+    }
+  },
+];
+const tplById = (id) => TEMPLATES.find(t => t.id === id) || TEMPLATES[0];
+
+/* ---------------- State ---------------- */
+function defaultState() {
+  const t = tplById('orn-round');
+  return {
+    v: 1, name: 'Christmas Ornament', template: t.id, tp: Object.assign({}, t.defaults),
+    baseMM: 2.0, whiteMM: 0.96, margin: 1.0, rim: 1.6,
+    colors: { base: '#161616', top: '#f4f4ef', td: 5 },
+    print: { preset: 'smart', first: 0.2, swap: 'ams', bed: 'bbl256', format: 'bambu', walls: 3, infill: 'auto', ironing: false, res: 'fine', speck: 0.2 },
+    els: [
+      { id: uid(), type: 'text', text: 'MERRY CHRISTMAS', font: 'Mountains of Christmas', size: 7.5, spacing: 0.02, curve: 0.5, thicken: 0.15, x: 0, y: -23, rot: 0, cut: false, tone: 1, hidden: false },
+      { id: uid(), type: 'shape', shape: 'snowflake', x: 0, y: 1, w: 30, h: 30, rot: 0, cut: false, tone: 1, hidden: false },
+      { id: uid(), type: 'text', text: '2026', font: 'Fredoka', size: 9, spacing: 0.06, curve: 0, thicken: 0, x: 0, y: 25, rot: 0, cut: false, tone: 1, hidden: false },
+    ],
+  };
+}
+let S = defaultState();
+const IMG = {};            // key -> {src, canvas, w, h, hasAlpha, lum, alpha}
+let selId = null;
+const hist = { past: [], future: [], last: null };
+
+function cleanState(s) { return JSON.parse(JSON.stringify(s)); }
+function snapshot() { return JSON.stringify(S); }
+function commit() {
+  const snap = snapshot();
+  if (snap === hist.last) return;
+  if (hist.last !== null) { hist.past.push(hist.last); if (hist.past.length > 80) hist.past.shift(); }
+  hist.last = snap; hist.future.length = 0;
+  updateUndoButtons(); scheduleSave();
+}
+function undo() {
+  if (!hist.past.length) return;
+  hist.future.push(hist.last); hist.last = hist.past.pop(); S = JSON.parse(hist.last); afterLoad();
+}
+function redo() {
+  if (!hist.future.length) return;
+  hist.past.push(hist.last); hist.last = hist.future.pop(); S = JSON.parse(hist.last); afterLoad();
+}
+function updateUndoButtons() { $('#undoBtn').disabled = !hist.past.length; $('#redoBtn').disabled = !hist.future.length; }
+
+/* ---------------- layer math ---------------- */
+function layerPlan() {
+  const pr = presetById(S.print.preset), FL = S.print.first, lb = pr.lb, lw = pr.lw;
+  const nB = Math.max(2, Math.round((S.baseMM - FL) / lb + 1e-6) + 1);
+  const baseH = FL + (nB - 1) * lb;
+  const nW = clamp(Math.round(S.whiteMM / lw + 1e-6), 1, 80);
+  const whiteH = nW * lw;
+  return { pr, FL, lb, lw, nB, baseH, nW, whiteH, total: baseH + whiteH, swapLayer: nB + 1, swapZ: baseH + lw, tau: Math.max(0.02, S.colors.td / 15) };
+}
+const layerZ = (plan, L) => L <= plan.nB ? plan.FL + (L - 1) * plan.lb : plan.baseH + (L - plan.nB) * plan.lw;
+function whiteAlpha(plan, n) { return n <= 0 ? 0 : 1 - Math.exp(-n * plan.lw / plan.tau); }
+
+/* ---------------- persistence ---------------- */
+const LS_KEY = 'jakebitt.layerart.v1';
+let saveTimer = 0, saveWarned = false;
+function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveLocal, 700); }
+function usedImageKeys() { return new Set(S.els.filter(e => e.type === 'image').map(e => e.img)); }
+function saveLocal() {
+  const imgs = {}; usedImageKeys().forEach(k => { if (IMG[k]) imgs[k] = IMG[k].src; });
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ S, imgs })); }
+  catch (e) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ S: Object.assign({}, S, { els: S.els.filter(x => x.type !== 'image') }), imgs: {} })); } catch (e2) { /* storage unavailable */ }
+    if (!saveWarned) { saveWarned = true; toast('Images are too big to keep in browser storage. Use Save to keep a project file.'); }
+  }
+}
+async function loadLocal() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { data = null; }
+  if (!data || !data.S || !Array.isArray(data.S.els)) return false;
+  await restoreImages(data.imgs || {});
+  S = migrate(data.S);
+  return true;
+}
+function migrate(s) {
+  const d = defaultState();
+  const out = Object.assign({}, d, s);
+  out.colors = Object.assign({}, d.colors, s.colors || {});
+  out.print = Object.assign({}, d.print, s.print || {});
+  if (!TEMPLATES.some(t => t.id === out.template)) { out.template = d.template; out.tp = d.tp; }
+  out.tp = Object.assign({}, tplById(out.template).defaults, out.tp || {});
+  out.els = (out.els || []).filter(e => e && e.type && (e.type !== 'image' || IMG[e.img])).map(e => Object.assign({ id: uid(), x: 0, y: 0, rot: 0, cut: false, tone: 1, hidden: false }, e));
+  return out;
+}
+async function restoreImages(map) {
+  for (const k in map) {
+    if (IMG[k]) continue;
+    try { const img = await loadImg(map[k]); registerImage(k, img, map[k]); } catch (e) { /* skip broken */ }
+  }
+}
+
+/* ---------------- images ---------------- */
+function loadImg(src) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('load')); i.src = src; });
+}
+function registerImage(key, img, srcOverride) {
+  let w = img.naturalWidth || 0, h = img.naturalHeight || 0;
+  if (!w || !h) { w = 1200; h = 1200; }
+  const sc = Math.min(1600 / Math.max(w, h), srcOverride ? 1 : 4);
+  const cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
+  const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.imageSmoothingQuality = 'high'; cx.drawImage(img, 0, 0, cw, ch);
+  const d = cx.getImageData(0, 0, cw, ch).data, n = cw * ch;
+  const lum = new Float32Array(n), alpha = new Float32Array(n);
+  let transp = 0;
+  for (let i = 0, j = 0; i < n; i++, j += 4) {
+    lum[i] = (0.2126 * d[j] + 0.7152 * d[j + 1] + 0.0722 * d[j + 2]) / 255;
+    alpha[i] = d[j + 3] / 255; if (d[j + 3] < 245) transp++;
+  }
+  const hasAlpha = transp > n * 0.01;
+  let src = srcOverride;
+  if (!src) src = hasAlpha ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', 0.92);
+  IMG[key] = { src, canvas: cv, w: cw, h: ch, hasAlpha, lum, alpha };
+  return IMG[key];
+}
+function analyzeImage(im) {
+  const { lum, alpha, w, h, hasAlpha } = im; const n = w * h;
+  let opSum = 0, opN = 0, mid = 0, bSum = 0, bN = 0;
+  for (let i = 0; i < n; i++) {
+    if (alpha[i] > 0.5) { opSum += lum[i]; opN++; if (lum[i] > 0.15 && lum[i] < 0.85) mid++; }
+  }
+  for (let x = 0; x < w; x++) { bSum += lum[x] + lum[(h - 1) * w + x]; bN += 2; }
+  for (let y = 0; y < h; y++) { bSum += lum[y * w] + lum[y * w + w - 1]; bN += 2; }
+  const raiseDark = hasAlpha ? (opN ? opSum / opN < 0.5 : true) : (bSum / bN > 0.5);
+  const photo = !hasAlpha && opN > 0 && mid / opN > 0.35;
+  return { raiseDark, photo };
+}
+function stencilSource(im, raiseDark) {
+  const n = im.w * im.h, s = new Float32Array(n);
+  for (let i = 0; i < n; i++) s[i] = im.alpha[i] * (raiseDark ? 1 - im.lum[i] : im.lum[i]);
+  return s;
+}
+function otsu(s) {
+  const hist = new Float64Array(64); for (let i = 0; i < s.length; i++) hist[Math.min(63, (s[i] * 64) | 0)]++;
+  let total = s.length, sum = 0; for (let i = 0; i < 64; i++) sum += i * hist[i];
+  let sumB = 0, wB = 0, best = 0, thr = 32;
+  for (let i = 0; i < 64; i++) {
+    wB += hist[i]; if (!wB) continue; const wF = total - wB; if (!wF) break;
+    sumB += i * hist[i]; const mB = sumB / wB, mF = (sum - sumB) / wF, v = wB * wF * (mB - mF) * (mB - mF);
+    if (v > best) { best = v; thr = i; }
+  }
+  return clamp((thr + 0.5) / 64, 0.15, 0.85);
+}
+async function importImageFile(file) {
+  if (!file) return;
+  if (file.type && !/^image\//.test(file.type)) { toast('That file is not an image. Try PNG, JPG, WebP or SVG.'); return; }
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImg(url);
+    const key = 'img_' + uid();
+    const im = registerImage(key, img);
+    addImageElement(key, im, file.name);
+  } catch (e) { toast('Couldn’t read that image. Try PNG, JPG, WebP or SVG.'); }
+  finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+}
+function addImageElement(key, im, fileName) {
+  const a = analyzeImage(im);
+  const g = pieceInfo(), [aw, ah] = g.area;
+  const asp = im.h / im.w;
+  let w = aw * 0.78; if (w * asp > ah * 0.78) w = ah * 0.78 / asp;
+  const el = {
+    id: uid(), type: 'image', img: key, name: (fileName || 'Image').replace(/\.[a-z0-9]+$/i, '').slice(0, 40),
+    x: g.designOffset[0], y: g.designOffset[1], w: r2(w), rot: 0, flip: false,
+    mode: a.photo ? 'photo' : 'stencil', raiseDark: a.raiseDark, threshold: 0.5, smooth: 0.6,
+    bright: 0, contrast: 0.1, mid: 0, detail: 0.5, invert: false, perceptual: true,
+    cut: false, tone: 1, hidden: false,
+  };
+  el.threshold = r2(otsu(stencilSource(im, el.raiseDark)));
+  S.els.push(el); selId = el.id;
+  if (el.mode === 'photo') ensurePhotoDepth();
+  structureChanged(); commit();
+  toast(el.mode === 'photo' ? 'Added as shaded photo. Switch to Two-tone for logos.' : 'Added as two-tone art. Switch to Photo shading for pictures.');
+}
+function ensurePhotoDepth() {
+  // photos need enough white layers to show shades
+  const plan = layerPlan();
+  if (plan.nW < 10) { S.whiteMM = Math.max(S.whiteMM, 12 * plan.lw); }
+}
+
+const procCache = new Map();  // el.id -> {sig, canvas}
+function processedImage(el, plan) {
+  const im = IMG[el.img]; if (!im) return null;
+  const photo = el.mode === 'photo';
+  const sig = JSON.stringify([el.img, el.mode, el.raiseDark, el.threshold, el.smooth, el.bright, el.contrast, el.mid, el.detail, el.invert, el.perceptual, photo ? [plan.nW, plan.lw, plan.tau] : 0]);
+  const c = procCache.get(el.id);
+  if (c && c.sig === sig) return c.canvas;
+  const { w, h } = im, n = w * h;
+  let s;
+  if (!photo) {
+    s = stencilSource(im, el.raiseDark);
+    const br = el.smooth * Math.max(w, h) / 700;
+    if (br > 0.3) LACore.blur(s, w, h, br);
+    const thr = el.threshold, soft = 0.06;
+    for (let i = 0; i < n; i++) s[i] = clamp((s[i] - thr) / soft + 0.5, 0, 1);
+  } else {
+    s = new Float32Array(n);
+    const ct = 1 + el.contrast * 1.5, gam = Math.pow(2, -el.mid * 1.6);
+    for (let i = 0; i < n; i++) {
+      let v = el.invert ? 1 - im.lum[i] : im.lum[i];
+      v = (v - 0.5) * ct + 0.5 + el.bright * 0.6;
+      v = clamp(v, 0, 1); v = Math.pow(v, gam);
+      s[i] = v * (im.alpha[i] > 0.5 ? 1 : 0);
+    }
+    const br = el.detail * Math.max(w, h) / 450;
+    if (br > 0.3) LACore.blur(s, w, h, br);
+    if (el.perceptual) {
+      const Hmax = plan.whiteH, amax = 1 - Math.exp(-Hmax / plan.tau);
+      for (let i = 0; i < n; i++) { const a = clamp(s[i], 0, 1) * amax; s[i] = clamp(-plan.tau * Math.log(1 - a) / Hmax, 0, 1); }
+    }
+  }
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const cx = cv.getContext('2d'); const id = cx.createImageData(w, h), d = id.data;
+  for (let i = 0, j = 0; i < n; i++, j += 4) { const v = Math.round(clamp(s[i], 0, 1) * 255); d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255; }
+  cx.putImageData(id, 0, 0);
+  procCache.set(el.id, { sig, canvas: cv });
+  return cv;
+}
+
+/* ---------------- piece geometry ---------------- */
+let pieceCache = { key: '', info: null };
+function pieceInfo() {
+  const t = tplById(S.template), key = S.template + JSON.stringify(S.tp);
+  if (pieceCache.key === key) return pieceCache.info;
+  const g = t.build(S.tp);
+  // bbox by rasterising at 2 px/mm
+  const ext = 260, k = 2, sz = ext * 2 * k;
+  const cv = document.createElement('canvas'); cv.width = cv.height = sz;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.setTransform(k, 0, 0, k, ext * k, ext * k); cx.fillStyle = '#fff';
+  g.solids.forEach(p => cx.fill(p));
+  const d = cx.getImageData(0, 0, sz, sz).data;
+  let x0 = sz, y0 = sz, x1 = -1, y1 = -1;
+  for (let y = 0; y < sz; y++) for (let x = 0; x < sz; x++) if (d[(y * sz + x) * 4] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const bb = x1 < 0 ? [-40, -40, 40, 40] : [x0 / k - ext - 0.5, y0 / k - ext - 0.5, (x1 + 1) / k - ext + 0.5, (y1 + 1) / k - ext + 0.5];
+  const info = { solids: g.solids, holes: g.holes, close: g.close || 0, area: g.area, designOffset: g.designOffset || [0, 0], bb, size: [bb[2] - bb[0] - 1, bb[3] - bb[1] - 1] };
+  pieceCache = { key, info };
+  return info;
+}
+
+/* ---------------- raster fields ---------------- */
+function mkCanvas(W, H) { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; }
+function ctxOf(c) { return c.getContext('2d', { willReadFrequently: true }); }
+function readRed(c) {
+  const d = ctxOf(c).getImageData(0, 0, c.width, c.height).data, n = c.width * c.height, f = new Float32Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) f[i] = d[j] / 255;
+  return f;
+}
+let baseCache = { key: '', val: null };
+function buildBase(pxmm) {
+  const g = pieceInfo();
+  const key = JSON.stringify([S.template, S.tp, S.margin, S.rim, Math.round(pxmm * 1000)]);
+  if (baseCache.key === key) return baseCache.val;
+  const padPx = Math.ceil((g.close || 0) * pxmm) + 6;
+  const x0 = g.bb[0] - padPx / pxmm, y0 = g.bb[1] - padPx / pxmm;
+  const W = Math.ceil((g.bb[2] - g.bb[0]) * pxmm) + padPx * 2, H = Math.ceil((g.bb[3] - g.bb[1]) * pxmm) + padPx * 2;
+  const N = W * H;
+  const set = (cx) => { cx.setTransform(pxmm, 0, 0, pxmm, -x0 * pxmm, -y0 * pxmm); cx.fillStyle = '#fff'; };
+  const sc = mkCanvas(W, H), sx = ctxOf(sc); sx.fillStyle = '#000'; sx.fillRect(0, 0, W, H); set(sx); g.solids.forEach(p => sx.fill(p));
+  let solid = readRed(sc);
+  if (g.close > 0) {
+    const rpx = g.close * pxmm, inside = new Uint8Array(N), outside = new Uint8Array(N);
+    for (let i = 0; i < N; i++) { inside[i] = solid[i] >= 0.5 ? 1 : 0; outside[i] = 1 - inside[i]; }
+    const dOut = LACore.edt(outside, W, H);            // distance from outside px to nearest inside px
+    const dil = new Uint8Array(N);
+    for (let i = 0; i < N; i++) dil[i] = (inside[i] || dOut[i] - 0.5 <= rpx) ? 1 : 0;
+    const dIn = LACore.edt(dil, W, H);
+    for (let i = 0; i < N; i++) { const c = clamp(dIn[i] - rpx, 0, 1); if (c > solid[i]) solid[i] = c; }
+  }
+  const M0 = solid;
+  if (g.holes.length) {
+    const hc = mkCanvas(W, H), hx = ctxOf(hc); hx.fillStyle = '#000'; hx.fillRect(0, 0, W, H); set(hx); g.holes.forEach(p => hx.fill(p));
+    const Hh = readRed(hc);
+    for (let i = 0; i < N; i++) M0[i] = Math.min(M0[i], 1 - Hh[i]);
+  }
+  const mask = new Uint8Array(N); for (let i = 0; i < N; i++) mask[i] = M0[i] >= 0.5 ? 1 : 0;
+  const d = LACore.edt(mask, W, H);
+  const mpx = Math.max(0, S.margin) * pxmm, rpx = Math.max(0, S.rim) * pxmm;
+  const C = new Float32Array(N);
+  for (let i = 0; i < N; i++) C[i] = mpx > 0.01 ? Math.min(M0[i], clamp(d[i] - mpx, 0, 1)) : M0[i];
+  let R = null;
+  if (rpx > 0.01) { R = new Float32Array(N); for (let i = 0; i < N; i++) R[i] = Math.min(C[i], clamp(mpx + rpx + 1 - d[i], 0, 1)); }
+  const val = { W, H, x0, y0, pxmm, M0, C, R };
+  baseCache = { key, val };
+  return val;
+}
+
+/* text layout (in mm, local to element, before rotation) */
+const measureCtx = document.createElement('canvas').getContext('2d');
+const fontCSS = (f) => `${f.w} 100px "${f.n}", "DM Sans", sans-serif`;
+const pendingFonts = new Set();
+function ensureFont(name) {
+  const f = fontByName(name), css = `${f.w} 100px "${f.n}"`;
+  if (!document.fonts || document.fonts.check(css)) return true;
+  if (!pendingFonts.has(css)) {
+    pendingFonts.add(css);
+    document.fonts.load(css).then(() => { pendingFonts.delete(css); textCache.clear(); invalidate(); }).catch(() => pendingFonts.delete(css));
+  }
+  return false;
+}
+const textCache = new Map();
+function textLayout(el) {
+  ensureFont(el.font);
+  const key = JSON.stringify([el.text, el.font, el.spacing, el.curve]);
+  const c = textCache.get(key); if (c) return c;
+  const f = fontByName(el.font); measureCtx.font = fontCSS(f);
+  const sp = el.spacing * 100, lineH = 112;
+  const glyphs = []; // {ch,x,y,rot} in font units (font size 100)
+  let bb = [Infinity, Infinity, -Infinity, -Infinity];
+  const add = (x0, y0, x1, y1) => { bb[0] = Math.min(bb[0], x0); bb[1] = Math.min(bb[1], y0); bb[2] = Math.max(bb[2], x1); bb[3] = Math.max(bb[3], y1); };
+  const text = (el.text || '').replace(/\r/g, '');
+  const asc = 40, desc = 40; // half glyph box around the middle baseline
+  if (Math.abs(el.curve) < 0.01) {
+    const lines = text.split('\n'); const total = lines.length * lineH;
+    lines.forEach((ln, li) => {
+      const y = -total / 2 + lineH * (li + 0.5);
+      if (!sp) { const w = measureCtx.measureText(ln).width; glyphs.push({ line: ln, x: 0, y, w }); add(-w / 2, y - asc, w / 2, y + desc); return; }
+      const ws = [...ln].map(ch => measureCtx.measureText(ch).width);
+      const tw = ws.reduce((a, b) => a + b, 0) + sp * Math.max(0, ws.length - 1);
+      let x = -tw / 2;
+      [...ln].forEach((ch, i) => { glyphs.push({ ch, x: x + ws[i] / 2, y, rot: 0 }); x += ws[i] + sp; });
+      add(-tw / 2, y - asc, tw / 2, y + desc);
+    });
+  } else {
+    const ln = text.replace(/\n/g, ' ');
+    const chars = [...ln], ws = chars.map(ch => measureCtx.measureText(ch).width);
+    const tw = ws.reduce((a, b) => a + b, 0) + sp * Math.max(0, chars.length - 1);
+    const span = Math.abs(el.curve) * Math.PI * 1.6; const R = Math.max(30, tw / Math.max(span, 0.01));
+    const up = el.curve > 0;
+    let s = -tw / 2;
+    chars.forEach((ch, i) => {
+      const mid = s + ws[i] / 2, th = mid / R;
+      const x = R * Math.sin(th), y = up ? R - R * Math.cos(th) : -(R - R * Math.cos(th));
+      glyphs.push({ ch, x, y, rot: up ? th : -th });
+      const e = Math.max(ws[i], 70) * 0.6; add(x - e, y - e, x + e, y + e);
+      s += ws[i] + sp;
+    });
+    if (!chars.length) add(-10, -10, 10, 10);
+  }
+  if (!isFinite(bb[0])) bb = [-30, -40, 30, 40];
+  const out = { glyphs, bb, font: f };
+  if (textCache.size > 200) textCache.clear();
+  textCache.set(key, out);
+  return out;
+}
+function elementBox(el) { // local box in mm: [x0,y0,x1,y1]
+  if (el.type === 'text') { const L = textLayout(el), k = el.size / 100, t = el.thicken || 0; return [L.bb[0] * k - t, L.bb[1] * k - t, L.bb[2] * k + t, L.bb[3] * k + t]; }
+  if (el.type === 'image') { const im = IMG[el.img]; const h = im ? el.w * im.h / im.w : el.w; return [-el.w / 2, -h / 2, el.w / 2, h / 2]; }
+  return [-el.w / 2, -el.h / 2, el.w / 2, el.h / 2];
+}
+function drawElement(cx, el, plan) {
+  cx.save(); cx.translate(el.x, el.y); cx.rotate((el.rot || 0) * Math.PI / 180);
+  cx.fillStyle = '#fff'; cx.strokeStyle = '#fff';
+  if (el.type === 'image') {
+    const pc = processedImage(el, plan);
+    if (pc) { const h = el.w * pc.height / pc.width; if (el.flip) cx.scale(-1, 1); cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high'; cx.drawImage(pc, -el.w / 2, -h / 2, el.w, h); }
+  } else if (el.type === 'text') {
+    const L = textLayout(el), k = el.size / 100;
+    cx.scale(k, k); cx.font = fontCSS(L.font); cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    const sw = (el.thicken || 0) * 2 / k;
+    cx.lineJoin = 'round'; cx.lineWidth = sw;
+    for (const g of L.glyphs) {
+      if (g.line !== undefined) { cx.fillText(g.line, g.x, g.y); if (sw > 0) cx.strokeText(g.line, g.x, g.y); continue; }
+      cx.save(); cx.translate(g.x, g.y); cx.rotate(g.rot || 0); cx.fillText(g.ch, 0, 0); if (sw > 0) cx.strokeText(g.ch, 0, 0); cx.restore();
+    }
+  } else {
+    const ic = ICONS[el.shape] || ICONS.star;
+    cx.scale(el.w, el.h); ic.draw(cx);
+  }
+  cx.restore();
+}
+function toneLevel(el, plan) { return clamp(Math.round((el.tone == null ? 1 : el.tone) * plan.nW), 1, plan.nW); }
+
+/* design fields at a base raster: P (photo, fraction of white height), groups [{level,F}], K (cut) */
+function buildDesign(base, plan) {
+  const { W, H, x0, y0, pxmm } = base;
+  const prep = (c) => { const x = ctxOf(c); x.fillStyle = '#000'; x.fillRect(0, 0, W, H); x.setTransform(pxmm, 0, 0, pxmm, -x0 * pxmm, -y0 * pxmm); x.globalCompositeOperation = 'lighten'; return x; };
+  let Pc = null, Kc = null; const G = new Map();
+  for (const el of S.els) {
+    if (el.hidden) continue;
+    let c;
+    if (el.cut) c = Kc || (Kc = mkCanvas(W, H));
+    else if (el.type === 'image' && el.mode === 'photo') c = Pc || (Pc = mkCanvas(W, H));
+    else { const lv = toneLevel(el, plan); c = G.get(lv); if (!c) { c = mkCanvas(W, H); G.set(lv, c); } }
+    if (!c._prepped) { prep(c); c._prepped = true; }
+    drawElement(ctxOf(c), el, plan);
+  }
+  const groups = [];
+  G.forEach((c, lv) => groups.push({ level: lv, F: readRed(c) }));
+  if (base.R) {
+    const g = groups.find(x => x.level === plan.nW);
+    if (g) { const F = g.F; for (let i = 0; i < F.length; i++) if (base.R[i] > F[i]) F[i] = base.R[i]; }
+    else groups.push({ level: plan.nW, F: base.R });
+  }
+  groups.sort((a, b) => b.level - a.level);
+  const P = Pc ? readRed(Pc) : null, K = Kc ? readRed(Kc) : null;
+  let Cc = base.C;
+  if (K) { Cc = new Float32Array(base.C.length); for (let i = 0; i < Cc.length; i++) Cc[i] = Math.min(base.C[i], 1 - K[i]); }
+  return { P, groups, Cc };
+}
+/* per-pixel white layer count (0..nW), matching exported geometry */
+function levelMap(base, des, plan) {
+  const N = base.W * base.H, out = new Uint8Array(N), nW = plan.nW, { P, groups, Cc } = des;
+  for (let i = 0; i < N; i++) {
+    if (Cc[i] < 0.5) continue;
+    let n = 0;
+    if (P) { n = Math.floor(P[i] * nW + 0.5); if (n > nW) n = nW; }
+    for (let g = 0; g < groups.length; g++) { const G = groups[g]; if (G.level <= n) break; if (G.F[i] >= 0.5) { n = G.level; break; } }
+    out[i] = n;
+  }
+  return out;
+}
+
+/* ---------------- 2D view ---------------- */
+const cv2 = $('#view2d'), vp = $('#viewport');
+const view = { scale: 4, cx: 0, cy: 0, dpr: 1, w: 0, h: 0, fitted: false };
+let dirty = true, rafId = 0, interactive = false;
+let pieceImg = { canvas: null, x0: 0, y0: 0, pxmm: 1, key: '' };
+let bedPattern = null;
+function invalidate() { dirty = true; requestRender(); }
+function requestRender() { if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; render2D(); }); }
+function resize2D() {
+  const r = vp.getBoundingClientRect(); view.dpr = Math.min(2.5, window.devicePixelRatio || 1);
+  view.w = Math.max(10, r.width); view.h = Math.max(10, r.height);
+  cv2.width = Math.round(view.w * view.dpr); cv2.height = Math.round(view.h * view.dpr);
+  const big = view.fitW && (Math.abs(view.w - view.fitW) / view.fitW > 0.3 || Math.abs(view.h - view.fitH) / view.fitH > 0.3);
+  if (!view.fitted || big) fitView(); requestRender(); if (three.ready && !$('#view3d').hidden) three.resize();
+}
+function fitView() {
+  const g = pieceInfo(); const bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1];
+  view.scale = Math.max(0.5, Math.min((view.w - 70) / bw, (view.h - 70) / bh));
+  view.cx = (g.bb[0] + g.bb[2]) / 2; view.cy = (g.bb[1] + g.bb[3]) / 2; view.fitted = true; view.fitW = view.w; view.fitH = view.h;
+  updateZoomLabel(); requestRender();
+}
+function updateZoomLabel() { const g = pieceInfo(); const bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1]; const fit = Math.min((view.w - 70) / bw, (view.h - 70) / bh); $('#zoomLabel').textContent = Math.round(view.scale / fit * 100) + '%'; }
+const s2m = (sx, sy) => [(sx - view.w / 2) / view.scale + view.cx, (sy - view.h / 2) / view.scale + view.cy];
+const m2s = (mx, my) => [(mx - view.cx) * view.scale + view.w / 2, (my - view.cy) * view.scale + view.h / 2];
+function makeBedPattern(cx) {
+  const c = mkCanvas(96, 96), x = c.getContext('2d');
+  x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bed').trim() || '#1a1c1f'; x.fillRect(0, 0, 96, 96);
+  for (let i = 0; i < 700; i++) { const a = Math.random() * 0.06; x.fillStyle = Math.random() < 0.5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a * 1.6})`; x.fillRect(Math.random() * 96, Math.random() * 96, 1, 1); }
+  return cx.createPattern(c, 'repeat');
+}
+function targetPxmm(inter) {
+  const g = pieceInfo(), bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1];
+  let pxmm = view.scale * view.dpr;
+  const cap = inter ? 650000 : 2600000;
+  if (bw * bh * pxmm * pxmm > cap) pxmm = Math.sqrt(cap / (bw * bh));
+  return Math.max(1.5, Math.min(pxmm, 24));
+}
+function computePieceImage() {
+  const plan = layerPlan();
+  const pxmm = targetPxmm(interactive);
+  const base = buildBase(pxmm), des = buildDesign(base, plan), lv = levelMap(base, des, plan);
+  const { W, H, M0 } = base; const N = W * H;
+  const bc = hexToRgb(S.colors.base), tc = hexToRgb(S.colors.top);
+  const lut = [];
+  for (let n = 0; n <= plan.nW; n++) { const a = whiteAlpha(plan, n); lut.push([bc[0] + (tc[0] - bc[0]) * a, bc[1] + (tc[1] - bc[1]) * a, bc[2] + (tc[2] - bc[2]) * a]); }
+  const c = (pieceImg.canvas && pieceImg.canvas.width === W && pieceImg.canvas.height === H) ? pieceImg.canvas : mkCanvas(W, H);
+  const cx = c.getContext('2d'); const id = cx.createImageData(W, H), d = id.data;
+  const o = Math.max(1, Math.round(pxmm * 0.12));
+  const hs = 0.11 / Math.max(1, plan.nW / 6);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x, m = M0[i];
+      if (m < 0.01) continue;
+      const n = lv[i], col = lut[n];
+      let sh = 1;
+      if (x >= o && y >= o) {
+        const j = i - o * W - o;
+        if (M0[j] < 0.5) sh = 1.16; else { const dn = n - lv[j]; if (dn) sh = 1 + clamp(dn * hs * (dn > 0 ? 1.2 : 1.6), -0.35, 0.3); }
+      }
+      if (x + o < W && y + o < H && M0[i + o * W + o] < 0.5 && sh === 1) sh = 0.82;
+      const k = i * 4;
+      d[k] = clamp(col[0] * sh, 0, 255); d[k + 1] = clamp(col[1] * sh, 0, 255); d[k + 2] = clamp(col[2] * sh, 0, 255);
+      d[k + 3] = clamp(m * 1.4, 0, 1) * 255;
+    }
+  }
+  cx.putImageData(id, 0, 0);
+  pieceImg = { canvas: c, x0: base.x0, y0: base.y0, pxmm, W, H };
+  lastStats = { base, lv, plan };
+}
+let lastStats = null;
+let guides = { x: false, y: false };
+function render2D() {
+  if ($('#view2d').hidden) return;
+  const ctx = cv2.getContext('2d');
+  const want = targetPxmm(false);
+  if (dirty || !pieceImg.canvas || (!interactive && Math.abs(pieceImg.pxmm - want) / want > 0.2)) {
+    try { computePieceImage(); } catch (e) { console.error(e); }
+    dirty = false;
+    updateStackRibbon();
+  }
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  if (!bedPattern) bedPattern = makeBedPattern(ctx);
+  ctx.fillStyle = bedPattern; ctx.fillRect(0, 0, view.w, view.h);
+  // 10 mm grid
+  const step = view.scale * 10;
+  if (step > 14) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.035)'; ctx.lineWidth = 1; ctx.beginPath();
+    const [ox, oy] = m2s(0, 0);
+    for (let x = ((ox % step) + step) % step; x < view.w; x += step) { ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, view.h); }
+    for (let y = ((oy % step) + step) % step; y < view.h; y += step) { ctx.moveTo(0, Math.round(y) + 0.5); ctx.lineTo(view.w, Math.round(y) + 0.5); }
+    ctx.stroke();
+  }
+  if (pieceImg.canvas) {
+    const [sx, sy] = m2s(pieceImg.x0, pieceImg.y0), k = view.scale / pieceImg.pxmm;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(pieceImg.canvas, sx, sy, pieceImg.W * k, pieceImg.H * k);
+    ctx.restore();
+  }
+  // size label
+  const g = pieceInfo();
+  const [lx, ly] = m2s((g.bb[0] + g.bb[2]) / 2, g.bb[3]);
+  ctx.font = '500 11.5px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(233,237,242,0.55)'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const plan = layerPlan();
+  ctx.fillText(`${g.size[0].toFixed(1)} × ${g.size[1].toFixed(1)} × ${plan.total.toFixed(2)} mm`, lx, ly + 12);
+  // guides
+  ctx.strokeStyle = 'rgba(155,215,255,0.75)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+  if (guides.x) { const [gx] = m2s(0, 0); ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, view.h); ctx.stroke(); }
+  if (guides.y) { const [, gy] = m2s(0, 0); ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(view.w, gy + 0.5); ctx.stroke(); }
+  ctx.setLineDash([]);
+  // selection
+  const el = selected();
+  if (el && !el.hidden) drawSelection(ctx, el);
+}
+function boxCorners(el) {
+  const b = elementBox(el), a = (el.rot || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  return [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]].map(([x, y]) => m2s(el.x + x * ca - y * sa, el.y + x * sa + y * ca));
+}
+function rotHandle(el) {
+  const b = elementBox(el), a = (el.rot || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  const tx = (b[0] + b[2]) / 2, ty = b[1];
+  const [sx, sy] = m2s(el.x + tx * ca - ty * sa, el.y + tx * sa + ty * ca);
+  return [sx + sa * 26, sy - ca * 26, sx, sy];
+}
+function drawSelection(ctx, el) {
+  const c = boxCorners(el);
+  ctx.strokeStyle = '#9bd7ff'; ctx.lineWidth = 1.5; ctx.beginPath(); c.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke();
+  const [rx, ry, tx, ty] = rotHandle(el);
+  ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(rx, ry); ctx.stroke();
+  ctx.fillStyle = '#0d0f12'; ctx.beginPath(); ctx.arc(rx, ry, 6, 0, TAU); ctx.fill(); ctx.stroke();
+  for (const [x, y] of c) { ctx.fillStyle = '#e9edf2'; ctx.fillRect(x - 5, y - 5, 10, 10); ctx.strokeRect(x - 5, y - 5, 10, 10); }
+}
+function selected() { return S.els.find(e => e.id === selId) || null; }
+function hitTest(sx, sy) {
+  const [mx, my] = s2m(sx, sy);
+  for (let i = S.els.length - 1; i >= 0; i--) {
+    const el = S.els[i]; if (el.hidden) continue;
+    const a = -(el.rot || 0) * Math.PI / 180, dx = mx - el.x, dy = my - el.y;
+    const lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a);
+    const b = elementBox(el), tol = 4 / view.scale;
+    if (lx >= b[0] - tol && lx <= b[2] + tol && ly >= b[1] - tol && ly <= b[3] + tol) return el;
+  }
+  return null;
+}
+function handleAt(sx, sy) {
+  const el = selected(); if (!el || el.hidden) return null;
+  const [rx, ry] = rotHandle(el);
+  if (Math.hypot(sx - rx, sy - ry) < 11) return { kind: 'rot', el };
+  const c = boxCorners(el);
+  for (const [x, y] of c) if (Math.abs(sx - x) < 9 && Math.abs(sy - y) < 9) return { kind: 'scale', el };
+  return null;
+}
+
+/* pointer interaction */
+const pointers = new Map(); let drag = null;
+function evPos(e) { const r = cv2.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+cv2.addEventListener('pointerdown', (e) => {
+  cv2.focus({ preventScroll: true });
+  cv2.setPointerCapture(e.pointerId);
+  const [sx, sy] = evPos(e); pointers.set(e.pointerId, [sx, sy]);
+  if (pointers.size === 2) { const p = [...pointers.values()]; drag = { kind: 'pinch', d0: Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]), s0: view.scale, m: s2m((p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2) }; return; }
+  if (e.button === 1 || e.button === 2) { drag = { kind: 'pan', sx, sy, cx: view.cx, cy: view.cy }; return; }
+  const h = handleAt(sx, sy);
+  if (h) {
+    const el = h.el, [ex, ey] = m2s(el.x, el.y);
+    drag = h.kind === 'rot'
+      ? { kind: 'rot', el, a0: Math.atan2(sy - ey, sx - ex), r0: el.rot || 0, ex, ey }
+      : { kind: 'scale', el, d0: Math.max(1, Math.hypot(sx - ex, sy - ey)), ex, ey, orig: { size: el.size, w: el.w, h: el.h } };
+    interactive = true; return;
+  }
+  const hit = hitTest(sx, sy);
+  if (hit) {
+    if (selId !== hit.id) { selId = hit.id; selectionChanged(); }
+    const [mx, my] = s2m(sx, sy);
+    drag = { kind: 'move', el: hit, ox: mx - hit.x, oy: my - hit.y, moved: false };
+    interactive = true;
+  } else {
+    if (selId) { selId = null; selectionChanged(); }
+    drag = { kind: 'pan', sx, sy, cx: view.cx, cy: view.cy };
+  }
+  requestRender();
+});
+cv2.addEventListener('pointermove', (e) => {
+  const [sx, sy] = evPos(e);
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [sx, sy]);
+  if (!drag) {
+    const h = handleAt(sx, sy);
+    cv2.style.cursor = h ? (h.kind === 'rot' ? 'grab' : 'nwse-resize') : hitTest(sx, sy) ? 'move' : 'default';
+    return;
+  }
+  if (drag.kind === 'pinch' && pointers.size >= 2) {
+    const p = [...pointers.values()], d = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]);
+    view.scale = clamp(drag.s0 * d / Math.max(1, drag.d0), 0.3, 80);
+    const mid = [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2];
+    view.cx = drag.m[0] - (mid[0] - view.w / 2) / view.scale; view.cy = drag.m[1] - (mid[1] - view.h / 2) / view.scale;
+    updateZoomLabel(); requestRender(); return;
+  }
+  if (drag.kind === 'pan') { view.cx = drag.cx - (sx - drag.sx) / view.scale; view.cy = drag.cy - (sy - drag.sy) / view.scale; requestRender(); return; }
+  const el = drag.el;
+  if (drag.kind === 'move') {
+    const [mx, my] = s2m(sx, sy); let nx = mx - drag.ox, ny = my - drag.oy;
+    const snap = 6 / view.scale; const off = pieceInfo().designOffset;
+    guides.x = Math.abs(nx - off[0]) < snap && !e.altKey; guides.y = Math.abs(ny - off[1]) < snap && !e.altKey;
+    if (guides.x) nx = off[0]; if (guides.y) ny = off[1];
+    el.x = r2(nx); el.y = r2(ny); drag.moved = true;
+  } else if (drag.kind === 'scale') {
+    const k = clamp(Math.hypot(sx - drag.ex, sy - drag.ey) / drag.d0, 0.05, 40);
+    if (el.type === 'text') el.size = r2(clamp(drag.orig.size * k, 1, 300));
+    else if (el.type === 'image') el.w = r2(clamp(drag.orig.w * k, 2, 500));
+    else { el.w = r2(clamp(drag.orig.w * k, 1, 500)); el.h = r2(clamp(drag.orig.h * k, 1, 500)); }
+  } else if (drag.kind === 'rot') {
+    let a = drag.r0 + (Math.atan2(sy - drag.ey, sx - drag.ex) - drag.a0) * 180 / Math.PI;
+    a = ((a + 540) % 360) - 180; if (e.shiftKey) a = Math.round(a / 15) * 15; else if (Math.abs(a) < 2) a = 0;
+    el.rot = Math.round(a * 10) / 10;
+  }
+  syncInspectorValues(); invalidate();
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (drag && drag.kind === 'pinch' && pointers.size < 2) { drag = null; return; }
+  if (!drag) return;
+  const was = drag.kind; drag = null; guides = { x: false, y: false };
+  if (interactive) { interactive = false; invalidate(); }
+  if (was === 'move' || was === 'scale' || was === 'rot') { commit(); syncInspectorValues(); }
+  requestRender();
+}
+cv2.addEventListener('pointerup', endPointer);
+cv2.addEventListener('pointercancel', endPointer);
+cv2.addEventListener('contextmenu', (e) => e.preventDefault());
+cv2.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const [sx, sy] = evPos(e), [mx, my] = s2m(sx, sy);
+  const k = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015));
+  view.scale = clamp(view.scale * k, 0.3, 80);
+  view.cx = mx - (sx - view.w / 2) / view.scale; view.cy = my - (sy - view.h / 2) / view.scale;
+  updateZoomLabel(); requestRender();
+}, { passive: false });
+cv2.addEventListener('dblclick', (e) => {
+  const el = hitTest(...evPos(e));
+  if (el && el.type === 'text') { selId = el.id; selectionChanged(); setTimeout(() => { const t = $('#insp-text'); if (t) { t.focus(); t.select(); } }, 30); }
+});
+
+/* keyboard */
+function isTyping(e) { const t = e.target; return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable); }
+window.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === 'z' && !isTyping(e)) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && e.key.toLowerCase() === 'y' && !isTyping(e)) { e.preventDefault(); redo(); return; }
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); saveProjectFile(); return; }
+  if (isTyping(e) || $('#exportDlg').open || $('#confirmDlg').open) return;
+  const el = selected();
+  if (mod && e.key.toLowerCase() === 'd' && el) { e.preventDefault(); duplicateEl(el); return; }
+  if (!el) return;
+  if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteEl(el); return; }
+  if (e.key === 'Escape') { selId = null; selectionChanged(); return; }
+  const st = e.shiftKey ? 5 : 0.5; let dx = 0, dy = 0;
+  if (e.key === 'ArrowLeft') dx = -st; else if (e.key === 'ArrowRight') dx = st; else if (e.key === 'ArrowUp') dy = -st; else if (e.key === 'ArrowDown') dy = st; else return;
+  e.preventDefault(); el.x = r2(el.x + dx); el.y = r2(el.y + dy); syncInspectorValues(); invalidate(); commitSoon();
+});
+let commitTimer = 0; function commitSoon() { clearTimeout(commitTimer); commitTimer = setTimeout(commit, 400); }
+
+/* drop & paste */
+let dragDepth = 0;
+vp.addEventListener('dragenter', (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { dragDepth++; $('#dropHint').hidden = false; e.preventDefault(); } });
+vp.addEventListener('dragover', (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) e.preventDefault(); });
+vp.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $('#dropHint').hidden = true; });
+vp.addEventListener('drop', (e) => { e.preventDefault(); dragDepth = 0; $('#dropHint').hidden = true; const f = e.dataTransfer.files[0]; if (f) importImageFile(f); });
+window.addEventListener('paste', (e) => {
+  if (isTyping(e)) return;
+  const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+  if (item) { e.preventDefault(); importImageFile(item.getAsFile()); }
+});
+
+/* ---------------- element ops ---------------- */
+function addText() {
+  const g = pieceInfo(), [aw] = g.area;
+  const el = { id: uid(), type: 'text', text: 'Your Text', font: 'Fredoka', size: r2(clamp(aw * 0.16, 4, 30)), spacing: 0.02, curve: 0, thicken: 0, x: g.designOffset[0], y: g.designOffset[1], rot: 0, cut: false, tone: 1, hidden: false };
+  S.els.push(el); selId = el.id; structureChanged(); commit();
+  setTimeout(() => { const t = $('#insp-text'); if (t) { t.focus(); t.select(); } }, 30);
+}
+function addShape(key) {
+  const g = pieceInfo(), [aw, ah] = g.area, ic = ICONS[key];
+  let w = Math.min(aw, ah) * (ic.panel ? 0.6 : 0.42), h = w;
+  if (ic.aspect) { w = Math.min(aw * 0.8, ah * 0.3 * ic.aspect); h = w / ic.aspect; }
+  const el = { id: uid(), type: 'shape', shape: key, x: g.designOffset[0], y: g.designOffset[1], w: r2(w), h: r2(h), rot: 0, cut: false, tone: 1, hidden: false };
+  S.els.push(el); selId = el.id; structureChanged(); commit();
+}
+function deleteEl(el) { S.els = S.els.filter(e => e.id !== el.id); procCache.delete(el.id); if (selId === el.id) selId = null; structureChanged(); commit(); }
+function duplicateEl(el) {
+  const c = JSON.parse(JSON.stringify(el)); c.id = uid(); c.x = r2(c.x + 4); c.y = r2(c.y + 4);
+  S.els.push(c); selId = c.id; structureChanged(); commit();
+}
+function elLabel(el) {
+  if (el.type === 'text') return (el.text || 'Text').replace(/\n/g, ' ').slice(0, 30) || 'Text';
+  if (el.type === 'image') return el.name || 'Image';
+  return (ICONS[el.shape] || {}).n || 'Shape';
+}
+
+/* ---------------- UI builders ---------------- */
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v; else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'html') e.innerHTML = v;
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return e;
+}
+function rangeFill(inp) { const p = (inp.value - inp.min) / ((inp.max - inp.min) || 1) * 100; inp.style.setProperty('--p', p + '%'); }
+/* slider: get/set via fns; onInput live, commit on change */
+function slider(id, label, min, max, step, get, set, fmt, opts) {
+  opts = opts || {};
+  const val = h('span', { class: 'val', id: id + '-v' }, fmt(get()));
+  const inp = h('input', { type: 'range', id, min, max, step, value: get(), 'aria-label': label });
+  rangeFill(inp);
+  inp.addEventListener('input', () => { set(parseFloat(inp.value)); val.textContent = fmt(get()); rangeFill(inp); (opts.onInput || invalidate)(); });
+  inp.addEventListener('change', () => { commit(); if (opts.onChange) opts.onChange(); });
+  inp._sync = () => { if (document.activeElement !== inp) { inp.value = get(); rangeFill(inp); } val.textContent = fmt(get()); };
+  syncers.push(inp._sync);
+  return h('div', { class: 'field' }, h('div', { class: 'field-row' }, h('label', { class: 'label', for: id }, label), val), inp);
+}
+function numField(id, label, unit, get, set, step) {
+  const inp = h('input', { id, type: 'number', step: step || 0.5, value: r2(get()), 'aria-label': label });
+  inp.addEventListener('input', () => { const v = parseFloat(inp.value); if (isFinite(v)) { set(v); invalidate(); } });
+  inp.addEventListener('change', () => { inp.value = r2(get()); commit(); });
+  syncers.push(() => { if (document.activeElement !== inp) inp.value = r2(get()); });
+  return h('div', { class: 'field' }, h('label', { class: 'label', for: id }, label), h('div', { class: 'unit-in' }, inp, h('span', null, unit)));
+}
+function segCtl(label, options, get, set, id) {
+  const wrap = h('div', { class: 'seg', role: 'group', 'aria-label': label, id });
+  const btns = options.map(([v, t]) => {
+    const b = h('button', { 'aria-pressed': String(get() === v), type: 'button' }, t);
+    b.addEventListener('click', () => { set(v); btns.forEach((x, i) => x.setAttribute('aria-pressed', String(options[i][0] === get()))); });
+    return b;
+  });
+  wrap.append(...btns);
+  return label ? h('div', { class: 'field' }, h('span', { class: 'label' }, label), wrap) : wrap;
+}
+function switchCtl(id, label, get, set) {
+  const inp = h('input', { type: 'checkbox', id, role: 'switch' }); inp.checked = !!get();
+  inp.addEventListener('change', () => set(inp.checked));
+  return h('label', { class: 'switch', for: id }, h('span', { class: 'label' }, label), inp);
+}
+let syncers = [];
+function syncInspectorValues() { syncers.forEach(f => { try { f(); } catch (e) { /* element gone */ } }); }
+
+/* ---------------- left rail ---------------- */
+let curCat = 'all';
+function setTab(name) {
+  ['templates', 'add', 'design'].forEach(t => { $('#tab-' + t).setAttribute('aria-selected', String(t === name)); $('#panel-' + t).hidden = t !== name; });
+}
+['templates', 'add', 'design'].forEach(t => $('#tab-' + t).addEventListener('click', () => setTab(t)));
+function drawPieceThumb(canvas, t, tp) {
+  const W = canvas.width = 220, H = canvas.height = 176, cx = canvas.getContext('2d');
+  cx.fillStyle = '#1a1c1f'; cx.fillRect(0, 0, W, H);
+  const g = t.build(tp || t.defaults);
+  // approximate bbox by sampling path in a small canvas
+  const tmp = mkCanvas(200, 200), tx = ctxOf(tmp), k = 0.75; tx.setTransform(k, 0, 0, k, 100, 100); tx.fillStyle = '#fff'; g.solids.forEach(p => tx.fill(p));
+  const d = tx.getImageData(0, 0, 200, 200).data; let x0 = 200, y0 = 200, x1 = 0, y1 = 0;
+  for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) if (d[(y * 200 + x) * 4] > 30) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const bw = (x1 - x0 + 1) / k, bh = (y1 - y0 + 1) / k, mx = ((x0 + x1) / 2 - 100) / k, my = ((y0 + y1) / 2 - 100) / k;
+  const sc = Math.min((W - 30) / bw, (H - 26) / bh);
+  cx.setTransform(sc, 0, 0, sc, W / 2 - mx * sc, H / 2 - my * sc);
+  cx.shadowColor = 'rgba(0,0,0,.5)'; cx.shadowBlur = 8; cx.shadowOffsetY = 3;
+  cx.fillStyle = '#3a3f47'; g.solids.forEach(p => cx.fill(p));
+  cx.shadowColor = 'transparent';
+  cx.globalCompositeOperation = 'destination-out'; g.holes.forEach(p => cx.fill(p)); cx.globalCompositeOperation = 'source-over';
+  cx.fillStyle = '#1a1c1f'; cx.globalCompositeOperation = 'destination-over'; cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillRect(0, 0, W, H); cx.globalCompositeOperation = 'source-over';
+}
+function buildTemplatePanel() {
+  const chips = $('#catChips'); chips.innerHTML = '';
+  CATS.forEach(([id, n]) => {
+    const b = h('button', { class: 'chip', 'aria-pressed': String(curCat === id), type: 'button' }, n);
+    b.addEventListener('click', () => { curCat = id; buildTemplatePanel(); });
+    chips.append(b);
+  });
+  const grid = $('#tplGrid'); grid.innerHTML = '';
+  TEMPLATES.filter(t => curCat === 'all' || t.cat === curCat).forEach(t => {
+    const c = h('canvas', { 'aria-hidden': 'true' });
+    const isCur = S.template === t.id;
+    drawPieceThumb(c, t, isCur ? S.tp : t.defaults);
+    const dims = t.defaults.d ? `Ø ${t.defaults.d} mm` : `${t.defaults.w} × ${t.defaults.h || t.defaults.w} mm`;
+    const b = h('button', { class: 'tcard', 'aria-pressed': String(isCur), type: 'button', title: t.name }, c, h('span', { class: 'tname' }, t.name), h('span', { class: 'tsize' }, dims));
+    b.addEventListener('click', () => chooseTemplate(t.id));
+    grid.append(b);
+  });
+  // piece options card at top
+  let card = $('#pieceCard'); if (card) card.remove();
+  card = h('div', { class: 'card', id: 'pieceCard' });
+  const t = tplById(S.template);
+  card.append(h('div', { class: 'sec-title' }, h('span', null, t.name), h('span', { class: 'val' }, `${pieceInfo().size[0].toFixed(0)} × ${pieceInfo().size[1].toFixed(0)} mm`)));
+  t.params.forEach(p => {
+    if (p.when && !p.when(S.tp)) return;
+    const onPieceChange = () => { pieceChanged(); };
+    if (p.type === 'range') card.append(slider('tp-' + p.k, p.label, p.min, p.max, p.step, () => S.tp[p.k], v => { S.tp[p.k] = v; }, v => `${v} ${p.unit || ''}`.trim(), { onInput: onPieceChange, onChange: () => buildTemplatePanel() }));
+    else if (p.type === 'toggle') card.append(switchCtl('tp-' + p.k, p.label, () => S.tp[p.k], v => { S.tp[p.k] = v; pieceChanged(); commit(); buildTemplatePanel(); }));
+    else if (p.type === 'select') {
+      const sel = h('select', { class: 'sel', id: 'tp-' + p.k }, p.options.map(([v, n]) => h('option', { value: v, selected: S.tp[p.k] === v }, n)));
+      sel.addEventListener('change', () => { S.tp[p.k] = sel.value; pieceChanged(); commit(); buildTemplatePanel(); });
+      card.append(h('div', { class: 'field' }, h('label', { class: 'label', for: 'tp-' + p.k }, p.label), sel));
+    }
+  });
+  card.append(h('div', { class: 'divider' }));
+  card.append(slider('rim', 'White border', 0, 6, 0.2, () => S.rim, v => { S.rim = v; }, v => v ? v.toFixed(1) + ' mm' : 'Off', { onInput: () => { baseCache.key = ''; invalidate(); } }));
+  card.append(slider('margin', 'Black edge around design', 0, 5, 0.2, () => S.margin, v => { S.margin = v; }, v => v.toFixed(1) + ' mm', { onInput: () => { baseCache.key = ''; invalidate(); } }));
+  $('#panel-templates').prepend(card);
+}
+/* scale + centre the whole design so it fits the piece's design area (no compounding) */
+function designBounds() {
+  let b = [Infinity, Infinity, -Infinity, -Infinity];
+  S.els.forEach(el => {
+    if (el.hidden) return;
+    const bx = elementBox(el), a = (el.rot || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    [[bx[0], bx[1]], [bx[2], bx[1]], [bx[2], bx[3]], [bx[0], bx[3]]].forEach(([x, y]) => {
+      const X = el.x + x * ca - y * sa, Y = el.y + x * sa + y * ca;
+      b = [Math.min(b[0], X), Math.min(b[1], Y), Math.max(b[2], X), Math.max(b[3], Y)];
+    });
+  });
+  return isFinite(b[0]) ? b : null;
+}
+function fitDesignToPiece() {
+  const b = designBounds(); if (!b) return;
+  const g = pieceInfo(), [aw, ah] = g.area, off = g.designOffset;
+  const bw = Math.max(1, b[2] - b[0]), bh = Math.max(1, b[3] - b[1]);
+  let k = Math.min(aw * 0.86 / bw, ah * 0.86 / bh);
+  if (k > 0.97 && k < 1.35) k = 1;
+  const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
+  S.els.forEach(e => {
+    e.x = r2(off[0] + (e.x - cx) * k); e.y = r2(off[1] + (e.y - cy) * k);
+    if (k !== 1) {
+      if (e.type === 'text') { e.size = r2(clamp(e.size * k, 1, 300)); e.thicken = r2(Math.min(e.thicken || 0, 1.2)); }
+      else if (e.type === 'image') e.w = r2(clamp(e.w * k, 2, 500));
+      else { e.w = r2(clamp(e.w * k, 1, 500)); e.h = r2(clamp(e.h * k, 1, 500)); }
+    }
+  });
+  textCache.clear();
+}
+function pieceChanged() { pieceCache.key = ''; baseCache.key = ''; invalidate(); const cur = $('#tplGrid .tcard[aria-pressed="true"] canvas'); if (cur) drawPieceThumb(cur, tplById(S.template), S.tp); }
+function chooseTemplate(id) {
+  if (S.template === id) return;
+  const t = tplById(id);
+  S.template = id; S.tp = Object.assign({}, t.defaults); S.baseMM = t.base;
+  pieceCache.key = ''; baseCache.key = '';
+  fitDesignToPiece();
+  if (TEMPLATES.some(x => x.name === S.name) || S.name === 'Christmas Ornament' || S.name === 'Untitled piece' || !S.name.trim()) S.name = t.name;
+  three.framed = false;
+  $('#projName').value = S.name;
+  view.fitted = false; fitView(); buildTemplatePanel(); buildInspector(); invalidate(); commit();
+}
+
+function buildAddPanel() {
+  const grid = $('#shapeGrid'); grid.innerHTML = '';
+  Object.keys(ICONS).forEach(k => {
+    const ic = ICONS[k], c = h('canvas', { width: 64, height: 64, 'aria-hidden': 'true' }), x = c.getContext('2d');
+    x.fillStyle = '#e9edf2'; x.strokeStyle = '#e9edf2';
+    const a = ic.aspect || 1; x.translate(32, 32); x.scale(48, 48 / a); ic.draw(x);
+    const b = h('button', { class: 'shape-btn', title: ic.n, 'aria-label': 'Add ' + ic.n, type: 'button' }, c);
+    b.addEventListener('click', () => addShape(k));
+    grid.append(b);
+  });
+}
+$('#dropzone').addEventListener('click', () => $('#imgFile').click());
+$('#dropzone').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#imgFile').click(); } });
+$('#dropzone').addEventListener('dragover', (e) => { e.preventDefault(); $('#dropzone').classList.add('over'); });
+$('#dropzone').addEventListener('dragleave', () => $('#dropzone').classList.remove('over'));
+$('#dropzone').addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); $('#dropzone').classList.remove('over'); importImageFile(e.dataTransfer.files[0]); });
+$('#imgFile').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; importImageFile(f); });
+$('#addTextBtn').addEventListener('click', addText);
+$('#samplePhotoBtn').addEventListener('click', () => {
+  const c = sampleMoon(); const key = 'img_' + uid();
+  loadImg(c.toDataURL('image/jpeg', 0.92)).then(img => { const im = registerImage(key, img); addImageElement(key, im, 'Sample moon'); });
+});
+function sampleMoon() {
+  const N = 900, c = mkCanvas(N, N), x = c.getContext('2d');
+  x.fillStyle = '#000'; x.fillRect(0, 0, N, N);
+  const R = N * 0.44, cx = N / 2, cy = N / 2;
+  const id = x.getImageData(0, 0, N, N), d = id.data;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const craters = []; for (let i = 0; i < 70; i++) craters.push([rnd() * 2 - 1, rnd() * 2 - 1, 0.03 + Math.pow(rnd(), 3) * 0.22, 0.3 + rnd() * 0.5]);
+  const maria = []; for (let i = 0; i < 7; i++) maria.push([rnd() * 1.2 - 0.6, rnd() * 1.2 - 0.6, 0.18 + rnd() * 0.25]);
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+    const u = (px - cx) / R, v = (py - cy) / R, r2v = u * u + v * v; if (r2v > 1) continue;
+    const z = Math.sqrt(1 - r2v);
+    let lum = 0.25 + 0.75 * Math.max(0, (-0.45 * u - 0.35 * v + 0.82 * z));
+    let alb = 0.82;
+    for (const [mx, my, mr] of maria) { const dd = Math.hypot(u - mx, v - my) / mr; if (dd < 1) alb -= 0.28 * (1 - dd * dd); }
+    for (const [mx, my, mr, depth] of craters) {
+      const dd = Math.hypot(u - mx, v - my) / mr;
+      if (dd < 1.25) { const rim = Math.exp(-Math.pow((dd - 1) * 7, 2)); alb += rim * 0.18 * depth; if (dd < 1) { const sx = (u - mx) / mr, sy = (v - my) / mr; alb -= 0.12 * depth; lum *= 1 + 0.35 * depth * (sx * 0.5 + sy * 0.4); } }
+    }
+    const val = clamp(lum * alb, 0, 1) * 255 * (1 - Math.pow(1 - z, 6) * 0.3);
+    const k = (py * N + px) * 4; d[k] = d[k + 1] = d[k + 2] = val; d[k + 3] = 255;
+  }
+  x.putImageData(id, 0, 0);
+  return c;
+}
+
+function buildDesignList() {
+  const list = $('#elList'); list.innerHTML = '';
+  $('#elCount').textContent = S.els.length;
+  $('#elEmpty').hidden = S.els.length > 0;
+  const icon = (t) => t === 'text' ? '<svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>' : t === 'image' ? '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
+  [...S.els].reverse().forEach(el => {
+    const sub = el.cut ? 'Cut out' : el.type === 'image' ? (el.mode === 'photo' ? 'Photo shading' : 'Two-tone') : 'Raised white';
+    const eye = h('button', { class: 'icon-btn', title: el.hidden ? 'Show' : 'Hide', 'aria-label': el.hidden ? 'Show' : 'Hide', type: 'button', html: el.hidden ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 6c5 0 9 6 9 6a17 17 0 01-3 3.4M6.6 6.6C4.3 8.1 3 12 3 12s4 6 9 6a8.7 8.7 0 004.4-1.2"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>' });
+    eye.addEventListener('click', (e) => { e.stopPropagation(); el.hidden = !el.hidden; structureChanged(); commit(); });
+    const del = h('button', { class: 'icon-btn', title: 'Delete', 'aria-label': 'Delete', type: 'button', html: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>' });
+    del.addEventListener('click', (e) => { e.stopPropagation(); deleteEl(el); });
+    const item = h('div', { class: 'el-item' + (el.hidden ? ' is-hidden' : ''), role: 'button', tabindex: 0, 'aria-selected': String(selId === el.id) },
+      h('span', { class: 'ico', html: icon(el.type) }), h('span', { style: 'min-width:0' }, h('div', { class: 'nm' }, elLabel(el)), h('div', { class: 'sub' }, sub)), eye, del);
+    const pick = () => { selId = el.id; selectionChanged(); };
+    item.addEventListener('click', pick); item.addEventListener('keydown', (e) => { if (e.key === 'Enter') pick(); });
+    list.append(item);
+  });
+}
+
+/* ---------------- inspector ---------------- */
+function buildInspector() {
+  syncers = [];
+  const root = $('#inspector'); root.innerHTML = '';
+  root.append(buildLayersCard());
+  const el = selected();
+  if (!el) {
+    root.append(h('div', { class: 'empty' },
+      h('h3', null, 'Nothing selected'),
+      h('p', { class: 'hint', style: 'margin:0' }, 'Click something on the piece to edit it. Drag to move, use the corners to resize and the round handle to rotate.'),
+      h('p', { class: 'hint', style: 'margin:0' }, 'Add an image, text or a shape from the ', h('b', null, 'Add'), ' tab. Everything you add prints in the top color.')));
+    return;
+  }
+  const typeName = el.type === 'text' ? 'Text' : el.type === 'image' ? 'Image' : (ICONS[el.shape] || {}).n || 'Shape';
+  const dup = h('button', { class: 'icon-btn', title: 'Duplicate (Ctrl+D)', 'aria-label': 'Duplicate', type: 'button', html: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>' });
+  dup.addEventListener('click', () => duplicateEl(el));
+  const del = h('button', { class: 'icon-btn', title: 'Delete', 'aria-label': 'Delete', type: 'button', html: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>' });
+  del.addEventListener('click', () => deleteEl(el));
+  root.append(h('div', { class: 'insp-head' }, h('h2', null, typeName), h('div', { class: 'tb-group' }, dup, del)));
+  const body = h('div', { class: 'insp-body' }); root.append(body);
+  const plan = layerPlan();
+  const re = () => { invalidate(); };
+
+  if (el.type === 'text') {
+    const ta = h('textarea', { class: 'txt', id: 'insp-text', rows: 2, 'aria-label': 'Text' }); ta.value = el.text;
+    ta.addEventListener('input', () => { el.text = ta.value; textCache.clear(); invalidate(); buildDesignListSoon(); });
+    ta.addEventListener('change', commit);
+    body.append(h('div', { class: 'field' }, h('label', { class: 'label', for: 'insp-text' }, 'Text'), ta));
+    const fl = h('div', { class: 'font-list', role: 'listbox', 'aria-label': 'Font' });
+    FONTS.forEach(f => {
+      const b = h('button', { class: 'font-opt', type: 'button', 'aria-pressed': String(el.font === f.n), style: `font-family:"${f.n}",sans-serif;font-weight:${f.w}` }, f.n);
+      b.addEventListener('click', () => { el.font = f.n; ensureFont(f.n); textCache.clear(); fl.querySelectorAll('.font-opt').forEach(x => x.setAttribute('aria-pressed', String(x === b))); invalidate(); commit(); });
+      fl.append(b);
+    });
+    body.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Font'), fl));
+    body.append(slider('insp-size', 'Size', 2, 60, 0.5, () => el.size, v => { el.size = v; }, v => v.toFixed(1) + ' mm'));
+    body.append(slider('insp-spacing', 'Letter spacing', -0.1, 0.6, 0.01, () => el.spacing, v => { el.spacing = v; textCache.clear(); }, v => Math.round(v * 100) + '%'));
+    body.append(slider('insp-curve', 'Curve', -1, 1, 0.01, () => el.curve, v => { el.curve = Math.abs(v) < 0.02 ? 0 : v; textCache.clear(); }, v => v === 0 ? 'Straight' : (v > 0 ? 'Arch ' : 'Smile ') + Math.round(Math.abs(v) * 100) + '%'));
+    body.append(slider('insp-thicken', 'Make letters bolder', 0, 1.2, 0.05, () => el.thicken, v => { el.thicken = v; }, v => v ? '+' + v.toFixed(2) + ' mm' : 'Off'));
+    if (/Great Vibes|Dancing|Pacifico|Cinzel/.test(el.font) && el.size < 10 && (el.thicken || 0) < 0.2) body.append(h('div', { class: 'warn-note' }, 'Thin script letters this small can be too fine for a 0.4 mm nozzle. Raise “Make letters bolder” to about 0.2 mm.'));
+  } else if (el.type === 'image') {
+    body.append(segCtl('Style', [['stencil', 'Two-tone'], ['photo', 'Photo shading']], () => el.mode, v => { el.mode = v; if (v === 'photo') ensurePhotoDepth(); structureChanged(); commit(); }, 'insp-mode'));
+    if (el.mode === 'stencil') {
+      body.append(segCtl('Raise these parts in white', [[true, 'Dark parts'], [false, 'Light parts']], () => el.raiseDark, v => { el.raiseDark = v; el.threshold = r2(otsu(stencilSource(IMG[el.img], v))); buildInspector(); invalidate(); commit(); }, 'insp-raise'));
+      body.append(slider('insp-thr', 'Threshold', 0.05, 0.95, 0.01, () => el.threshold, v => { el.threshold = v; }, v => Math.round(v * 100) + '%'));
+      body.append(slider('insp-smooth', 'Smooth edges', 0, 3, 0.1, () => el.smooth, v => { el.smooth = v; }, v => v.toFixed(1)));
+    } else {
+      body.append(slider('insp-bright', 'Brightness', -1, 1, 0.01, () => el.bright, v => { el.bright = v; }, v => (v > 0 ? '+' : '') + Math.round(v * 100)));
+      body.append(slider('insp-contrast', 'Contrast', -1, 1, 0.01, () => el.contrast, v => { el.contrast = v; }, v => (v > 0 ? '+' : '') + Math.round(v * 100)));
+      body.append(slider('insp-mid', 'Midtones', -1, 1, 0.01, () => el.mid, v => { el.mid = v; }, v => (v > 0 ? '+' : '') + Math.round(v * 100)));
+      body.append(slider('insp-detail', 'Soften fine noise', 0, 3, 0.1, () => el.detail, v => { el.detail = v; }, v => v.toFixed(1)));
+      body.append(switchCtl('insp-invert', 'Invert (negative)', () => el.invert, v => { el.invert = v; invalidate(); commit(); }));
+      body.append(switchCtl('insp-percep', 'True-to-photo shading', () => el.perceptual, v => { el.perceptual = v; invalidate(); commit(); }));
+      body.append(h('p', { class: 'hint', style: 'margin:0' }, 'Bright spots get more white layers, dark spots get fewer. ', h('b', null, `${plan.nW} white layers`), ` give ${plan.nW + 1} shades. Add white layers above for smoother shading.`));
+    }
+    body.append(switchCtl('insp-flip', 'Mirror', () => el.flip, v => { el.flip = v; invalidate(); commit(); }));
+  } else {
+    const sg = h('div', { class: 'shape-grid' });
+    Object.keys(ICONS).forEach(k => {
+      const ic = ICONS[k], c = h('canvas', { width: 48, height: 48 }), x = c.getContext('2d'); x.fillStyle = x.strokeStyle = '#e9edf2';
+      const a = ic.aspect || 1; x.translate(24, 24); x.scale(36, 36 / a); ic.draw(x);
+      const b = h('button', { class: 'shape-btn', title: ic.n, 'aria-label': ic.n, 'aria-pressed': String(el.shape === k), type: 'button' }, c);
+      b.addEventListener('click', () => { const old = ICONS[el.shape] || {}; el.shape = k; if ((ic.aspect || 1) !== (old.aspect || 1)) { el.h = r2(el.w / (ic.aspect || 1)); } buildInspector(); invalidate(); commit(); buildDesignList(); });
+      sg.append(b);
+    });
+    body.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Shape'), sg));
+  }
+
+  body.append(h('div', { class: 'divider' }));
+  const pos = h('div', { class: 'grid2' });
+  pos.append(numField('insp-x', 'X (from center)', 'mm', () => el.x, v => { el.x = v; }));
+  pos.append(numField('insp-y', 'Y (from center)', 'mm', () => el.y, v => { el.y = v; }));
+  if (el.type === 'image') pos.append(numField('insp-w', 'Width', 'mm', () => el.w, v => { el.w = clamp(v, 1, 500); }));
+  if (el.type === 'shape') { pos.append(numField('insp-w', 'Width', 'mm', () => el.w, v => { el.w = clamp(v, 1, 500); })); pos.append(numField('insp-h', 'Height', 'mm', () => el.h, v => { el.h = clamp(v, 1, 500); })); }
+  pos.append(numField('insp-rot', 'Rotation', '°', () => el.rot || 0, v => { el.rot = clamp(v, -360, 360); }, 1));
+  body.append(pos);
+  const centerBtns = h('div', { class: 'grid2' },
+    h('button', { class: 'btn small', type: 'button', onclick: () => { el.x = pieceInfo().designOffset[0]; syncInspectorValues(); invalidate(); commit(); } }, 'Center across'),
+    h('button', { class: 'btn small', type: 'button', onclick: () => { el.y = pieceInfo().designOffset[1]; syncInspectorValues(); invalidate(); commit(); } }, 'Center down'));
+  body.append(centerBtns);
+
+  body.append(h('div', { class: 'divider' }));
+  body.append(segCtl('Prints as', [[false, 'Raised white'], [true, 'Cut out (black)']], () => el.cut, v => { el.cut = v; structureChanged(); commit(); }, 'insp-cut'));
+  if (el.cut) body.append(h('p', { class: 'hint', style: 'margin:0' }, 'Cut out removes white wherever it overlaps, so black shows through. Put it on top of a white panel or photo.'));
+  else if (!(el.type === 'image' && el.mode === 'photo')) {
+    body.append(slider('insp-tone', 'Height (white layers)', 1, plan.nW, 1, () => toneLevel(el, plan), v => { el.tone = v / plan.nW; }, v => `${Math.round(v)} of ${plan.nW}`));
+  }
+}
+let dlTimer = 0; function buildDesignListSoon() { clearTimeout(dlTimer); dlTimer = setTimeout(buildDesignList, 250); }
+
+function buildLayersCard() {
+  const plan = layerPlan();
+  const card = h('div', { class: 'insp-body', style: 'padding-bottom:6px' });
+  const wrap = h('div', { class: 'card' });
+  wrap.append(h('div', { class: 'sec-title' }, h('span', null, 'Layers & colors'), h('span', { class: 'val' }, plan.total.toFixed(2) + ' mm tall')));
+  const stepper = (id, get, inc, dec) => {
+    const out = h('output', { id }, get());
+    const minus = h('button', { type: 'button', 'aria-label': 'Fewer layers' }, '−'), plus = h('button', { type: 'button', 'aria-label': 'More layers' }, '+');
+    minus.addEventListener('click', () => { dec(); layersChanged(); });
+    plus.addEventListener('click', () => { inc(); layersChanged(); });
+    return h('div', { class: 'stepper' }, minus, out, plus);
+  };
+  wrap.append(h('div', { class: 'layer-row' },
+    h('span', { class: 'swatch-dot', style: `background:${S.colors.base}` }),
+    h('span', null, h('div', { class: 'lname' }, 'Base layers'), h('div', { class: 'lsub', id: 'lsubB' }, `${fmtMM(plan.baseH)} mm · 1–${plan.nB}`)),
+    stepper('nB', () => plan.nB, () => { const p = layerPlan(); S.baseMM = p.FL + Math.min(80, p.nB) * p.lb; }, () => { const p = layerPlan(); S.baseMM = p.FL + Math.max(1, p.nB - 2) * p.lb; })));
+  wrap.append(h('div', { class: 'layer-row' },
+    h('span', { class: 'swatch-dot', style: `background:${S.colors.top}` }),
+    h('span', null, h('div', { class: 'lname' }, 'Top layers'), h('div', { class: 'lsub', id: 'lsubW' }, `≤ ${fmtMM(plan.whiteH)} mm · ${plan.nB + 1}–${plan.nB + plan.nW}`)),
+    stepper('nW', () => plan.nW, () => { const p = layerPlan(); S.whiteMM = Math.min(80, p.nW + 1) * p.lw; }, () => { const p = layerPlan(); S.whiteMM = Math.max(1, p.nW - 1) * p.lw; })));
+  const ps = h('select', { class: 'sel', id: 'presetSel', 'aria-label': 'Print profile' }, PRESETS.map(p => h('option', { value: p.id, selected: S.print.preset === p.id }, `${p.name} — ${p.lb.toFixed(2)} / ${p.lw.toFixed(2)} mm`)));
+  ps.addEventListener('change', () => { S.print.preset = ps.value; layersChanged(); });
+  wrap.append(h('div', { class: 'field' }, h('label', { class: 'label', for: 'presetSel' }, 'Print profile (base / top layer height)'), ps));
+
+  const swatchRow = (list, cur, onPick, customId, label) => {
+    const row = h('div', { class: 'swatches', role: 'group', 'aria-label': label });
+    list.forEach(c => {
+      const b = h('button', { class: 'sw', type: 'button', title: c.n, 'aria-label': c.n, 'aria-pressed': String(cur.toLowerCase() === c.c), style: `background:${c.c}` });
+      b.addEventListener('click', () => onPick(c));
+      row.append(b);
+    });
+    const ci = h('input', { type: 'color', id: customId, value: cur, 'aria-label': 'Custom color' });
+    ci.addEventListener('input', () => onPick({ c: ci.value, custom: true }));
+    ci.addEventListener('change', commit);
+    row.append(h('label', { class: 'sw-custom', title: 'Custom color' }, ci));
+    return row;
+  };
+  wrap.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Base color (prints first)'),
+    swatchRow(BASE_COLORS, S.colors.base, (c) => { S.colors.base = c.c; invalidate(); if (!c.custom) { commit(); buildInspector(); } else refreshDots(); }, 'baseColor', 'Base color')));
+  wrap.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Top color (prints on top)'),
+    swatchRow(TOP_COLORS, S.colors.top, (c) => { S.colors.top = c.c; if (c.td) S.colors.td = c.td; procCache.clear(); invalidate(); if (!c.custom) { commit(); buildInspector(); } else refreshDots(); }, 'topColor', 'Top color')));
+  wrap.append(slider('td', 'Top color see-through (TD)', 0.3, 10, 0.1, () => S.colors.td, v => { S.colors.td = v; procCache.clear(); }, v => v.toFixed(1)));
+  const swapBtn = h('button', { class: 'btn small ghost', type: 'button' }, 'Swap base and top colors');
+  swapBtn.addEventListener('click', () => { const b = S.colors.base; S.colors.base = S.colors.top; S.colors.top = b; const tc = TOP_COLORS.find(c => c.c === S.colors.top); S.colors.td = tc ? tc.td : 4; procCache.clear(); invalidate(); commit(); buildInspector(); });
+  wrap.append(swapBtn);
+  card.append(wrap);
+  return card;
+}
+function refreshDots() { const d = document.querySelectorAll('#inspector .swatch-dot'); if (d[0]) d[0].style.background = S.colors.base; if (d[1]) d[1].style.background = S.colors.top; }
+function layersChanged() {
+  procCache.clear(); invalidate(); commit(); buildInspector();
+  if ($('#exportDlg').open) refreshExportDialog();
+}
+
+/* ---------------- layer ribbon ---------------- */
+function updateStackRibbon() {
+  const plan = layerPlan();
+  let used = plan.nW;
+  if (lastStats) { let mx = 0; const lv = lastStats.lv; for (let i = 0; i < lv.length; i++) if (lv[i] > mx) mx = lv[i]; used = mx; }
+  const rb = $('#ribbon'); rb.innerHTML = '';
+  const total = plan.nB + Math.max(used, 0);
+  const bc = hexToRgb(S.colors.base), tc = hexToRgb(S.colors.top);
+  for (let L = 1; L <= total; L++) {
+    const isW = L > plan.nB, n = L - plan.nB, a = isW ? whiteAlpha(plan, n) : 0;
+    const col = `rgb(${bc.map((v, i) => Math.round(v + (tc[i] - v) * a)).join(',')})`;
+    const th = L <= plan.nB ? (L === 1 ? plan.FL : plan.lb) : plan.lw;
+    const i = h('i', { class: (isW ? 'w' : '') + (L === plan.nB + 1 ? ' swap' : ''), style: `background:${col};flex-grow:${th}`, title: `Layer ${L} · Z ${fmtMM(layerZ(plan, L))} mm` });
+    rb.append(i);
+  }
+  $('#stackMeta').innerHTML = `<b>${plan.pr.name}</b> · ${total} layers · ${fmtMM(plan.baseH + used * plan.lw)} mm`;
+  const leg = $('#stackLegend');
+  leg.innerHTML = '';
+  leg.append(h('span', null, h('i', { class: 'k', style: `background:${S.colors.base}` }), `1–${plan.nB} base · ${plan.lb.toFixed(2)} mm layers`));
+  if (used > 0) {
+    leg.append(h('span', { class: 'swapk' }, `⇄ color change at layer ${plan.swapLayer} (${fmtMM(plan.swapZ)} mm)`));
+    leg.append(h('span', null, h('i', { class: 'k', style: `background:${S.colors.top}` }), `${plan.nB + 1}–${plan.nB + used} top · ${plan.lw.toFixed(2)} mm layers`));
+  } else leg.append(h('span', null, 'No top-color design yet'));
+}
+
+/* ---------------- structure / selection events ---------------- */
+function selectionChanged() { buildInspector(); buildDesignList(); requestRender(); }
+function structureChanged() { buildInspector(); buildDesignList(); invalidate(); }
+let lastTplKey = '';
+function afterLoad() {
+  const tk = S.template + JSON.stringify(S.tp); if (tk !== lastTplKey) { lastTplKey = tk; view.fitted = false; three.framed = false; }
+  procCache.clear(); textCache.clear(); pieceCache.key = ''; baseCache.key = '';
+  if (selId && !S.els.some(e => e.id === selId)) selId = null;
+  $('#projName').value = S.name;
+  buildTemplatePanel(); buildInspector(); buildDesignList(); updateUndoButtons(); if (!view.fitted && view.w > 10) fitView(); invalidate(); scheduleSave();
+  if (three.ready && !$('#view3d').hidden) schedule3D();
+}
+
+/* ---------------- model building (shared by 3D + export) ---------------- */
+let buildToken = 0;
+async function buildModel(pxmm, onProgress, token) {
+  const plan = layerPlan();
+  const g = pieceInfo(); const bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1];
+  const maxPx = 12e6; if (bw * bh * pxmm * pxmm > maxPx) pxmm = Math.sqrt(maxPx / (bw * bh));
+  const base = buildBase(pxmm); const des = buildDesign(base, plan);
+  const { W, H } = base, N = W * H;
+  const tf = { sx: 1 / pxmm, tx: base.x0, sy: -1 / pxmm, ty: -base.y0 };
+  const speck = Math.max(0, S.print.speck);
+  const tol = 0.22;
+  onProgress && onProgress(0.05, 'Tracing the base');
+  await tick(); if (token != null && token !== buildToken) return null;
+  const baseB = new LACore.MeshBuilder();
+  baseB.addPolys(LACore.fieldToPolygons(base.M0, W, H, tf, { tolPx: tol, minArea: 1 }), 0, plan.baseH);
+  const { P, groups, Cc } = des;
+  const slabs = [];
+  let prev = new Float32Array(N), cur = new Float32Array(N), prevStart = 0, havePrev = false;
+  const finish = (field, k0, k1) => {
+    const polys = LACore.fieldToPolygons(field, W, H, tf, { tolPx: tol, minArea: speck });
+    const mb = new LACore.MeshBuilder(); const z0 = plan.baseH + (k0 - 1) * plan.lw, z1 = plan.baseH + k1 * plan.lw;
+    mb.addPolys(polys, z0, z1);
+    const m = mb.finish(); if (m.indices.length) slabs.push({ k0, k1, z0, z1, mesh: m });
+  };
+  let lastK = 0;
+  for (let k = 1; k <= plan.nW; k++) {
+    let any = false;
+    for (let i = 0; i < N; i++) {
+      let v = 0;
+      if (P) { v = P[i] * plan.nW - (k - 1); v = v < 0 ? 0 : v > 1 ? 1 : v; }
+      for (let gI = 0; gI < groups.length; gI++) { const G = groups[gI]; if (G.level < k) break; const f = G.F[i]; if (f > v) v = f; }
+      const c = Cc[i]; if (c < v) v = c;
+      cur[i] = v; if (v >= 0.5) any = true;
+    }
+    if (!any) break;
+    let same = havePrev;
+    if (same) for (let i = 0; i < N; i++) if (cur[i] !== prev[i]) { same = false; break; }
+    if (!same) {
+      if (havePrev) finish(prev, prevStart, k - 1);
+      const t = prev; prev = cur; cur = t; prevStart = k; havePrev = true;
+    }
+    lastK = k;
+    onProgress && onProgress(0.08 + 0.85 * k / plan.nW, `Tracing top layer ${k} of ${plan.nW}`);
+    await tick(); if (token != null && token !== buildToken) return null;
+  }
+  if (havePrev) finish(prev, prevStart, lastK);
+  const base_mesh = baseB.finish();
+  // merge top slabs
+  let nv = 0, ni = 0; slabs.forEach(s => { nv += s.mesh.positions.length; ni += s.mesh.indices.length; });
+  const tp = new Float32Array(nv), ti = new Uint32Array(ni); let ov = 0, oi = 0;
+  slabs.forEach(s => { tp.set(s.mesh.positions, ov); const off = ov / 3; for (let i = 0; i < s.mesh.indices.length; i++) ti[oi + i] = s.mesh.indices[i] + off; ov += s.mesh.positions.length; oi += s.mesh.indices.length; });
+  const top_mesh = { positions: tp, indices: ti };
+  const b = LACore.meshBounds([base_mesh, top_mesh].filter(m => m.positions.length));
+  const center = [(b[0] + b[3]) / 2, (b[1] + b[4]) / 2];
+  const shift = (m) => { const p = m.positions; for (let i = 0; i < p.length; i += 3) { p[i] -= center[0]; p[i + 1] -= center[1]; } };
+  shift(base_mesh); shift(top_mesh); slabs.forEach(s => shift(s.mesh));
+  onProgress && onProgress(0.97, 'Finishing');
+  return { plan, base: base_mesh, top: top_mesh, slabs, usedLevels: lastK, size: [b[3] - b[0], b[4] - b[1], b[5]] };
+}
+
+/* ---------------- 3D view ---------------- */
+const three = { ready: false };
+function init3D() {
+  if (three.ready) return true;
+  if (typeof THREE === 'undefined') { toast('3D preview could not load. Check your connection.'); return false; }
+  const canvas = $('#view3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.localClippingEnabled = true;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0d0f12);
+  const cam = new THREE.PerspectiveCamera(35, 1, 0.5, 5000); cam.up.set(0, 0, 1);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x30343c, 0.55));
+  const d1 = new THREE.DirectionalLight(0xffffff, 0.85); d1.position.set(-0.6, -1, 1.4); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xbfdcff, 0.35); d2.position.set(1, 0.8, 0.6); scene.add(d2);
+  const grid = new THREE.GridHelper(400, 40, 0x2a2f37, 0x1d2128); grid.rotation.x = Math.PI / 2; grid.position.z = -0.02; scene.add(grid);
+  const group = new THREE.Group(); scene.add(group);
+  const clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1000);
+  Object.assign(three, { renderer, scene, cam, group, clip, ready: true, theta: -Math.PI / 2 + 0.5, phi: 0.95, radius: 200, target: new THREE.Vector3(0, 0, 1) });
+  three.resize = () => { const r = vp.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / Math.max(1, r.height); cam.updateProjectionMatrix(); draw3D(); };
+  // orbit controls
+  const ptr = new Map(); let mode = null, last = null, pd = 0;
+  canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); mode = (e.button === 2 || e.shiftKey) ? 'pan' : 'rot'; last = [e.clientX, e.clientY]; if (ptr.size === 2) { const p = [...ptr.values()]; pd = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]); mode = 'pinch'; } });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (mode === 'pinch' && ptr.size === 2) { const p = [...ptr.values()], d = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]); three.radius = clamp(three.radius * pd / Math.max(1, d), 10, 3000); pd = d; draw3D(); return; }
+    const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY];
+    if (mode === 'rot') { three.theta -= dx * 0.008; three.phi = clamp(three.phi - dy * 0.008, 0.05, Math.PI / 2 + 0.6); }
+    else if (mode === 'pan') {
+      const k = three.radius * 0.0018, t = three.theta;
+      three.target.x += (-Math.sin(t) * dx - Math.cos(t) * Math.cos(three.phi) * dy) * k * -1;
+      three.target.y += (Math.cos(t) * dx - Math.sin(t) * Math.cos(three.phi) * dy) * k * -1;
+    }
+    draw3D();
+  });
+  const up = (e) => { ptr.delete(e.pointerId); if (ptr.size < 2 && mode === 'pinch') mode = null; if (!ptr.size) mode = null; };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); three.radius = clamp(three.radius * Math.exp(e.deltaY * 0.0012), 10, 3000); draw3D(); }, { passive: false });
+  $('#clipRange').addEventListener('input', () => applyClip());
+  return true;
+}
+function draw3D() {
+  if (!three.ready) return;
+  const { cam, target } = three, r = three.radius;
+  cam.position.set(target.x + r * Math.sin(three.phi) * Math.cos(three.theta), target.y + r * Math.sin(three.phi) * Math.sin(three.theta), target.z + r * Math.cos(three.phi));
+  cam.lookAt(target); three.renderer.render(three.scene, cam);
+}
+let t3Timer = 0;
+function schedule3D() { clearTimeout(t3Timer); t3Timer = setTimeout(rebuild3D, 350); }
+async function rebuild3D() {
+  if (!init3D()) return;
+  const token = ++buildToken;
+  $('#busy').hidden = false; $('#busyText').textContent = 'Building 3D preview…';
+  let model = null;
+  try {
+    const g = pieceInfo(), area = (g.bb[2] - g.bb[0]) * (g.bb[3] - g.bb[1]);
+    const pxmm = clamp(Math.sqrt(900000 / area), 2.5, 6);
+    model = await buildModel(pxmm, (p, t) => { $('#busyText').textContent = t; }, token);
+  } catch (e) { console.error(e); toast('Could not build the 3D preview.'); }
+  if (token !== buildToken) return;
+  $('#busy').hidden = true;
+  if (!model) return;
+  const { group } = three;
+  while (group.children.length) { const c = group.children.pop(); c.geometry.dispose(); c.material.dispose(); }
+  const plan = model.plan, bc = new THREE.Color(S.colors.base), tc = new THREE.Color(S.colors.top);
+  const mk = (m, color) => {
+    if (!m.indices.length) return;
+    let geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(m.positions, 3)); geo.setIndex(new THREE.BufferAttribute(m.indices, 1));
+    geo = geo.toNonIndexed(); geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.82, metalness: 0, side: THREE.DoubleSide, clippingPlanes: [three.clip] });
+    group.add(new THREE.Mesh(geo, mat));
+  };
+  mk(model.base, bc);
+  model.slabs.forEach(s => { const a = whiteAlpha(plan, s.k1); mk(s.mesh, bc.clone().lerp(tc, a)); });
+  three.model = model;
+  if (!three.framed) { three.radius = Math.max(model.size[0], model.size[1]) * 2.1 + 20; three.target.set(0, 0, model.size[2] / 2); three.framed = true; }
+  const total = plan.nB + model.usedLevels, cr = $('#clipRange');
+  const atMax = +cr.value >= +cr.max; cr.max = Math.max(1, total); if (atMax) cr.value = cr.max; else cr.value = Math.min(+cr.value, total);
+  rangeFill(cr); applyClip(); three.resize();
+}
+function applyClip() {
+  if (!three.model) return;
+  const plan = three.model.plan, cr = $('#clipRange'), L = +cr.value, total = +cr.max;
+  three.clip.constant = L >= total ? 1000 : layerZ(plan, L) + 1e-4;
+  rangeFill(cr);
+  $('#clipVal').textContent = L >= total ? `all ${total}` : `${L} of ${total}`;
+  $('#clipHint').textContent = L <= plan.nB ? `Base color · Z ${fmtMM(layerZ(plan, L))} mm` : L === plan.nB + 1 ? `Color change here · first top-color layer` : `Top color · Z ${fmtMM(layerZ(plan, L))} mm`;
+  draw3D();
+}
+function setView(v3) {
+  $('#v2dBtn').setAttribute('aria-pressed', String(!v3)); $('#v3dBtn').setAttribute('aria-pressed', String(v3));
+  $('#view2d').hidden = v3; $('#view3d').hidden = !v3; $('#clip3d').hidden = !v3;
+  ['#zoomOut', '#zoomIn', '#fitBtn', '#zoomLabel'].forEach(s => $(s).style.visibility = v3 ? 'hidden' : 'visible');
+  if (v3) { if (init3D()) { three.resize(); rebuild3D(); } else setView(false); }
+  else { $('#busy').hidden = true; buildToken++; resize2D(); }
+}
+$('#v2dBtn').addEventListener('click', () => setView(false));
+$('#v3dBtn').addEventListener('click', () => setView(true));
+
+/* re-run 3D when design changes while 3D view is open */
+const _invalidate = invalidate;
+invalidate = function () { _invalidate(); if (three.ready && !$('#view3d').hidden) schedule3D(); };
+
+/* ---------------- export ---------------- */
+function objectSettings(plan) {
+  const inf = S.print.infill === 'auto' ? (plan.total <= 5 ? 100 : 20) : +S.print.infill;
+  const o = {
+    layer_height: plan.lb.toFixed(2),
+    wall_loops: String(S.print.walls),
+    sparse_infill_density: inf + '%',
+    top_surface_pattern: 'monotonicline',
+    ironing_type: S.print.ironing ? 'top' : 'no ironing',
+    enable_support: '0',
+    brim_type: 'no_brim',
+  };
+  if (inf < 100) o.sparse_infill_pattern = 'gyroid';
+  return o;
+}
+function guideText(plan, usedLevels, grams, size) {
+  const used = usedLevels == null ? plan.nW : usedLevels;
+  const pr = plan.pr, last = plan.nB + used, s = S.print;
+  const inf = objectSettings(plan).sparse_infill_density;
+  const pad = (t, n) => (t + ' '.repeat(n)).slice(0, n);
+  const lines = [];
+  lines.push('LAYER ART STUDIO — PRINT GUIDE');
+  lines.push(`${S.name}`);
+  if (size) lines.push(`${size[0].toFixed(1)} × ${size[1].toFixed(1)} mm, ${size[2].toFixed(2)} mm tall`);
+  lines.push('');
+  lines.push(`Profile: ${pr.name}`);
+  lines.push(`  First layer ${plan.FL.toFixed(2)} mm · base layers ${plan.lb.toFixed(2)} mm · top layers ${plan.lw.toFixed(2)} mm`);
+  lines.push('');
+  lines.push('LAYERS');
+  lines.push(`  ${pad(`1–${plan.nB}`, 9)}base color   0.00 → ${fmtMM(plan.baseH)} mm`);
+  if (used > 0) {
+    lines.push(`  ${pad(`${plan.nB + 1}–${last}`, 9)}top color    ${fmtMM(plan.baseH)} → ${fmtMM(plan.baseH + used * plan.lw)} mm`);
+    lines.push(`  Color change at layer ${plan.swapLayer} (layer slider shows ${fmtMM(plan.swapZ)} mm)`);
+  }
+  lines.push('');
+  if (s.swap === 'ams') {
+    lines.push('AMS / MULTI-COLOR');
+    lines.push('  The base and the top are separate parts on filament 1 (base)');
+    lines.push('  and filament 2 (top). Load both colors, slice, print.');
+  } else {
+    lines.push('MANUAL SWAP (ONE NOZZLE, NO AMS)');
+    lines.push(`  1. Slice, then drag the layer slider to layer ${plan.swapLayer} (Z ${fmtMM(plan.swapZ)} mm).`);
+    lines.push('  2. Right-click the + on the slider and choose “Add pause”');
+    lines.push('     (PrusaSlicer: “Add color change”). Slice again.');
+    lines.push('  3. Print with the base color. When it pauses, unload, load the');
+    lines.push('     top color, purge until it runs clean, and resume.');
+  }
+  lines.push('');
+  lines.push('SETTINGS (already in the Bambu / Orca 3MF)');
+  lines.push(`  Layer height ${plan.lb.toFixed(2)} mm` + (plan.lb !== plan.lw ? ` · height range from ${fmtMM(plan.baseH)} mm: ${plan.lw.toFixed(2)} mm` : ''));
+  lines.push(`  Walls ${s.walls} · Infill ${inf} · Supports off · Brim off · Ironing ${s.ironing ? 'top' : 'off'}`);
+  lines.push(`  First layer height must be ${plan.FL.toFixed(2)} mm so the color change lands exactly.`);
+  if (grams) { lines.push(''); lines.push(`Filament: base ≈ ${grams[0].toFixed(1)} g · top ≈ ${grams[1].toFixed(1)} g (PLA)`); }
+  return lines.join('\n');
+}
+let exportEst = null;
+function estimate() {
+  // estimate from a 4 px/mm raster
+  const plan = layerPlan(); const base = buildBase(4), des = buildDesign(base, plan), lv = levelMap(base, des, plan);
+  const a = 1 / 16; let bArea = 0, wVol = 0, maxL = 0;
+  for (let i = 0; i < lv.length; i++) { if (base.M0[i] >= 0.5) bArea += a; wVol += lv[i] * plan.lw * a; if (lv[i] > maxL) maxL = lv[i]; }
+  baseCache.key = ''; // keep the preview cache for display resolution
+  return { grams: [bArea * plan.baseH * 1.24 / 1000, wVol * 1.24 / 1000], used: maxL };
+}
+function openExport() {
+  exportEst = estimate();
+  buildExportControls(); refreshExportDialog();
+  $('#exportStatus').textContent = ''; $('#exportProg').hidden = true; $('#doExport').disabled = false;
+  $('#exportDlg').showModal();
+}
+function buildExportControls() {
+  const pg = $('#presetGrid'); pg.innerHTML = '';
+  PRESETS.forEach(p => {
+    const meter = (n, cls) => h('div', { class: 'meter ' + cls }, [1, 2, 3, 4, 5].map(i => h('i', { class: i <= n ? 'on' : '' })));
+    const b = h('button', { class: 'preset', type: 'button', 'aria-pressed': String(S.print.preset === p.id) },
+      p.badge ? h('span', { class: 'badge' }, p.badge) : null,
+      h('span', { class: 'pn' }, p.name), h('span', { class: 'ph' }, `${p.lb.toFixed(2)} / ${p.lw.toFixed(2)} mm`),
+      h('span', { class: 'mrow' }, 'Speed', meter(p.speed, '')), h('span', { class: 'mrow' }, 'Detail', meter(p.quality, 'q')),
+      h('span', { class: 'pd' }, p.desc));
+    b.addEventListener('click', () => { S.print.preset = p.id; layersChanged(); exportEst = estimate(); buildExportControls(); refreshExportDialog(); });
+    pg.append(b);
+  });
+  const sc = $('#swapCards'); sc.innerHTML = '';
+  [['ams', 'AMS / multi-color', 'Both colors loaded. The printer switches by itself at the right layer.'], ['manual', 'Manual swap', 'One spool at a time. Add a pause at the layer shown in the guide, then swap.']].forEach(([v, n, d]) => {
+    const b = h('button', { class: 'opt', type: 'button', 'aria-pressed': String(S.print.swap === v) }, h('span', { class: 'on' }, n), h('span', { class: 'od' }, d));
+    b.addEventListener('click', () => { S.print.swap = v; commit(); buildExportControls(); refreshExportDialog(); });
+    sc.append(b);
+  });
+  const fl = $('#formatList'); fl.innerHTML = '';
+  [['bambu', 'Bambu Studio / OrcaSlicer 3MF', 'Recommended. Parts, filament slots, layer heights and settings are filled in. The slicer may say it is loading geometry only; that is expected.'],
+   ['3mf', 'Standard 3MF', 'PrusaSlicer, Cura and others. Two colored parts.'],
+   ['stl2', 'STL — two parts (.zip)', 'Base and top as separate STLs plus the print guide.'],
+   ['stl1', 'STL — one piece', 'Single STL. Add the color change yourself at the layer in the guide.']].forEach(([v, n, d]) => {
+    const inp = h('input', { type: 'radio', name: 'fmt', value: v }); inp.checked = S.print.format === v;
+    inp.addEventListener('change', () => { S.print.format = v; commit(); refreshExportDialog(); });
+    fl.append(h('label', { class: 'fmt' }, inp, h('span', null, h('div', { class: 'fn' }, n), h('div', { class: 'fd' }, d))));
+  });
+  const ab = $('#advBody'); ab.innerHTML = '';
+  const sel = (id, label, opts, get, set) => { const s = h('select', { class: 'sel', id }, opts.map(([v, n]) => h('option', { value: v, selected: String(get()) === String(v) }, n))); s.addEventListener('change', () => { set(s.value); commit(); refreshExportDialog(); }); return h('div', { class: 'field' }, h('label', { class: 'label', for: id }, label), s); };
+  ab.append(sel('bedSel', 'Printer', BEDS.map(b => [b.id, b.n]), () => S.print.bed, v => S.print.bed = v));
+  ab.append(sel('firstSel', 'First layer height', [['0.2', '0.20 mm (default)'], ['0.16', '0.16 mm'], ['0.24', '0.24 mm'], ['0.28', '0.28 mm']], () => S.print.first.toFixed(2).replace(/0$/, ''), v => { S.print.first = parseFloat(v); layersChanged(); exportEst = estimate(); }));
+  ab.append(sel('wallSel', 'Walls', [[2, '2'], [3, '3'], [4, '4']], () => S.print.walls, v => S.print.walls = +v));
+  ab.append(sel('infSel', 'Infill', [['auto', 'Auto'], [15, '15%'], [25, '25%'], [50, '50%'], [100, '100% (solid)']], () => S.print.infill, v => S.print.infill = v === 'auto' ? 'auto' : +v));
+  ab.append(sel('resSel', 'Mesh detail', RES.map(r => [r.id, r.n]), () => S.print.res, v => S.print.res = v));
+  ab.append(sel('speckSel', 'Remove specks smaller than', [[0, 'Keep everything'], [0.1, '0.1 mm²'], [0.2, '0.2 mm² (default)'], [0.4, '0.4 mm²'], [0.8, '0.8 mm²']], () => S.print.speck, v => S.print.speck = +v));
+  ab.append(h('div', { style: 'grid-column:1/-1' }, switchCtl('ironSel', 'Iron the top surface (smoother, slower)', () => S.print.ironing, v => { S.print.ironing = v; commit(); refreshExportDialog(); })));
+}
+function refreshExportDialog() {
+  const plan = layerPlan(), est = exportEst || { grams: [0, 0], used: plan.nW };
+  const used = est.used, total = plan.nB + used, g = pieceInfo();
+  // vertical bar
+  const vb = $('#vbar'); vb.innerHTML = '';
+  const H = plan.baseH + used * plan.lw, px = 150 / Math.max(0.1, H);
+  const bc = hexToRgb(S.colors.base), tc = hexToRgb(S.colors.top);
+  for (let L = 1; L <= total; L++) {
+    const th = L === 1 ? plan.FL : L <= plan.nB ? plan.lb : plan.lw, a = L > plan.nB ? whiteAlpha(plan, L - plan.nB) : 0;
+    vb.append(h('i', { style: `height:${th * px}px;background:rgb(${bc.map((v, i) => Math.round(v + (tc[i] - v) * a)).join(',')})` }));
+  }
+  const vl = $('#vlabels'); vl.innerHTML = '';
+  const labs = [[plan.baseH / 2 * px, `<b>${plan.nB}</b> base layers · 0 → ${fmtMM(plan.baseH)} mm`, '']];
+  if (used) { labs.push([plan.baseH * px, `⇄ color change at layer <b>${plan.swapLayer}</b>`, 'swapl']); labs.push([(plan.baseH + H) / 2 * px, `<b>${used}</b> top layers · → ${fmtMM(H)} mm`, '']); }
+  for (let i = 0; i < labs.length; i++) { labs[i][0] = clamp(labs[i][0], 8, 142); if (i && labs[i][0] < labs[i - 1][0] + 17) labs[i][0] = labs[i - 1][0] + 17; }
+  for (let i = labs.length - 1; i >= 0; i--) { if (labs[i][0] > 142) labs[i][0] = 142; if (i < labs.length - 1 && labs[i][0] > labs[i + 1][0] - 17) labs[i][0] = labs[i + 1][0] - 17; }
+  labs.forEach(([y, html, cls]) => { const d = h('div', { class: cls, style: `bottom:${y}px` }); d.innerHTML = html; vl.append(d); });
+  const bed = BEDS.find(b => b.id === S.print.bed) || BEDS[0];
+  const fits = g.size[0] <= bed.w - 6 && g.size[1] <= bed.h - 6;
+  const st = $('#sumTable'); st.innerHTML = '';
+  const row = (k, v) => st.append(h('dt', null, k), h('dd', null, v));
+  row('Size', `${g.size[0].toFixed(1)} × ${g.size[1].toFixed(1)} × ${fmtMM(H)} mm`);
+  row('Layers', `${total} (${plan.nB} base + ${used} top)`);
+  row('Color change', used ? `layer ${plan.swapLayer} · ${fmtMM(plan.swapZ)} mm` : 'none');
+  row('Filament', `≈ ${est.grams[0].toFixed(1)} g base + ${est.grams[1].toFixed(1)} g top`);
+  row('Fits the bed', fits ? `yes (${bed.w} × ${bed.h})` : `no — ${bed.w} × ${bed.h} bed`);
+  $('#guideText').textContent = guideText(plan, used, est.grams, [g.size[0], g.size[1], H]);
+  if (!used) $('#exportStatus').textContent = 'There is no top-color design yet, so the file will print in one color.';
+  else if (!fits) $('#exportStatus').textContent = 'This piece is bigger than the selected printer bed.';
+  else $('#exportStatus').textContent = '';
+}
+$('#copyGuide').addEventListener('click', async () => {
+  const t = $('#guideText').textContent;
+  try { await navigator.clipboard.writeText(t); toast('Print guide copied'); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($('#guideText')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Press Ctrl+C to copy'); }
+});
+function download(data, name, type) {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: type || 'application/octet-stream' });
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function thumbnailPNG() {
+  return new Promise((res) => {
+    try {
+      const plan = layerPlan(), g = pieceInfo(), bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1];
+      const size = 512, pxmm = Math.min(14, (size - 40) / Math.max(bw, bh));
+      const base = buildBase(pxmm), des = buildDesign(base, plan), lv = levelMap(base, des, plan);
+      const c = mkCanvas(size, size), x = c.getContext('2d');
+      const pc = mkCanvas(base.W, base.H), px = pc.getContext('2d'), id = px.createImageData(base.W, base.H);
+      const bc = hexToRgb(S.colors.base), tc = hexToRgb(S.colors.top);
+      for (let i = 0; i < lv.length; i++) { const m = base.M0[i]; if (m < 0.01) continue; const a = whiteAlpha(plan, lv[i]); const k = i * 4; for (let j = 0; j < 3; j++) id.data[k + j] = bc[j] + (tc[j] - bc[j]) * a; id.data[k + 3] = clamp(m * 1.4, 0, 1) * 255; }
+      px.putImageData(id, 0, 0);
+      x.drawImage(pc, (size - base.W) / 2, (size - base.H) / 2);
+      baseCache.key = '';
+      c.toBlob(b => { if (!b) return res(null); b.arrayBuffer().then(ab => res(new Uint8Array(ab))).catch(() => res(null)); }, 'image/png');
+    } catch (e) { res(null); }
+  });
+}
+async function doExport() {
+  if (typeof fflate === 'undefined' && S.print.format !== 'stl1') { toast('The file packer did not load. Check your connection and reload.'); return; }
+  const btn = $('#doExport'); btn.disabled = true;
+  const prog = $('#exportProg'), bar = prog.querySelector('i'); prog.hidden = false; bar.style.width = '0%';
+  const status = $('#exportStatus');
+  buildToken++;
+  const myToken = buildToken;
+  try {
+    const res = RES.find(r => r.id === S.print.res) || RES[1];
+    const model = await buildModel(res.pxmm, (p, t) => { bar.style.width = Math.round(p * 100) + '%'; status.textContent = t + '…'; }, myToken);
+    if (!model) throw new Error('cancelled');
+    const plan = model.plan, name = slug(S.name);
+    const vb = LACore.meshVolume(model.base), vt = model.top.indices.length ? LACore.meshVolume(model.top) : 0;
+    const grams = [vb * 1.24 / 1000, vt * 1.24 / 1000];
+    const guide = guideText(plan, model.usedLevels, grams, model.size);
+    const enc = new TextEncoder();
+    const bed = BEDS.find(b => b.id === S.print.bed) || BEDS[0];
+    const fmt = S.print.format;
+    status.textContent = 'Packing the file…'; await tick();
+    if (fmt === 'stl1') {
+      download(LACore.stlBinary([model.base, model.top]), `${name}.stl`, 'model/stl');
+    } else if (fmt === 'stl2') {
+      const files = { [`${name}-1-base-${colorName(S.colors.base, BASE_COLORS)}.stl`]: LACore.stlBinary([model.base]), 'PRINT-GUIDE.txt': enc.encode(guide) };
+      if (model.top.indices.length) files[`${name}-2-top-${colorName(S.colors.top, TOP_COLORS)}.stl`] = LACore.stlBinary([model.top]);
+      download(fflate.zipSync(files, { level: 6 }), `${name}-stl.zip`, 'application/zip');
+    } else {
+      const thumb = await thumbnailPNG();
+      const bambu = fmt === 'bambu';
+      const pkg = LACore.build3MF({
+        name: S.name || 'Layer Art', bambu,
+        parts: [
+          { name: 'Base (' + colorName(S.colors.base, BASE_COLORS) + ')', mesh: model.base, color: S.colors.base, extruder: 1 },
+          { name: 'Top (' + colorName(S.colors.top, TOP_COLORS) + ')', mesh: model.top, color: S.colors.top, extruder: S.print.swap === 'ams' ? 2 : 1 },
+        ],
+        center: [bed.w / 2, bed.h / 2],
+        objectSettings: objectSettings(plan),
+        layerRanges: plan.lb !== plan.lw ? [{ min: r4(plan.baseH), max: r4(plan.baseH + plan.whiteH + 2), settings: { layer_height: plan.lw.toFixed(2) } }] : [],
+        pauseZ: (S.print.swap === 'manual' && model.top.indices.length) ? r4(plan.swapZ) : null,
+        topColor: S.colors.top, thumbnail: thumb,
+      });
+      pkg['Metadata/print-guide.txt'] = guide;
+      const files = {};
+      for (const k in pkg) files[k] = typeof pkg[k] === 'string' ? enc.encode(pkg[k]) : pkg[k];
+      download(fflate.zipSync(files, { level: 6 }), `${name}.3mf`, 'model/3mf');
+    }
+    bar.style.width = '100%';
+    status.textContent = `Saved. Color change at layer ${plan.swapLayer} (${fmtMM(plan.swapZ)} mm).`;
+    toast('Export ready');
+  } catch (e) {
+    if (e.message === 'cancelled') status.textContent = 'Export stopped because the design changed. Click Download again.';
+    else { console.error(e); status.textContent = 'Export failed: ' + (e.message || e) + '. Try a lower mesh detail in Advanced settings.'; }
+  } finally {
+    btn.disabled = false; setTimeout(() => { prog.hidden = true; }, 1200);
+    if (three.ready && !$('#view3d').hidden) schedule3D();
+  }
+}
+const r4 = (v) => Math.round(v * 10000) / 10000;
+function colorName(c, list) { const f = list.find(x => x.c.toLowerCase() === (c || '').toLowerCase()); return f ? f.n.toLowerCase() : 'custom'; }
+$('#exportBtn').addEventListener('click', openExport);
+$('#doExport').addEventListener('click', doExport);
+document.querySelectorAll('#exportDlg [data-close]').forEach(b => b.addEventListener('click', () => $('#exportDlg').close()));
+$('#exportDlg').addEventListener('click', (e) => { if (e.target === $('#exportDlg')) $('#exportDlg').close(); });
+
+/* ---------------- project files ---------------- */
+function saveProjectFile() {
+  const imgs = {}; usedImageKeys().forEach(k => { if (IMG[k]) imgs[k] = IMG[k].src; });
+  download(JSON.stringify({ app: 'jakebitt-layer-art', v: 1, S, imgs }), `${slug(S.name)}.layerart.json`, 'application/json');
+  toast('Project saved');
+}
+$('#saveBtn').addEventListener('click', saveProjectFile);
+$('#openBtn').addEventListener('click', () => $('#projFile').click());
+$('#projFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data || !data.S || !Array.isArray(data.S.els)) throw new Error('bad');
+    await restoreImages(data.imgs || {});
+    S = migrate(data.S); selId = null; view.fitted = false; fitView(); afterLoad(); commit(); toast('Project opened');
+  } catch (err) { toast('That file is not a Layer Art Studio project.'); }
+});
+$('#newBtn').addEventListener('click', async () => {
+  if (!(await askConfirm('Start a new design?', 'This clears the current piece. Save a project file first if you want to keep it.', 'Start new'))) return;
+  S = defaultState(); S.els = []; S.name = 'Untitled piece'; selId = null; view.fitted = false; fitView(); afterLoad(); commit();
+});
+function askConfirm(title, msg, ok) {
+  return new Promise((res) => {
+    const d = $('#confirmDlg'); $('#confirmTitle').textContent = title; $('#confirmMsg').textContent = msg; $('#confirmYes').textContent = ok || 'OK';
+    const done = (v) => { d.close(); res(v); };
+    $('#confirmYes').onclick = () => done(true); $('#confirmNo').onclick = () => done(false);
+    d.oncancel = () => res(false);
+    d.showModal();
+  });
+}
+$('#projName').addEventListener('input', () => { S.name = $('#projName').value.slice(0, 60); });
+$('#projName').addEventListener('change', () => { if (!S.name.trim()) { S.name = 'Untitled piece'; $('#projName').value = S.name; } commit(); });
+$('#undoBtn').addEventListener('click', undo);
+$('#redoBtn').addEventListener('click', redo);
+$('#zoomIn').addEventListener('click', () => { view.scale = clamp(view.scale * 1.25, 0.3, 80); updateZoomLabel(); requestRender(); });
+$('#zoomOut').addEventListener('click', () => { view.scale = clamp(view.scale / 1.25, 0.3, 80); updateZoomLabel(); requestRender(); });
+$('#fitBtn').addEventListener('click', fitView);
+
+/* ---------------- toast ---------------- */
+let toastT = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+
+/* ---------------- init ---------------- */
+async function init() {
+  const loaded = await loadLocal();
+  if (!loaded) S = defaultState();
+  $('#projName').value = S.name;
+  buildTemplatePanel(); buildAddPanel(); buildInspector(); buildDesignList();
+  hist.last = snapshot(); updateUndoButtons();
+  new ResizeObserver(() => resize2D()).observe(vp);
+  resize2D();
+  if (document.fonts) document.fonts.ready.then(() => { textCache.clear(); invalidate(); });
+  window.__layerArt = { get S() { return S; }, buildModel, LACore, layerPlan, estimate, setView };
+}
+init();
+})();
+
+</script>
+</body>
+</html>
