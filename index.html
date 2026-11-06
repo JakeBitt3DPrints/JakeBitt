@@ -1,234 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JakeBitt</title>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --accent: #38bdf8;
-            --accent2: #818cf8;
-            --text: #f8fafc;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-        .container {
-            text-align: center;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .logo {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p {
-            font-size: 1.2rem;
-            opacity: 0.7;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid var(--accent);
-            border-radius: 2rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-        .pulse {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%   { box-shadow: 0 0 0 0   rgba(56, 189, 248, 0.7); }
-            70%  { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0);   }
-            100% { box-shadow: 0 0 0 0   rgba(56, 189, 248, 0);   }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>jakebitt</title>
+<meta name="description" content="Browser tools for 3D printing, business and Minecraft.">
+<meta name="theme-color" content="#0c0e12">
+<link rel="icon" type="image/svg+xml" href="/img/jb.svg">
+<link rel="apple-touch-icon" href="/img/jb-180.png">
+<meta property="og:title" content="jakebitt">
+<meta property="og:description" content="Browser tools for 3D printing, business and Minecraft.">
+<meta property="og:image" content="https://jakebitt.com/img/jb-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e12;
+  --surface: #13161b;
+  --surface-2: #191d24;
+  --line: #232932;
+  --line-strong: #323946;
+  --fg: #ecf0f4;
+  --muted: #98a2b0;
+  --faint: #667080;
+  --ice: #9bd7ff;
+  --ice-ink: #06263a;
+  --gold: #e8c46b;
+  --display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+  --ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(.22,.7,.2,1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--ui); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; overflow-x: clip; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; }
+.wrap { width: min(1160px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); margin: 0 auto; }
 
-        /* ── Tools section ── */
-        .tools-label {
-            font-size: 0.68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: rgba(248,250,252,0.3);
-        }
-        .tools-grid {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .tool-card {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            padding: 0.9rem 1.25rem;
-            background: rgba(56,189,248,0.06);
-            border: 1px solid rgba(56,189,248,0.18);
-            border-radius: 0.85rem;
-            text-decoration: none;
-            color: var(--text);
-            transition: background .2s, border-color .2s, transform .2s;
-            text-align: left;
-            min-width: 210px;
-        }
-        .tool-card:hover {
-            background: rgba(56,189,248,0.13);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        .tool-icon {
-            flex-shrink: 0;
-            width: 2.5rem;
-            height: 2.5rem;
-            background: rgba(56,189,248,0.1);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tool-icon svg {
-            width: 1.3rem;
-            height: 1.3rem;
-            fill: none;
-            stroke: var(--accent);
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-        .tool-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.85rem;
-        }
-        .tool-group + .tool-group { margin-top: 0.5rem; }
-        .tool-name {
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 0.15rem;
-        }
-        .tool-desc {
-            font-size: 0.72rem;
-            color: rgba(248,250,252,0.5);
-        }
-        .tool-arrow {
-            margin-left: auto;
-            color: rgba(56,189,248,0.4);
-            font-size: 0.9rem;
-            transition: transform .2s, color .2s;
-        }
-        .tool-card:hover .tool-arrow {
-            transform: translateX(3px);
-            color: var(--accent);
-        }
-    </style>
+/* header */
+.top { position: sticky; top: 0; z-index: 10; background: rgba(12,14,18,.85); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .25s; }
+.top.scrolled { border-bottom-color: var(--line); }
+.top-inner { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: inline-flex; align-items: center; gap: 11px; min-height: 44px; text-decoration: none; }
+.brand-name { font: 800 20px/1 var(--display); letter-spacing: -0.02em; }
+.logo { width: 38px; height: 38px; flex-shrink: 0; transition: transform .35s var(--ease); }
+.nav { display: flex; gap: 4px; }
+.nav a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 14.5px; padding: 8px 12px; border-radius: 8px; transition: color .2s, background .2s; }
+
+/* hero */
+.hero { padding: 80px 0 100px; }
+.hello { margin: 0 0 6px; font: 700 clamp(22px, 3vw, 34px)/1.2 var(--display); letter-spacing: -0.02em; color: var(--fg); }
+h1 {
+  margin: 0; font: 800 clamp(56px, min(21vw, 30vh), 164px)/.92 var(--display); letter-spacing: -0.05em; padding: 0 .04em .12em 0;
+  background: linear-gradient(100deg, #eaf7ff 0%, #9bd7ff 30%, #38bdf8 58%, #818cf8 86%, #a5b4fc 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  width: -webkit-fit-content; width: -moz-fit-content; width: fit-content;
+}
+.tagline { margin: 4px 0 0; font: 600 clamp(20px, 2.4vw, 26px)/1.3 var(--display); letter-spacing: -0.01em; color: #c9d0d9; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
+.btn { display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 18px; border-radius: 11px; text-decoration: none; font-weight: 700; font-size: 15px; border: 1px solid var(--line-strong); background: var(--surface-2); transition: background .2s, border-color .2s, transform .2s var(--ease); }
+.btn.primary { background: var(--ice); border-color: var(--ice); color: var(--ice-ink); }
+.btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s var(--ease); }
+.new { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(232,196,107,.4); border-radius: 6px; padding: 1px 6px; flex-shrink: 0; line-height: 1.5; }
+
+/* tools */
+.cat { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 40px; padding: 40px 0; border-top: 1px solid var(--line); }
+.cat-head { position: sticky; top: 92px; align-self: start; }
+h2 { margin: 0; font: 800 24px/1.15 var(--display); letter-spacing: -0.025em; }
+.cat-head p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+.count { display: inline-block; margin-top: 14px; color: var(--faint); font-size: 13.5px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px;
+  padding: 18px 20px 18px 18px; min-height: 96px; text-decoration: none;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  transition: border-color .25s, transform .35s var(--ease), background .25s, box-shadow .35s var(--ease);
+}
+.ico { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; background: rgba(155,215,255,.08); border: 1px solid rgba(155,215,255,.16); transition: background .25s, border-color .25s, transform .35s var(--ease); }
+.ico svg { overflow: visible; width: 26px; height: 26px; color: var(--ice); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.card h3 { margin: 0 0 3px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font: 700 17.5px/1.25 var(--display); letter-spacing: -0.015em; }
+.card p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.45; }
+.card .arrow { width: 18px; height: 18px; fill: none; stroke: var(--faint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s, transform .3s var(--ease); }
+
+/* footer */
+footer { border-top: 1px solid var(--line); margin-top: 28px; }
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 24px 0 calc(34px + env(safe-area-inset-bottom, 0px)); color: var(--faint); font-size: 14px; }
+.foot .logo { width: 26px; height: 26px; }
+.foot .brand-name { font-size: 16px; color: var(--fg); }
+.foot a.up { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; text-decoration: none; color: var(--muted); font-weight: 500; }
+
+/* hover (mouse/trackpad only, so taps on phones don't leave things stuck) */
+@media (hover: hover) {
+  .nav a:hover { color: var(--fg); background: var(--surface-2); }
+  .brand:hover .logo { transform: rotate(-6deg); }
+  .btn:hover { background: #20252e; border-color: #414a59; }
+  .btn.primary:hover { background: #b7e3ff; border-color: #b7e3ff; }
+  .btn.primary:hover svg { transform: translateY(2px); }
+  .btn:not(.primary):hover svg { transform: translateX(3px); }
+  .card:hover { border-color: rgba(155,215,255,.35); background: #151920; transform: translateY(-3px); box-shadow: 0 20px 36px -26px rgba(0,0,0,.95); }
+  .card:hover .ico { background: rgba(155,215,255,.14); border-color: rgba(155,215,255,.32); }
+  .card:hover .arrow { stroke: var(--ice); transform: translateX(4px); }
+  .foot a.up:hover { color: var(--fg); }
+}
+/* touch feedback */
+.card:active { transform: scale(.985); background: #151920; }
+.btn:active { transform: scale(.98); }
+.card:focus-visible { outline-offset: 2px; }
+
+/* icon motion */
+.ico .p-tag { transform-box: view-box; transform-origin: 8px 8px; }
+@keyframes p-tag-a { 0%{transform:none}25%{transform:rotate(-14deg)}55%{transform:rotate(7deg)}80%{transform:rotate(-3deg)}100%{transform:none} }
+@keyframes p-tag-b { 0%{transform:none}25%{transform:rotate(-14deg)}55%{transform:rotate(7deg)}80%{transform:rotate(-3deg)}100%{transform:none} }
+.js .card.in .p-tag { animation: p-tag-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .p-tag { animation: p-tag-b .9s var(--ease) both; } }
+.ico .l-rays { transform-box: view-box; transform-origin: 12px 4px; }
+@keyframes l-rays-a { 0%,100%{opacity:1;transform:none}40%{opacity:.25;transform:translateY(1px)}70%{opacity:1;transform:translateY(-.6px)} }
+@keyframes l-rays-b { 0%,100%{opacity:1;transform:none}40%{opacity:.25;transform:translateY(1px)}70%{opacity:1;transform:translateY(-.6px)} }
+.js .card.in .l-rays { animation: l-rays-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .l-rays { animation: l-rays-b .9s var(--ease) both; } }
+.ico .l-sun { transform-box: view-box; transform-origin: 15.6px 11px; }
+@keyframes l-sun-a { 0%,100%{transform:none}50%{transform:scale(1.35)} }
+@keyframes l-sun-b { 0%,100%{transform:none}50%{transform:scale(1.35)} }
+.js .card.in .l-sun { animation: l-sun-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .l-sun { animation: l-sun-b .9s var(--ease) both; } }
+.ico .o-swing { transform-box: view-box; transform-origin: 12px 2.2px; }
+@keyframes o-swing-a { 0%{transform:none}25%{transform:rotate(11deg)}55%{transform:rotate(-7deg)}80%{transform:rotate(3deg)}100%{transform:none} }
+@keyframes o-swing-b { 0%{transform:none}25%{transform:rotate(11deg)}55%{transform:rotate(-7deg)}80%{transform:rotate(3deg)}100%{transform:none} }
+.js .card.in .o-swing { animation: o-swing-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .o-swing { animation: o-swing-b .9s var(--ease) both; } }
+.ico .o-star { transform-box: view-box; transform-origin: 12px 14.6px; }
+@keyframes o-star-a { 0%,100%{transform:none}50%{transform:rotate(72deg) scale(1.1)} }
+@keyframes o-star-b { 0%,100%{transform:none}50%{transform:rotate(72deg) scale(1.1)} }
+.js .card.in .o-star { animation: o-star-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .o-star { animation: o-star-b .9s var(--ease) both; } }
+.ico .c-cur { transform-box: view-box; transform-origin: 18px 16px; }
+@keyframes c-cur-a { 0%{transform:none}35%{transform:translate(2.5px,2.5px)}60%{transform:translate(-.6px,-.6px) scale(.85)}100%{transform:none} }
+@keyframes c-cur-b { 0%{transform:none}35%{transform:translate(2.5px,2.5px)}60%{transform:translate(-.6px,-.6px) scale(.85)}100%{transform:none} }
+.js .card.in .c-cur { animation: c-cur-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .c-cur { animation: c-cur-b .9s var(--ease) both; } }
+.ico .c-cube { transform-box: view-box; transform-origin: 10.5px 10.8px; }
+@keyframes c-cube-a { 0%,100%{transform:none}60%{transform:scale(.92)} }
+@keyframes c-cube-b { 0%,100%{transform:none}60%{transform:scale(.92)} }
+.js .card.in .c-cube { animation: c-cube-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .c-cube { animation: c-cube-b .9s var(--ease) both; } }
+.ico .s-marks { transform-box: view-box; transform-origin: 12px 12px; }
+@keyframes s-marks-a { 0%,100%{transform:none}45%{transform:scale(1.14)} }
+@keyframes s-marks-b { 0%,100%{transform:none}45%{transform:scale(1.14)} }
+.js .card.in .s-marks { animation: s-marks-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .s-marks { animation: s-marks-b .9s var(--ease) both; } }
+.ico .d-c { transform-box: view-box; transform-origin: 7.4px 7.4px; }
+@keyframes d-c-a { 0%,100%{transform:none}50%{transform:translate(-1.2px,-.6px)} }
+@keyframes d-c-b { 0%,100%{transform:none}50%{transform:translate(-1.2px,-.6px)} }
+.js .card.in .d-c { animation: d-c-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .d-c { animation: d-c-b .9s var(--ease) both; } }
+.ico .d-t { transform-box: view-box; transform-origin: 16.6px 7px; }
+@keyframes d-t-a { 0%,100%{transform:none}50%{transform:translate(1px,-1px) rotate(12deg)} }
+@keyframes d-t-b { 0%,100%{transform:none}50%{transform:translate(1px,-1px) rotate(12deg)} }
+.js .card.in .d-t { animation: d-t-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .d-t { animation: d-t-b .9s var(--ease) both; } }
+.ico .d-r { transform-box: view-box; transform-origin: 12px 17.2px; }
+@keyframes d-r-a { 0%,100%{transform:none}50%{transform:translateY(1.2px) rotate(-8deg)} }
+@keyframes d-r-b { 0%,100%{transform:none}50%{transform:translateY(1.2px) rotate(-8deg)} }
+.js .card.in .d-r { animation: d-r-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .d-r { animation: d-r-b .9s var(--ease) both; } }
+.ico .k-arm { transform-box: view-box; transform-origin: 18.3px 10.4px; }
+@keyframes k-arm-a { 0%,100%{transform:none}25%{transform:rotate(-130deg)}45%{transform:rotate(-100deg)}65%{transform:rotate(-130deg)} }
+@keyframes k-arm-b { 0%,100%{transform:none}25%{transform:rotate(-130deg)}45%{transform:rotate(-100deg)}65%{transform:rotate(-130deg)} }
+.js .card.in .k-arm { animation: k-arm-a .9s var(--ease) var(--ad, .35s) both; }
+@media (hover: hover) { .js .card.in:hover .k-arm { animation: k-arm-b .9s var(--ease) both; } }
+
+/* motion */
+.js .rise { opacity: 0; translate: 0 14px; }
+.js .rise.in { opacity: 1; translate: 0 0; transition: opacity .6s var(--ease) var(--d, 0s), translate .6s var(--ease) var(--d, 0s); }
+.js .card.rise.in { transition: opacity .6s var(--ease) var(--d, 0s), translate .6s var(--ease) var(--d, 0s), transform .35s var(--ease), border-color .25s, background .25s, box-shadow .35s var(--ease); }
+
+@media (max-width: 1040px) {
+  .cat { grid-template-columns: 200px minmax(0, 1fr); gap: 28px; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .cat { grid-template-columns: 1fr; gap: 18px; padding: 32px 0; }
+  .cat-head { position: static; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .cat-head p { display: none; }
+  .count { margin: 0; }
+}
+@media (max-width: 640px) {
+  .hero { padding: 64px 0 76px; }
+  .nav { display: none; }
+  .card { padding: 16px; min-height: 0; gap: 14px; }
+  .ico { width: 48px; height: 48px; border-radius: 13px; }
+  .ico svg { width: 23px; height: 23px; }
+}
+@media (max-width: 480px) {
+  .actions { flex-direction: column; align-items: stretch; margin-top: 28px; }
+  .btn { justify-content: center; height: 50px; }
+  .foot { justify-content: center; text-align: center; }
+  .card h3 { font-size: 16.5px; }
+  .card p { font-size: 14px; }
+}
+@media (max-width: 340px) {
+  .card { padding: 14px; gap: 12px; }
+  .ico { width: 42px; height: 42px; border-radius: 12px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .hero { padding: 36px 0 56px; }
+  .actions { margin-top: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
+  .js .rise { opacity: 1; translate: none; }
+  .ico * { animation: none !important; }
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">jakebitt</div>
-        <p>Building something interesting.</p>
-        <div class="status-badge">
-            <span class="pulse"></span>
-            Under Construction
-        </div>
+<script>document.documentElement.classList.add('js')</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="jb" viewBox="0 0 100 100"><rect width="100" height="100" rx="24" fill="#9bd7ff"/><g fill="#0c0e12"><path transform="translate(21.96 20.00) scale(0.06445)" d="M28 962Q23 962 20.0 962.0Q17 962 13 962L0 825Q39 820 55.0 805.0Q71 790 71 751V226H233V760Q233 814 219.5 852.5Q206 891 180.0 915.0Q154 939 115.5 950.5Q77 962 28 962ZM152 152Q106 152 81.5 132.5Q57 113 57 77Q57 39 81.5 19.5Q106 0 152 0Q199 0 223.5 19.5Q248 39 248 76Q248 113 223.5 132.5Q199 152 152 152ZM651 768Q601 768 563.5 749.0Q526 730 502.5 692.0Q479 654 471 598H452L449 754H317V495V34H478V209Q478 233 474.5 259.5Q471 286 465.5 315.0Q460 344 454 377H477Q491 323 514.0 287.0Q537 251 571.5 232.5Q606 214 653 214Q719 214 767.5 248.0Q816 282 843.0 344.5Q870 407 870 494Q870 578 843.5 639.5Q817 701 768.0 734.5Q719 768 651 768ZM591 638Q624 638 649.0 619.5Q674 601 687.5 567.5Q701 534 701 489Q701 443 688.0 410.5Q675 378 651.5 360.0Q628 342 595 342Q573 342 554.5 350.0Q536 358 522.0 372.0Q508 386 498.0 403.5Q488 421 483.0 440.5Q478 460 478 479V500Q478 521 484.0 545.0Q490 569 503.5 590.0Q517 611 538.5 624.5Q560 638 591 638Z"/></g></symbol>
+  <symbol id="go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
 
-        <section class="tool-group">
-            <div class="tools-label">3D Printing Tools</div>
-            <div class="tools-grid">
-                <a class="tool-card" href="/printcalc">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">3D Print Pricing</div>
-                        <div class="tool-desc">Calculate costs &amp; margins</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-                <a class="tool-card" href="/lithogen">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">Lithophane Generator</div>
-                        <div class="tool-desc">Image to 3D-printable STL</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-                <a class="tool-card" href="/layerart">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><path d="M4 15l8 4 8-4"/><path d="M4 11l8 4 8-4"/><path d="M12 3l8 4-8 4-8-4z"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">Layer Art Studio</div>
-                        <div class="tool-desc">Layered ornaments, bookmarks &amp; more</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-                <a class="tool-card" href="/cad">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5z"/><path d="M12 12l8.5-4.75M12 12v9.5M12 12L3.5 7.25"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">JakeCAD Studio</div>
-                        <div class="tool-desc">Easy to use Web Based CAD</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-            </div>
-        </section>
+<header class="top" id="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="/" aria-label="jakebitt home"><svg class="logo"><use href="#jb"/></svg><span class="brand-name">jakebitt</span></a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#print">3D Printing</a>
+      <a href="#business">Business</a>
+      <a href="#minecraft">Minecraft</a>
+    </nav>
+  </div>
+</header>
 
-        <section class="tool-group">
-            <div class="tools-label">Business Tools</div>
-            <div class="tools-grid">
-                <a class="tool-card" href="/signsheet">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><rect x="3" y="2.5" width="18" height="19" rx="1.5"/><rect x="6" y="5.5" width="5" height="7" rx=".5"/><rect x="13" y="5.5" width="5" height="7" rx=".5"/><rect x="6" y="14.5" width="12" height="4" rx=".5"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">Sign Sheet Maker</div>
-                        <div class="tool-desc">Print 4&times;6 signs at exact size</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-                <a class="tool-card" href="/design">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1.2 1.2-2.4-.8-1.2 0-2.6 1.4-2.6H17a4 4 0 0 0 4-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15.5" cy="7.5" r="1"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">Design Studio</div>
-                        <div class="tool-desc">Signs, posts, flyers &amp; more</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-            </div>
-        </section>
-
-        <section class="tool-group">
-            <div class="tools-label">Minecraft Tools</div>
-            <div class="tools-grid">
-                <a class="tool-card" href="/skins">
-                    <div class="tool-icon"><svg viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="6" rx="1"/><rect x="8.5" y="9.5" width="7" height="7" rx="1"/><path d="M6 10v6M18 10v6M10.5 17v4.5M13.5 17v4.5"/></svg></div>
-                    <div class="tool-info">
-                        <div class="tool-name">Skin Studio</div>
-                        <div class="tool-desc">Make and edit Minecraft skins</div>
-                    </div>
-                    <span class="tool-arrow">&rarr;</span>
-                </a>
-            </div>
-        </section>
+<main class="wrap">
+  <section class="hero">
+    <p class="hello rise">Hey, I'm Jake.</p>
+    <h1 class="rise" style="--d:.06s">jakebitt</h1>
+    <p class="tagline rise" style="--d:.12s">Building something interesting.</p>
+    <div class="actions rise" style="--d:.18s">
+      <a class="btn primary" href="#print">Browse tools <svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+      <a class="btn" href="/layerart"><span class="new">New</span> Layer Art Studio <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
+  </section>
+
+  <section class="cat" id="print">
+    <div class="cat-head rise"><h2>3D Printing Tools</h2><p>Price it, design it, print it.</p><span class="count">4 tools</span></div>
+    <div class="grid">
+      <a class="card rise" style="--d:0.00s;--ad:0.35s" href="/printcalc">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><g class="p-tag"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.4 1.4 0 0 1 0 2L13.6 20.5a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.4"/><path d="M15.4 11.1c-.4-.6-1.2-.9-2-.7-.9.3-1.2 1.2-.6 1.8.5.5 1.6.5 2.1 1.1.6.6.2 1.6-.7 1.8-.8.2-1.6-.1-2-.7M13 9.6l.4.9M14.6 16.1l.4.9"/></g></svg></span>
+        <div><h3>3D Print Pricing</h3><p>Calculate costs &amp; margins</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+      <a class="card rise" style="--d:0.05s;--ad:0.40s" href="/lithogen">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="7" width="17" height="13.5" rx="1.6"/><path d="M3.5 17.5l5-4.6 3.4 3 2.6-2.3 6 4.9"/><circle class="l-sun" cx="15.6" cy="11" r="1.5"/><g class="l-rays"><path d="M12 2.2v2.2M6.6 3.4l1.1 1.8M17.4 3.4l-1.1 1.8"/></g></svg></span>
+        <div><h3>Lithophane Generator</h3><p>Image to 3D-printable STL</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+      <a class="card rise" style="--d:0.10s;--ad:0.45s" href="/layerart">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><g class="o-swing"><circle cx="12" cy="14.6" r="6.9"/><rect x="10.2" y="5.3" width="3.6" height="2.4" rx=".6"/><circle cx="12" cy="3.4" r="1.3"/><path class="o-star" d="M12 11.2l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z"/></g></svg></span>
+        <div><h3>Layer Art Studio <span class="new">New</span></h3><p>Layered ornaments, bookmarks &amp; more</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+      <a class="card rise" style="--d:0.15s;--ad:0.50s" href="/cad">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><g class="c-cube"><path d="M10.5 3l7 3.9v7.8l-7 3.9-7-3.9V6.9z"/><path d="M10.5 10.8l7-3.9M10.5 10.8v7.8M10.5 10.8L3.5 6.9"/></g><path class="c-cur" d="M15.2 13.6l5.6 2.3-2.4.9-.9 2.4z" fill="currentColor" stroke-width="1.2"/></svg></span>
+        <div><h3>JakeCAD Studio</h3><p>Easy to use web-based CAD</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <section class="cat" id="business">
+    <div class="cat-head rise"><h2>Business Tools</h2><p>For the booth and the shop.</p><span class="count">2 tools</span></div>
+    <div class="grid">
+      <a class="card rise" style="--d:0.00s;--ad:0.35s" href="/signsheet">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1.4"/><path d="M5 9.3h14M8 12.6h8M8 15.6h5"/><g class="s-marks"><path d="M5 1.8v1.6M19 1.8v1.6M1.8 5h1.6M20.6 5h1.6M5 20.6v1.6M19 20.6v1.6M1.8 19h1.6M20.6 19h1.6"/></g></svg></span>
+        <div><h3>Sign Sheet Maker</h3><p>Print 4&times;6 signs at exact size</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+      <a class="card rise" style="--d:0.05s;--ad:0.40s" href="/design">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle class="d-c" cx="7.4" cy="7.4" r="4.1"/><path class="d-t" d="M16.6 3.2l4.3 7.4h-8.6z"/><rect class="d-r" x="8" y="13.2" width="8" height="8" rx="1.4"/></svg></span>
+        <div><h3>Design Studio</h3><p>Signs, posts, flyers &amp; more</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <section class="cat" id="minecraft">
+    <div class="cat-head rise"><h2>Minecraft Tools</h2><p>Just for fun.</p><span class="count">1 tool</span></div>
+    <div class="grid">
+      <a class="card rise" style="--d:0.00s;--ad:0.35s" href="/skins">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="8" y="1.8" width="8" height="7" rx="1"/><rect x="9.6" y="4.6" width="1.7" height="1.7" fill="currentColor" stroke="none"/><rect x="12.7" y="4.6" width="1.7" height="1.7" fill="currentColor" stroke="none"/><rect x="8" y="9.8" width="8" height="6.4" rx=".7"/><rect x="4.4" y="9.8" width="2.6" height="6.4" rx=".7"/><rect class="k-arm" x="17" y="9.8" width="2.6" height="6.4" rx=".7"/><path d="M8 17.2h8v4.3a.7.7 0 0 1-.7.7H8.7a.7.7 0 0 1-.7-.7zM12 17.2v5"/></svg></span>
+        <div><h3>Skin Studio</h3><p>Make and edit Minecraft skins</p></div>
+        <svg class="arrow" aria-hidden="true"><use href="#go"/></svg>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="/" aria-label="jakebitt home"><svg class="logo"><use href="#jb"/></svg><span class="brand-name">jakebitt</span></a>
+    <span>© <span id="yr">2026</span> Jake</span>
+    <a class="up" href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<script>
+(() => {
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  const top = document.querySelector('.top');
+  const onScroll = () => top.classList.toggle('scrolled', scrollY > 4);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const items = document.querySelectorAll('.rise');
+  if (!('IntersectionObserver' in window)) { items.forEach(el => el.classList.add('in')); return; }
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -5% 0px' });
+  items.forEach(el => io.observe(el));
+})();
+</script>
 </body>
 </html>
