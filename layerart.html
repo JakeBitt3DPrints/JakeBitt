@@ -3072,29 +3072,54 @@ function draw3D() {
 }
 let t3Timer = 0;
 function schedule3D() { clearTimeout(t3Timer); t3Timer = setTimeout(rebuild3D, 350); }
-async function rebuild3D() {
-  if (!init3D()) return;
-  const token = ++buildToken;
-  $('#busy').hidden = false; $('#busyText').textContent = 'Building 3D preview…';
-  let model = null;
-  try { const g = pieceInfo(), area = (g.bb[2] - g.bb[0]) * (g.bb[3] - g.bb[1]); model = await buildModel(clamp(Math.sqrt(900000 / area), 2.5, 6), (p, t) => { $('#busyText').textContent = t; }, token); }
-  catch (e) { console.error(e); toast('Could not build the 3D preview.'); }
-  if (token !== buildToken) return;
-  $('#busy').hidden = true;
-  if (!model) return;
+/* The preview is built from the same geometry as the exported file, at the same resolution, so what you
+   see is what prints. A quick draft shows first; the full-detail mesh replaces it a moment later. */
+const PREVIEW_MAX_PX = 9e6;
+function previewPxmm(draft) {
+  const g = pieceInfo(), area = (g.bb[2] - g.bb[0]) * (g.bb[3] - g.bb[1]);
+  if (draft) return clamp(Math.sqrt(500000 / area), 2.5, 4);
+  const res = RES.find(r => r.id === S.print.res) || RES[1];
+  return Math.min(res.pxmm, Math.sqrt(PREVIEW_MAX_PX / area));
+}
+function showModel(model) {
   const { group } = three;
   while (group.children.length) { const c = group.children.pop(); c.geometry.dispose(); c.material.dispose(); }
   const plan = model.plan, lut = makeLUT(plan);
   const mk = (m, rgb) => {
     if (!m.indices.length) return;
-    let geo = new THREE.BufferGeometry();
+    const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(m.positions, 3)); geo.setIndex(new THREE.BufferAttribute(m.indices, 1));
-    geo = geo.toNonIndexed(); geo.computeVertexNormals();
-    group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(rgbCss(rgb)), roughness: 0.82, metalness: 0, side: THREE.DoubleSide, clippingPlanes: [three.clip] })));
+    geo.computeBoundingSphere();
+    group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(rgbCss(rgb)), roughness: 0.78, metalness: 0, flatShading: true, side: THREE.DoubleSide, clippingPlanes: [three.clip] })));
   };
   mk(model.base, lut[0]);
   model.slabs.forEach(s => mk(s.mesh, lut[s.k1]));
   three.model = model;
+}
+async function rebuild3D() {
+  if (!init3D()) return;
+  const token = ++buildToken;
+  const busy = $('#busy'), busyText = $('#busyText');
+  busy.hidden = false; busyText.textContent = 'Building 3D preview…';
+  let model = null;
+  const draftPx = previewPxmm(true), fullPx = previewPxmm(false);
+  try {
+    if (!three.model || fullPx / draftPx > 1.6) {
+      model = await buildModel(draftPx, (p, t) => { busyText.textContent = t; }, token);
+      if (token !== buildToken) return;
+      if (model) { showModel(model); finish3D(model); }
+    }
+    busyText.textContent = 'Sharpening detail…'; await tick();
+    if (token !== buildToken) return;
+    model = await buildModel(fullPx, (p) => { busyText.textContent = `Sharpening detail… ${Math.round(p * 100)}%`; }, token);
+  } catch (e) { console.error(e); toast('Could not build the 3D preview.'); }
+  if (token !== buildToken) return;
+  busy.hidden = true;
+  if (!model) return;
+  showModel(model); finish3D(model);
+}
+function finish3D(model) {
+  const plan = model.plan;
   if (!three.framed) { three.radius = Math.max(model.size[0], model.size[1]) * 2.1 + 20; three.target.set(0, 0, model.size[2] / 2); three.framed = true; }
   const total = plan.nB + model.usedLevels, cr = $('#clipRange'), atMax = +cr.value >= +cr.max;
   cr.max = Math.max(1, total); if (atMax) cr.value = cr.max; else cr.value = Math.min(+cr.value, total);
