@@ -315,6 +315,59 @@ details.adv .adv-body { padding: 4px 12px 14px; display: grid; grid-template-col
   details.adv .adv-body { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* inspector tabs */
+.itabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 2px; padding: 8px 10px 0; background: var(--panel); border-bottom: 1px solid var(--line); }
+.itab { flex: 1; min-width: 0; height: 36px; border: 0; background: transparent; color: var(--muted); font-size: 12.5px; font-weight: 650; border-bottom: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; }
+.itab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--ice); }
+.itab:not([disabled]):hover { color: var(--fg); }
+.itab[disabled] { opacity: .4; cursor: default; }
+/* piece header */
+.piece-head { display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; }
+.piece-head canvas { width: 112px; height: 88px; border-radius: 10px; display: block; }
+.piece-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; align-items: flex-start; }
+.piece-fam { font: 700 10.5px var(--font-ui); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.piece-name { font: 700 15px var(--font-display); line-height: 1.2; }
+.piece-size { font: 600 12px var(--font-mono); }
+.piece-size-in { font: 500 11px var(--font-mono); color: var(--muted); margin-bottom: 6px; }
+.chip-n { margin-left: 5px; font: 500 10.5px var(--font-mono); opacity: .65; }
+.tpl-search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); }
+.tpl-search:focus-within { border-color: var(--ice); }
+.tpl-search svg { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 2; flex: none; }
+.tpl-search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fg); font: inherit; font-size: 13px; outline: none; }
+.tcard canvas { background: #20242b; }
+.tcard { transition: border-color .12s, transform .12s; }
+.tcard:hover { transform: translateY(-1px); }
+/* palette */
+.pal-list { display: flex; flex-direction: column; gap: 6px; }
+.pal-row { display: grid; grid-template-columns: 34px 1fr auto 28px; gap: 8px; align-items: center; padding: 6px; border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--line-soft); }
+.pal-sw { width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,255,255,.18); box-shadow: inset 0 0 0 2px rgba(0,0,0,.2); cursor: pointer; }
+.pal-sw[aria-expanded="true"] { outline: 2px solid var(--ice); outline-offset: 2px; }
+.pal-meta { display: flex; flex-direction: column; min-width: 0; }
+.pal-meta b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-meta span { font: 500 11px var(--font-mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-h { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pal-mm { font: 500 10.5px var(--font-mono); color: var(--muted); }
+.pal-row .icon-btn { width: 28px; height: 28px; }
+.pal-row .stepper button { width: 26px; height: 28px; font-size: 16px; }
+.pal-row .stepper output { min-width: 26px; font-size: 13.5px; }
+.pal-row { grid-template-columns: 34px minmax(0,1fr) auto 28px; }
+.fil-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 4px; padding: 6px; border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--ice); }
+.fil { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--fg); font-size: 11.5px; text-align: left; cursor: pointer; min-width: 0; }
+.fil span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fil:hover { background: var(--raised); }
+.fil[aria-pressed="true"] { border-color: var(--ice); }
+.fil i { width: 16px; height: 16px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.2); }
+.fil-custom input { width: 18px; height: 18px; padding: 0; border: 0; background: none; }
+.pal-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.pp { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px; min-width: 42px; border-radius: 8px; border: 1px solid var(--line-soft); background: var(--bg); color: var(--muted); font: 600 10.5px var(--font-mono); cursor: pointer; }
+.pp i { width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(255,255,255,.18); }
+.pp[aria-pressed="true"] { border-color: var(--ice); color: var(--fg); box-shadow: 0 0 0 1px var(--ice) inset; }
+.auto-pal { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: var(--r-sm); border: 1px dashed var(--line); }
+#view3dSeg { margin-top: 2px; }
+.gram-list { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 10px; }
+.gram-list span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.gram-list i { width: 9px; height: 9px; border-radius: 3px; border: 1px solid #ffffff33; }
 </style>
 </head>
 <body>
@@ -347,6 +400,7 @@ details.adv .adv-body { padding: 4px 12px 14px; display: grid; grid-template-col
       <button class="tab" role="tab" id="tab-design" aria-selected="false" aria-controls="panel-design">Design<span class="count" id="elCount">0</span></button>
     </div>
     <section class="tabpanel" id="panel-templates" role="tabpanel" aria-labelledby="tab-templates">
+      <label class="tpl-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input type="search" id="tplSearch" placeholder="Search templates…" aria-label="Search templates" autocomplete="off"></label>
       <div class="chips" id="catChips"></div>
       <div class="tgrid" id="tplGrid"></div>
     </section>
@@ -394,7 +448,7 @@ details.adv .adv-body { padding: 4px 12px 14px; display: grid; grid-template-col
         <div class="field-row"><span class="label">Show up to layer</span><span class="val" id="clipVal">all</span></div>
         <input type="range" id="clipRange" min="1" max="10" value="10" aria-label="Show up to layer">
         <span class="hint" id="clipHint">Drag to watch the print build up layer by layer.</span>
-        <button class="btn small ghost" id="flipView" type="button">Flip to see the back</button>
+        <div class="seg" id="view3dSeg" role="group" aria-label="Camera"><button type="button" data-v="angle" aria-pressed="true">Angle</button><button type="button" data-v="top" aria-pressed="false">Top</button><button type="button" data-v="back" aria-pressed="false">Back</button></div>
       </div>
       <div class="drop-hint" id="dropHint" hidden>Drop to add to your piece</div>
       <div class="busy" id="busy" hidden><span class="spin"></span><span id="busyText">Building 3D preview…</span></div>
@@ -1592,11 +1646,11 @@ const pieceName = (t) => { const one = famOf(t).one; return t.contour ? 'Custom 
 
 /* ---------------- State ---------------- */
 function elDefaults(e) {
-  const base = { id: uid(), x: 0, y: 0, rot: 0, cut: false, tone: 1, hidden: false, effect: 'none', effectW: 0.8, effectGap: 0.8 };
+  const base = { id: uid(), x: 0, y: 0, rot: 0, cut: false, tone: 1, pc: 1, hidden: false, effect: 'none', effectW: 0.8, effectGap: 0.8 };
   const per = {
     text: { text: 'Your Text', font: 'Fredoka', size: 10, spacing: 0.02, curve: 0, thicken: 0, align: 'center', lineH: 1.12, batch: false },
     shape: { shape: 'star', w: 20, h: 20 },
-    image: { mode: 'stencil', raiseDark: true, threshold: 0.5, smooth: 0.6, bp: 0, wp: 1, mid: 0, sharpen: 0.3, detail: 0.4, invert: false, perceptual: true, flip: false, mask: 'none', frame: 0, w: 40 },
+    image: { mode: 'stencil', raiseDark: true, threshold: 0.5, smooth: 0.6, bp: 0, wp: 1, mid: 0, sharpen: 0.3, detail: 0.4, invert: false, perceptual: true, flip: false, mask: 'none', frame: 0, w: 40, sat: 0.15, clean: 2 },
     pattern: { pattern: 'stripes', size: 5, thick: 0.45, tone: 0.5 },
   }[e.type] || {};
   return Object.assign(base, per, e);
@@ -1612,6 +1666,8 @@ function defaultState() {
     print: { preset: 'smart', first: 0.2, swap: 'ams', bed: 'bbl256', format: 'bambu', walls: 3, infill: 'auto', ironing: false, res: 'fine', speck: 0.2 },
     batch: { on: false, names: '', mode: 'files' },
     designId: null,
+    mode: 'layer', turn: false, scaleDesign: true,
+    full: { palette: [{ c: '#161616', h: 0 }, { c: '#f4f4ef', h: 5 }, { c: '#c12e1f', h: 5 }, { c: '#00ae42', h: 5 }], flat: false, snap: true, rimPc: 1 },
     els: [
       elDefaults({ type: 'text', text: 'MERRY CHRISTMAS', font: 'Mountains of Christmas', size: 7.5, spacing: 0.02, curve: 0.5, thicken: 0.15, x: 0, y: -23 }),
       elDefaults({ type: 'shape', shape: 'snowflake', x: 0, y: 1, w: 30, h: 30 }),
@@ -1640,12 +1696,13 @@ function layerPlan() {
   const pr = presetById(S.print.preset), FL = S.print.first, lb = pr.lb, lw = pr.lw;
   const nB = Math.max(2, Math.round((S.baseMM - FL) / lb + 1e-6) + 1);
   const baseH = FL + (nB - 1) * lb;
-  const nW = clamp(Math.round(S.whiteMM / lw + 1e-6), 1, 80);
+  const full = S.mode === 'full';
+  const nW = full ? clamp(Math.max(1, ...S.full.palette.map(p => p.h | 0)), 1, 80) : clamp(Math.round(S.whiteMM / lw + 1e-6), 1, 80);
   const whiteH = nW * lw;
-  const acc = !!(S.accent && S.accent.on) && nW >= 2;
+  const acc = !full && !!(S.accent && S.accent.on) && nW >= 2;
   const kA = acc ? clamp(nW - S.accent.layers, 1, nW - 1) : nW;
   const plan = { pr, FL, lb, lw, nB, baseH, nW, whiteH, total: baseH + whiteH, swapLayer: nB + 1, swapZ: baseH + lw, tau: Math.max(0.02, S.colors.td / 15),
-    acc, kA, tauA: Math.max(0.02, (S.accent ? S.accent.td : 2.5) / 15), swap2Layer: nB + kA + 1, swap2Z: baseH + (kA + 1) * lw };
+    acc, kA, tauA: Math.max(0.02, (S.accent ? S.accent.td : 2.5) / 15), swap2Layer: nB + kA + 1, swap2Z: baseH + (kA + 1) * lw, full };
   const m = S.magnet || { mode: 'none' };
   plan.magnet = m.mode !== 'none';
   if (plan.magnet) {
@@ -1695,6 +1752,11 @@ function migrate(s) {
   out.magnet = Object.assign({}, d.magnet, s.magnet || {});
   out.print = Object.assign({}, d.print, s.print || {});
   out.batch = Object.assign({}, d.batch, s.batch || {});
+  out.full = Object.assign({}, d.full, s.full || {});
+  if (!Array.isArray(out.full.palette) || out.full.palette.length < 2) out.full.palette = d.full.palette;
+  out.full.palette = out.full.palette.slice(0, 8).map(p => ({ c: /^#[0-9a-f]{6}$/i.test(p.c) ? p.c : '#888888', h: clamp(p.h | 0, 0, 40) }));
+  if (out.mode !== 'full') out.mode = 'layer';
+  out.turn = !!out.turn; out.scaleDesign = out.scaleDesign !== false;
   if (!TEMPLATES.some(t => t.id === out.template)) { out.template = d.template; out.tp = d.tp; }
   out.tp = Object.assign({}, tplById(out.template).defaults, out.tp || {});
   out.els = (out.els || []).filter(e => e && e.type && (e.type !== 'image' || IMG[e.img])).map(e => elDefaults(e));
@@ -1893,16 +1955,18 @@ function maskPath(mask, w, h) {
 function drawRaw(cx, el, plan) {
   cx.fillStyle = '#fff'; cx.strokeStyle = '#fff';
   if (el.type === 'image') {
-    const pc = processedImage(el, plan); if (!pc) return;
+    const fullPhoto = S.mode === 'full' && el.mode === 'photo' && !el.cut;
+    const pc = fullPhoto ? processedImageFull(el) : processedImage(el, plan); if (!pc) return;
     const h = el.w * pc.height / pc.width, mp = maskPath(el.mask, el.w, h);
     cx.save();
     if (mp) cx.clip(mp);
     if (el.flip) cx.scale(-1, 1);
-    cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
+    if (fullPhoto) cx.imageSmoothingEnabled = false; else { cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high'; }
     cx.drawImage(pc, -el.w / 2, -h / 2, el.w, h);
     cx.restore();
     if (mp && el.mode === 'photo' && el.frame > 0) {
       const k = 1 + el.frame / Math.min(el.w, h); const fp = new Path2D(); fp.addPath(mp, new DOMMatrix([k, 0, 0, k, 0, 0]));
+      if (fullPhoto) cx.strokeStyle = S.full.palette[effPc(el)].c;
       cx.lineWidth = el.frame; cx.lineJoin = 'round'; cx.stroke(fp);
     }
   } else if (el.type === 'text') {
@@ -2000,9 +2064,14 @@ function pieceInfo() {
     pieceCache = { key, info };
     return info;
   }
-  const key = S.template + JSON.stringify(S.tp);
+  const key = S.template + JSON.stringify(S.tp) + (S.turn ? 'T' : '');
   if (pieceCache.key === key) return pieceCache.info;
   const g = t.build(S.tp);
+  if (S.turn) { // turn the whole piece sideways (hanging hole ends up on the left)
+    const a = -Math.PI / 2;
+    g.solids = g.solids.map(p => rotPath(p, a)); g.holes = g.holes.map(p => rotPath(p, a));
+    g.area = [g.area[1], g.area[0]]; const o = g.designOffset || [0, 0]; g.designOffset = [o[1], -o[0]];
+  }
   const ext = 300, k = 1.5, sz = Math.round(ext * 2 * k);
   const cv = mkCanvas(sz, sz), cx = ctxOf(cv);
   cx.setTransform(k, 0, 0, k, ext * k, ext * k); cx.fillStyle = '#fff';
@@ -2084,7 +2153,7 @@ function contourField(g, W, H, x0, y0, pxmm) {
 }
 function buildBase(pxmm) {
   const g = pieceInfo();
-  const key = JSON.stringify([S.template, S.tp, S.margin, S.rim, S.rimStyle, Math.round(pxmm * 1000), g.contour ? contourSig() : 0, g.contour ? [S.whiteMM, S.colors.td, S.print.preset] : 0]);
+  const key = JSON.stringify([S.template, S.tp, S.turn, S.margin, S.rim, S.rimStyle, Math.round(pxmm * 1000), g.contour ? contourSig() : 0, g.contour ? [S.whiteMM, S.colors.td, S.print.preset] : 0]);
   if (baseCache.key === key) return baseCache.val;
   const padPx = Math.ceil((g.close || 0) * pxmm) + 6;
   const x0 = g.bb[0] - padPx / pxmm, y0 = g.bb[1] - padPx / pxmm;
@@ -2191,24 +2260,222 @@ function levelMap(base, des, plan) {
   }
   return out;
 }
-/* realistic colored render of the piece at pxmm */
+/* realistic colored render of the piece at pxmm (same per-pixel heights the 3D model is built from) */
 function renderPiece(pxmm, opts) {
   opts = opts || {};
-  const plan = layerPlan(), base = buildBase(pxmm), des = buildDesign(base, plan), lv = levelMap(base, des, plan);
-  const { W, H, M0 } = base, lut = makeLUT(plan);
+  const plan = layerPlan(), base = buildBase(pxmm), pm = pixelModel(base, plan), lv = pm.lv, lab = pm.lab;
+  const { W, H, M0 } = base, lut = makeLUT(plan), P = lab ? palRGB() : null;
   const c = opts.canvas && opts.canvas.width === W && opts.canvas.height === H ? opts.canvas : mkCanvas(W, H);
   const cx = c.getContext('2d'), id = cx.createImageData(W, H), d = id.data;
   const o = Math.max(1, Math.round(pxmm * 0.12)), hs = 0.11 / Math.max(1, plan.nW / 6);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x, m = M0[i]; if (m < 0.01) continue;
-    const n = lv[i], col = lut[n]; let sh = 1;
+    const n = lv[i], col = lab ? P[lab[i]] : lut[n]; let sh = 1;
     if (x >= o && y >= o) { const j = i - o * W - o; if (M0[j] < 0.5) sh = 1.16; else { const dn = n - lv[j]; if (dn) sh = 1 + clamp(dn * hs * (dn > 0 ? 1.2 : 1.6), -0.35, 0.3); } }
     if (x + o < W && y + o < H && M0[i + o * W + o] < 0.5 && sh === 1) sh = 0.82;
     const k = i * 4; d[k] = clamp(col[0] * sh, 0, 255); d[k + 1] = clamp(col[1] * sh, 0, 255); d[k + 2] = clamp(col[2] * sh, 0, 255); d[k + 3] = clamp(m * 1.4, 0, 1) * 255;
   }
   cx.putImageData(id, 0, 0);
-  return { canvas: c, base, lv, plan };
+  return { canvas: c, base, lv, lab, plan };
 }
+
+/* ---------------- Full-color mode ----------------
+   Every spot on the top gets exactly one filament color from a small palette (2–8 colors).
+   Each color is its own part on its own AMS slot and can be raised to its own height. */
+const FILAMENTS = [
+  { n: 'Black', c: '#161616' }, { n: 'White', c: '#f4f4ef' }, { n: 'Light gray', c: '#d1d3d5' }, { n: 'Gray', c: '#8e9089' },
+  { n: 'Charcoal', c: '#4a4d52' }, { n: 'Red', c: '#c12e1f' }, { n: 'Maroon', c: '#8a1f2b' }, { n: 'Orange', c: '#ff6a13' },
+  { n: 'Yellow', c: '#f4d82a' }, { n: 'Gold', c: '#e4bd68' }, { n: 'Beige', c: '#efdcc4' }, { n: 'Brown', c: '#8b5a3c' },
+  { n: 'Dark brown', c: '#4f3324' }, { n: 'Green', c: '#00ae42' }, { n: 'Forest green', c: '#1e5838' }, { n: 'Mint', c: '#9be3c4' },
+  { n: 'Turquoise', c: '#00b1b7' }, { n: 'Sky blue', c: '#56b7e6' }, { n: 'Blue', c: '#1556c0' }, { n: 'Navy', c: '#0f2a6b' },
+  { n: 'Purple', c: '#5e43b7' }, { n: 'Lilac', c: '#b39ddb' }, { n: 'Pink', c: '#f5a3c0' }, { n: 'Hot pink', c: '#ec3a87' },
+  { n: 'Skin tone', c: '#e8b896' },
+];
+function filamentName(c) {
+  const f = FILAMENTS.find(x => x.c.toLowerCase() === (c || '').toLowerCase()); if (f) return f.n;
+  const l = rgb2lab(...hexToRgb(c)); let best = null, bd = 1e9;
+  FILAMENTS.forEach(x => { const d = labDist(l, rgb2lab(...hexToRgb(x.c))); if (d < bd) { bd = d; best = x; } });
+  return bd < 12 ? best.n : 'Custom';
+}
+const toHex = (rgb) => '#' + rgb.map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
+function srgbLin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function rgb2lab(r, g, b) {
+  const R = srgbLin(r), G = srgbLin(g), B = srgbLin(b);
+  const X = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047, Y = R * 0.2126 + G * 0.7152 + B * 0.0722, Z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883;
+  const f = (t) => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+}
+function lab2rgb(L, a, b) {
+  const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+  const inv = (t) => { const t3 = t * t * t; return t3 > 0.008856 ? t3 : (t - 16 / 116) / 7.787; };
+  const X = inv(fx) * 0.95047, Y = inv(fy), Z = inv(fz) * 1.08883;
+  const g = (c) => { c = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(Math.max(0, c), 1 / 2.4) - 0.055; return clamp(Math.round(c * 255), 0, 255); };
+  return [g(X * 3.2406 - Y * 1.5372 - Z * 0.4986), g(-X * 0.9689 + Y * 1.8758 + Z * 0.0415), g(X * 0.0557 - Y * 0.2040 + Z * 1.0570)];
+}
+const labDist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+const isFull = () => S.mode === 'full';
+function pal() { return S.full.palette; }
+function palRGB() { return pal().map(p => hexToRgb(p.c)); }
+function baseHex() { return isFull() ? pal()[0].c : S.colors.base; }
+function topHex() { return isFull() ? (pal()[1] || pal()[0]).c : S.colors.top; }
+function effPc(el) { const n = pal().length; return el.cut ? 0 : clamp((el.pc == null ? 1 : el.pc) | 0, 0, n - 1); }
+/* 32×32×32 lookup from RGB to the nearest palette color, measured in Lab */
+const lutCache = new Map();
+function paletteLUT() {
+  const key = pal().map(p => p.c).join(','); const c = lutCache.get(key); if (c) return c;
+  const labs = palRGB().map(rgb => rgb2lab(...rgb)), out = new Uint8Array(32768);
+  for (let r = 0; r < 32; r++) for (let g = 0; g < 32; g++) for (let b = 0; b < 32; b++) {
+    const l = rgb2lab(r * 8 + 4, g * 8 + 4, b * 8 + 4); let bi = 0, bd = 1e9;
+    for (let i = 0; i < labs.length; i++) { const d = labDist(l, labs[i]); if (d < bd) { bd = d; bi = i; } }
+    out[(r << 10) | (g << 5) | b] = bi;
+  }
+  if (lutCache.size > 20) lutCache.clear();
+  lutCache.set(key, out); return out;
+}
+function imageRGB(key) {
+  const im = IMG[key]; if (im.rgb) return im.rgb;
+  im.rgb = ctxOf(im.canvas).getImageData(0, 0, im.w, im.h).data; return im.rgb;
+}
+/* full-color image reduced to the palette, at the image's own resolution so the
+   design view, 3D preview and export all use the exact same color map */
+const fullCache = new Map();
+function processedImageFull(el) {
+  const im = IMG[el.img]; if (!im) return null;
+  const sig = JSON.stringify([el.img, el.bp, el.wp, el.mid, el.sat, el.detail, el.invert, el.clean, pal().map(p => p.c)]);
+  const c = fullCache.get(el.id); if (c && c.sig === sig) return c.canvas;
+  const { w, h } = im, n = w * h, src = imageRGB(el.img);
+  const ch = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
+  for (let i = 0, j = 0; i < n; i++, j += 4) { ch[0][i] = src[j] / 255; ch[1][i] = src[j + 1] / 255; ch[2][i] = src[j + 2] / 255; }
+  const br = (el.detail || 0) * Math.max(w, h) / 450;
+  if (br > 0.3) ch.forEach(a => LACore.blur(a, w, h, br));
+  const bp = Math.min(el.bp, el.wp - 0.02), span = Math.max(0.02, el.wp - bp), gam = Math.pow(2, -el.mid * 1.6), sat = 1 + (el.sat || 0);
+  const lut = paletteLUT(), P = palRGB(), idx = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    let r = ch[0][i], g = ch[1][i], b = ch[2][i];
+    if (el.invert) { r = 1 - r; g = 1 - g; b = 1 - b; }
+    r = Math.pow(clamp((r - bp) / span, 0, 1), gam); g = Math.pow(clamp((g - bp) / span, 0, 1), gam); b = Math.pow(clamp((b - bp) / span, 0, 1), gam);
+    if (sat !== 1) { const l = 0.2126 * r + 0.7152 * g + 0.0722 * b; r = clamp(l + (r - l) * sat, 0, 1); g = clamp(l + (g - l) * sat, 0, 1); b = clamp(l + (b - l) * sat, 0, 1); }
+    idx[i] = lut[((r * 255) >> 3 << 10) | ((g * 255) >> 3 << 5) | ((b * 255) >> 3)];
+  }
+  const it = clamp(el.clean == null ? 2 : el.clean, 0, 5);
+  if (it) cleanLabels(idx, im.alpha, w, h, P.length, it);
+  const cv = mkCanvas(w, h), cx = cv.getContext('2d'), id = cx.createImageData(w, h), d = id.data;
+  for (let i = 0, j = 0; i < n; i++, j += 4) { const p = P[idx[i]]; d[j] = p[0]; d[j + 1] = p[1]; d[j + 2] = p[2]; d[j + 3] = im.alpha[i] > 0.5 ? 255 : 0; }
+  cx.putImageData(id, 0, 0);
+  fullCache.set(el.id, { sig, canvas: cv });
+  return cv;
+}
+/* removes isolated specks: a pixel that shares its color with at most 2 of its 8 neighbours
+   takes the most common neighbouring color */
+function cleanLabels(lab, alpha, W, H, n, iters) {
+  const cnt = new Uint16Array(n); let src = lab, dst = new Uint8Array(lab.length);
+  for (let t = 0; t < iters; t++) {
+    dst.set(src);
+    for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+      const i = y * W + x; if (alpha && alpha[i] <= 0.5) continue;
+      cnt.fill(0);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const j = i + dy * W + dx; if (!alpha || alpha[j] > 0.5) cnt[src[j]]++; }
+      const own = cnt[src[i]]; if (own > 2) continue;
+      let best = src[i], bc = own; for (let c = 0; c < n; c++) if (cnt[c] > bc) { bc = cnt[c]; best = c; }
+      dst[i] = best;
+    }
+    const tmp = src; src = dst; dst = tmp;
+  }
+  if (src !== lab) lab.set(src);
+}
+/* label (palette index) for every pixel of the piece */
+function buildLabels(base, plan) {
+  const { W, H, x0, y0, pxmm, M0 } = base, N = W * H, n = pal().length, lab = new Uint8Array(N);
+  const P = palRGB(), lut = paletteLUT();
+  let group = null;
+  const flush = () => { if (!group) return; const F = readRed(group.c); for (let i = 0; i < N; i++) if (F[i] >= 0.5) lab[i] = group.pc; group = null; };
+  for (const el of S.els) {
+    if (el.hidden) continue;
+    if (el.type === 'image' && el.mode === 'photo' && !el.cut) {
+      flush();
+      const c = mkCanvas(W, H), x = ctxOf(c); x.setTransform(pxmm, 0, 0, pxmm, -x0 * pxmm, -y0 * pxmm);
+      drawElement(x, el, plan, pxmm);
+      const d = x.getImageData(0, 0, W, H).data;
+      for (let i = 0, j = 0; i < N; i++, j += 4) if (d[j + 3] >= 128) lab[i] = lut[(d[j] >> 3 << 10) | (d[j + 1] >> 3 << 5) | (d[j + 2] >> 3)];
+      continue;
+    }
+    const pc = effPc(el);
+    if (!group || group.pc !== pc) {
+      flush(); group = { pc, c: mkCanvas(W, H) };
+      const x = ctxOf(group.c); x.fillStyle = '#000'; x.fillRect(0, 0, W, H); x.setTransform(pxmm, 0, 0, pxmm, -x0 * pxmm, -y0 * pxmm); x.globalCompositeOperation = 'lighten';
+    }
+    drawElement(ctxOf(group.c), el, plan, pxmm);
+  }
+  flush();
+  if (base.R) { const rp = clamp(S.full.rimPc | 0, 0, n - 1); for (let i = 0; i < N; i++) if (base.R[i] >= 0.5) lab[i] = rp; }
+  for (let i = 0; i < N; i++) if (base.C[i] < 0.5 || M0[i] < 0.5) lab[i] = 0;
+  void P;
+  return lab;
+}
+/* per-pixel height (in top layers) and, in full-color mode, palette label */
+function pixelModel(base, plan) {
+  if (!isFull()) { const des = buildDesign(base, plan); return { lv: levelMap(base, des, plan), lab: null, des }; }
+  const lab = buildLabels(base, plan), hs = pal().map(p => p.h | 0), N = lab.length, lv = new Uint8Array(N);
+  for (let i = 0; i < N; i++) lv[i] = base.M0[i] >= 0.5 ? hs[lab[i]] : 0;
+  return { lv, lab };
+}
+/* k-means in Lab over an image's pixels; palette[0] (the base) stays fixed */
+function autoPaletteFromImage(key, count, snap) {
+  const im = IMG[key], rgb = imageRGB(key), n = im.w * im.h;
+  const step = Math.max(1, Math.floor(n / 24000)), pts = [];
+  for (let i = 0; i < n; i += step) if (im.alpha[i] > 0.5) pts.push(rgb2lab(rgb[i * 4], rgb[i * 4 + 1], rgb[i * 4 + 2]));
+  if (!pts.length) return null;
+  const fixed = rgb2lab(...hexToRgb(pal()[0].c)), K = clamp(count, 2, 8);
+  const C = [fixed];
+  while (C.length < K) { // k-means++ style seeding
+    let best = null, bd = -1;
+    for (let i = 0; i < pts.length; i += 7) { let m = 1e9; for (const c of C) m = Math.min(m, labDist(pts[i], c)); if (m > bd) { bd = m; best = pts[i]; } }
+    C.push(best.slice());
+  }
+  const asg = new Uint8Array(pts.length);
+  for (let it = 0; it < 14; it++) {
+    for (let i = 0; i < pts.length; i++) { let bi = 0, bd = 1e9; for (let k = 0; k < K; k++) { const d = labDist(pts[i], C[k]); if (d < bd) { bd = d; bi = k; } } asg[i] = bi; }
+    const sum = Array.from({ length: K }, () => [0, 0, 0, 0]);
+    for (let i = 0; i < pts.length; i++) { const s = sum[asg[i]]; s[0] += pts[i][0]; s[1] += pts[i][1]; s[2] += pts[i][2]; s[3]++; }
+    for (let k = 1; k < K; k++) if (sum[k][3]) C[k] = [sum[k][0] / sum[k][3], sum[k][1] / sum[k][3], sum[k][2] / sum[k][3]];
+  }
+  let cols = C.slice(1).map(l => toHex(lab2rgb(...l)));
+  if (snap) {
+    const used = new Set([pal()[0].c.toLowerCase()]);
+    cols = cols.map(cx => {
+      const l = rgb2lab(...hexToRgb(cx));
+      const ranked = FILAMENTS.map(f => [labDist(l, rgb2lab(...hexToRgb(f.c))), f.c]).sort((a, b) => a[0] - b[0]);
+      const pick = ranked.find(r => !used.has(r[1].toLowerCase())) || ranked[0]; used.add(pick[1].toLowerCase()); return pick[1];
+    });
+  }
+  // darker colors first so slots read naturally
+  cols.sort((a, b) => rgb2lab(...hexToRgb(a))[0] - rgb2lab(...hexToRgb(b))[0]);
+  return cols;
+}
+function applyAutoPalette(key, count, snap) {
+  const cols = autoPaletteFromImage(key, count, snap); if (!cols) return false;
+  const h0 = pal()[1] ? pal()[1].h : 5, flat = S.full.flat;
+  S.full.palette = [pal()[0]].concat(cols.map(c => ({ c, h: flat ? pal()[0].h : h0 })));
+  S.els.forEach(e => { if (e.pc >= S.full.palette.length) e.pc = S.full.palette.length - 1; });
+  if (S.full.rimPc >= S.full.palette.length) S.full.rimPc = 1;
+  fullCache.clear(); return true;
+}
+/* a colorful sample picture for trying full-color mode */
+function sampleSunset() {
+  const W = 900, H = 900, c = mkCanvas(W, H), x = ctxOf(c);
+  const sky = x.createLinearGradient(0, 0, 0, H * 0.62);
+  sky.addColorStop(0, '#2b1b5a'); sky.addColorStop(0.45, '#c2407a'); sky.addColorStop(1, '#ffb347');
+  x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#ffe36e'; x.beginPath(); x.arc(W * 0.5, H * 0.58, H * 0.16, 0, TAU); x.fill();
+  x.fillStyle = '#5a2a6e'; x.beginPath(); x.moveTo(0, H * 0.66); x.lineTo(W * 0.22, H * 0.44); x.lineTo(W * 0.42, H * 0.64); x.lineTo(W * 0.62, H * 0.42); x.lineTo(W * 0.85, H * 0.6); x.lineTo(W, H * 0.5); x.lineTo(W, H); x.lineTo(0, H); x.fill();
+  x.fillStyle = '#1f6d6b'; x.beginPath(); x.moveTo(0, H * 0.74); x.quadraticCurveTo(W * 0.3, H * 0.64, W * 0.55, H * 0.72); x.quadraticCurveTo(W * 0.8, H * 0.8, W, H * 0.7); x.lineTo(W, H); x.lineTo(0, H); x.fill();
+  x.fillStyle = '#123b2e';
+  for (let i = 0; i < 9; i++) { const tx = W * (0.05 + i * 0.115), ty = H * (0.86 + (i % 3) * 0.03), s = H * (0.1 + (i % 2) * 0.04); x.beginPath(); x.moveTo(tx, ty - s); x.lineTo(tx + s * 0.38, ty); x.lineTo(tx - s * 0.38, ty); x.fill(); }
+  x.fillStyle = '#0d2a20'; x.fillRect(0, H * 0.92, W, H * 0.08);
+  x.fillStyle = '#fff4d6'; for (let i = 0; i < 22; i++) { const sx = (i * 397) % W, sy = (i * 211) % (H * 0.3); x.beginPath(); x.arc(sx, sy, 2.5 + (i % 3), 0, TAU); x.fill(); }
+  return c;
+}
+function sampleSunsetKey() { const key = 'img_sample_sunset'; if (!IMG[key]) registerImageFromCanvas(key, sampleSunset()); return key; }
 
 /* ---------------- 2D view ---------------- */
 const cv2 = $('#view2d'), vp = $('#viewport');
@@ -2250,7 +2517,7 @@ function targetPxmm(inter) {
 function computePieceImage() {
   const r = renderPiece(targetPxmm(interactive), { canvas: pieceImg.canvas });
   pieceImg = { canvas: r.canvas, x0: r.base.x0, y0: r.base.y0, pxmm: r.base.pxmm, W: r.base.W, H: r.base.H };
-  lastStats = { base: r.base, lv: r.lv, plan: r.plan };
+  lastStats = { base: r.base, lv: r.lv, lab: r.lab, plan: r.plan };
 }
 function pieceSize() { return lastStats && lastStats.base.size[0] ? lastStats.base.size : pieceInfo().size; }
 function render2D() {
@@ -2570,95 +2837,204 @@ let curCat = 'all';
 function setTab(name) { ['templates', 'add', 'design'].forEach(t => { $('#tab-' + t).setAttribute('aria-selected', String(t === name)); $('#panel-' + t).hidden = t !== name; }); }
 ['templates', 'add', 'design'].forEach(t => $('#tab-' + t).addEventListener('click', () => setTab(t)));
 const thumbCache = new Map();
-function drawPieceThumb(canvas, t, tp, W, H) {
-  W = W || 220; H = H || 176; canvas.width = W; canvas.height = H;
-  const cx = canvas.getContext('2d'); cx.fillStyle = '#1a1c1f'; cx.fillRect(0, 0, W, H);
+function drawPieceThumb(canvas, t, tp, W, H, opts) {
+  W = W || 220; H = H || 176; opts = opts || {}; canvas.width = W; canvas.height = H;
+  const cx = canvas.getContext('2d'); cx.fillStyle = '#20242b'; cx.fillRect(0, 0, W, H);
+  const rimHex = isFull() ? (pal()[clamp(S.full.rimPc | 0, 0, pal().length - 1)] || pal()[0]).c : topHex();
+  const bc = hexToRgb(baseHex()), tc = hexToRgb(rimHex.toLowerCase() === baseHex().toLowerCase() ? topHex() : rimHex);
   if (t.contour) {
     cx.save(); cx.translate(W / 2, H / 2); const k = Math.min(W, H) / 176;
     cx.font = `400 ${46 * k}px "Pacifico", "DM Sans", cursive`; cx.textAlign = 'center'; cx.textBaseline = 'middle';
-    cx.lineJoin = 'round'; cx.lineWidth = 26 * k; cx.strokeStyle = '#3a3f47'; cx.strokeText('Jake', 0, 0);
-    cx.fillStyle = '#e9edf2'; cx.fillText('Jake', 0, 0);
-    cx.beginPath(); cx.arc(0, -40 * k, 9 * k, 0, TAU); cx.fillStyle = '#3a3f47'; cx.fill(); cx.beginPath(); cx.arc(0, -40 * k, 4 * k, 0, TAU); cx.fillStyle = '#1a1c1f'; cx.fill();
+    cx.lineJoin = 'round'; cx.lineWidth = 26 * k; cx.strokeStyle = rgbCss(bc); cx.strokeText('Jake', 0, 0);
+    cx.fillStyle = rgbCss(tc); cx.fillText('Jake', 0, 0);
+    cx.beginPath(); cx.arc(-70 * k, 0, 10 * k, 0, TAU); cx.fillStyle = rgbCss(bc); cx.fill(); cx.beginPath(); cx.arc(-70 * k, 0, 4.5 * k, 0, TAU); cx.fillStyle = '#20242b'; cx.fill();
     cx.restore(); return;
   }
   const g = t.build(tp || t.defaults);
-  const tmp = mkCanvas(240, 240), tx = ctxOf(tmp), k = 0.45; tx.setTransform(k, 0, 0, k, 120, 120); tx.fillStyle = '#fff'; g.solids.forEach(p => tx.fill(p));
-  const d = tx.getImageData(0, 0, 240, 240).data; let x0 = 240, y0 = 240, x1 = 0, y1 = 0;
-  for (let y = 0; y < 240; y++) for (let x = 0; x < 240; x++) if (d[(y * 240 + x) * 4] > 30) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  let solids = g.solids, holes = g.holes;
+  if (opts.turn) { solids = solids.map(p => rotPath(p, -Math.PI / 2)); holes = holes.map(p => rotPath(p, -Math.PI / 2)); }
+  const tmp = mkCanvas(240, 240), tx = ctxOf(tmp), k = 0.45; tx.setTransform(k, 0, 0, k, 120, 120); tx.fillStyle = '#fff'; solids.forEach(p => tx.fill(p));
+  const d0 = tx.getImageData(0, 0, 240, 240).data; let x0 = 240, y0 = 240, x1 = 0, y1 = 0;
+  for (let y = 0; y < 240; y++) for (let x = 0; x < 240; x++) if (d0[(y * 240 + x) * 4] > 30) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   const bw = (x1 - x0 + 1) / k, bh = (y1 - y0 + 1) / k, mx = ((x0 + x1) / 2 - 120) / k, my = ((y0 + y1) / 2 - 120) / k;
-  const sc = Math.min((W - W * 0.14) / bw, (H - H * 0.15) / bh);
-  cx.setTransform(sc, 0, 0, sc, W / 2 - mx * sc, H / 2 - my * sc);
-  cx.shadowColor = 'rgba(0,0,0,.5)'; cx.shadowBlur = 8; cx.shadowOffsetY = 3;
-  cx.fillStyle = '#3a3f47'; g.solids.forEach(p => cx.fill(p)); cx.shadowColor = 'transparent';
-  cx.globalCompositeOperation = 'destination-out'; g.holes.forEach(p => cx.fill(p));
-  cx.globalCompositeOperation = 'destination-over'; cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = '#1a1c1f'; cx.fillRect(0, 0, W, H); cx.globalCompositeOperation = 'source-over';
+  const sc = Math.min((W - W * 0.16) / bw, (H - H * 0.17) / bh);
+  // piece mask at thumbnail size, then a top-color border band measured inward from every edge (holes too)
+  const m = mkCanvas(W, H), mc = ctxOf(m); mc.fillStyle = '#000'; mc.fillRect(0, 0, W, H);
+  mc.setTransform(sc, 0, 0, sc, W / 2 - mx * sc, H / 2 - my * sc); mc.fillStyle = '#fff'; solids.forEach(p => mc.fill(p));
+  mc.fillStyle = '#000'; holes.forEach(p => mc.fill(p));
+  const F = readRed(m), N = W * H, ins = new Uint8Array(N); for (let i = 0; i < N; i++) ins[i] = F[i] >= 0.5 ? 1 : 0;
+  const dist = LACore.edt(ins, W, H), band = Math.max(1.6, Math.min(W, H) * 0.022);
+  const out = mkCanvas(W, H), oc = out.getContext('2d'), id = oc.createImageData(W, H), d = id.data;
+  for (let i = 0; i < N; i++) {
+    if (F[i] < 0.02) continue;
+    const r = clamp(band + 0.5 - dist[i] + 1, 0, 1), col = [bc[0] + (tc[0] - bc[0]) * r, bc[1] + (tc[1] - bc[1]) * r, bc[2] + (tc[2] - bc[2]) * r];
+    const j = i * 4; d[j] = col[0]; d[j + 1] = col[1]; d[j + 2] = col[2]; d[j + 3] = clamp(F[i] * 1.3, 0, 1) * 255;
+  }
+  oc.putImageData(id, 0, 0);
+  cx.shadowColor = 'rgba(0,0,0,.55)'; cx.shadowBlur = 9; cx.shadowOffsetY = 3; cx.drawImage(out, 0, 0); cx.shadowColor = 'transparent';
+}
+let tplQuery = '';
+function tplMatches(t, q) {
+  if (!q) return true;
+  const f = famOf(t), hay = `${t.name} ${f.n} ${(CATS.find(c => c[0] === f.cat) || [, ''])[1]} ${t.id}`.toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
 }
 function buildTemplateGrid() {
   const chips = $('#catChips'); chips.innerHTML = '';
+  const count = (id) => id === 'all' ? TEMPLATES.length : id === 'ideas' ? IDEAS.length : TEMPLATES.filter(t => famOf(t).cat === id).length;
   CATS.forEach(([id, n]) => {
-    const b = h('button', { class: 'chip', 'aria-pressed': String(curCat === id), type: 'button' }, n);
-    b.addEventListener('click', () => { curCat = id; buildTemplateGrid(); });
+    const b = h('button', { class: 'chip', 'aria-pressed': String(!tplQuery && curCat === id), type: 'button' }, n, h('span', { class: 'chip-n' }, count(id)));
+    b.addEventListener('click', () => { curCat = id; tplQuery = ''; const si = $('#tplSearch'); if (si) si.value = ''; buildTemplateGrid(); });
     chips.append(b);
   });
   const grid = $('#tplGrid'); grid.innerHTML = '';
-  if (curCat === 'ideas') { buildIdeasGrid(grid); return; }
-  FAMILIES.filter(f => curCat === 'all' || f.cat === curCat).forEach(f => {
-    const list = TEMPLATES.filter(t => t.fam === f.id);
+  if (!tplQuery && curCat === 'ideas') { buildIdeasGrid(grid); return; }
+  let shown = 0;
+  FAMILIES.filter(f => tplQuery || curCat === 'all' || f.cat === curCat).forEach(f => {
+    const list = TEMPLATES.filter(t => t.fam === f.id && tplMatches(t, tplQuery));
+    if (!list.length) return;
     grid.append(h('div', { class: 'fam-head' }, h('span', null, f.n), h('span', { class: 'val' }, list.length > 1 ? `${list.length} styles` : '')));
     list.forEach(t => {
       const c = h('canvas', { 'aria-hidden': 'true' });
       const isCur = S.template === t.id;
       drawPieceThumb(c, t, isCur ? S.tp : t.defaults);
-      const dd = t.defaults, dims = t.contour ? 'any size' : dd.d ? `Ø ${dd.d} mm` : `${dd.w} × ${dd.h || dd.w} mm`;
+      const dd = t.defaults, dims = t.contour ? 'fits your design' : dd.d ? `Ø ${dd.d} mm · ${inch(dd.d)}` : `${dd.w} × ${dd.h || dd.w} mm`;
       const b = h('button', { class: 'tcard', 'aria-pressed': String(isCur), type: 'button', title: `${f.n}: ${t.name}` }, c, h('span', { class: 'tname' }, t.name), h('span', { class: 'tsize' }, dims));
       b.addEventListener('click', () => chooseTemplate(t.id));
-      grid.append(b);
+      grid.append(b); shown++;
     });
   });
+  if (!shown) grid.append(h('p', { class: 'hint', style: 'grid-column:1/-1;margin:8px 0' }, `No templates match “${tplQuery}”. Try “round”, “bookmark”, “heart” or “sign”.`));
 }
-function buildPieceCard() {
-  let card = $('#pieceCard'); if (card) card.remove();
-  card = h('div', { class: 'card', id: 'pieceCard' });
-  const t = tplById(S.template), f = famOf(t), sz = pieceSize();
-  card.append(h('div', { class: 'sec-title' }, h('span', null, f.n), h('span', { class: 'val', id: 'pieceSizeVal' }, `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`)));
+function buildPieceCard() { if (inspTab === 'piece') buildInspector(); }
+const SIZE_PRESETS = {
+  'orn-round': [['2.5″', 64], ['3″', 76], ['3.5″', 89], ['4″', 102]],
+  'orn-shape': [['2.5″', 64], ['3″', 76], ['3.5″', 89], ['4″', 102]],
+  bookmark: [['1.5 × 6″', 38, 152], ['2 × 6″', 51, 152], ['2 × 7″', 51, 178], ['2.5 × 7″', 64, 178]],
+  keychain: [['Small', 38], ['Medium', 50], ['Large', 64]],
+  tag: [['2 × 3″', 51, 76], ['2.5 × 3.5″', 64, 89], ['3 × 4″', 76, 102]],
+  sign: [['4 × 6″', 152, 102], ['5 × 7″', 178, 127], ['6 × 8″', 203, 152], ['7 × 9″', 229, 178]],
+  coaster: [['3.5″', 89], ['3.75″', 95], ['4″', 102]],
+  magnet: [['1.5″', 38], ['2″', 51], ['2.5″', 64], ['3″', 76]],
+  custom: [['2″', 51], ['3″', 76], ['4″', 102], ['5″', 127]],
+};
+const inch = (mm) => (mm / 25.4).toFixed(2).replace(/0$/, '') + '″';
+const SIZE_KEYS = ['d', 'w', 'h'];
+let scaleSnap = null;
+function beginScale() { if (scaleSnap) return; const g = pieceInfo(); scaleSnap = { area: g.area.slice(), off: g.designOffset.slice(), els: S.els.map(e => ({ id: e.id, x: e.x, y: e.y, size: e.size, w: e.w, h: e.h })) }; }
+function applyScale() {
+  if (!scaleSnap || !S.scaleDesign || tplById(S.template).contour) return;
+  const g = pieceInfo(), a0 = scaleSnap.area, a1 = g.area, k = Math.min(a1[0] / a0[0], a1[1] / a0[1]);
+  if (!(k > 0) || !isFinite(k)) return;
+  const o0 = scaleSnap.off, o1 = g.designOffset;
+  scaleSnap.els.forEach(sn => {
+    const e = S.els.find(x => x.id === sn.id); if (!e || e.type === 'pattern') return;
+    e.x = r2(o1[0] + (sn.x - o0[0]) * k); e.y = r2(o1[1] + (sn.y - o0[1]) * k);
+    if (e.type === 'text') e.size = r2(clamp(sn.size * k, 1, 300)); else if (e.type === 'image') e.w = r2(clamp(sn.w * k, 2, 500)); else { e.w = r2(clamp(sn.w * k, 1, 500)); e.h = r2(clamp(sn.h * k, 1, 500)); }
+  });
+  textCache.clear(); effectCache.clear();
+}
+function endScale() { scaleSnap = null; }
+function presetActive(t, ps) {
+  const tp = S.tp, [, a, b] = ps, has = (k) => t.params.some(q => q.k === k && q.type === 'range');
+  if (b != null && has('w') && has('h')) return Math.abs(Math.max(tp.w, tp.h) - Math.max(a, b)) < 2 && Math.abs(Math.min(tp.w, tp.h) - Math.min(a, b)) < 2;
+  const long = b != null ? Math.max(a, b) : a;
+  if (has('d')) return Math.abs(tp.d - long) < 2;
+  if (has('w') && has('h')) return Math.abs(Math.max(tp.w, tp.h) - long) < 2;
+  if (has('w')) return Math.abs(tp.w - long) < 2;
+  return false;
+}
+function applySizePreset(ps) {
+  const t = tplById(S.template), P = (k) => t.params.find(q => q.k === k && q.type === 'range');
+  let clamped = false;
+  const set = (k, v) => { const pd = P(k); if (!pd) return; const c = clamp(Math.round(v / pd.step) * pd.step, pd.min, pd.max); if (Math.abs(c - v) > pd.step) clamped = true; S.tp[k] = +c.toFixed(2); };
+  beginScale();
+  const [, a, b] = ps;
+  if (b != null && P('w') && P('h')) { const land = t.defaults.w > t.defaults.h; set('w', land ? Math.max(a, b) : Math.min(a, b)); set('h', land ? Math.min(a, b) : Math.max(a, b)); }
+  else {
+    const long = b != null ? Math.max(a, b) : a;
+    if (P('d')) set('d', long);
+    else if (P('w') && P('h')) { const k = long / Math.max(S.tp.w, S.tp.h); set('w', S.tp.w * k); set('h', S.tp.h * k); }
+    else if (P('w')) set('w', long);
+  }
+  pieceChanged(); applyScale(); endScale();
+  view.fitted = false; fitView(); three.framed = false; invalidate(); commit(); buildInspector(); refreshThumbs();
+  if (clamped) toast('That size is outside this style’s range, so it was set as close as possible.');
+}
+function setTurn(v) {
+  if (S.turn === v) return;
+  S.turn = v; pieceCache.key = ''; baseCache.key = '';
+  fitDesignToPiece(); view.fitted = false; fitView(); three.framed = false; invalidate(); commit(); buildInspector();
+}
+function buildPiecePanel(root) {
+  const body = h('div', { class: 'insp-body' }); root.append(body);
+  const t = tplById(S.template), f = famOf(t), sz = pieceSize(), plan = layerPlan();
+  const head = h('div', { class: 'piece-head' });
+  const hc = h('canvas', { 'aria-hidden': 'true' }); drawPieceThumb(hc, t, S.tp, 168, 132, { turn: S.turn });
+  const browse = h('button', { class: 'btn small', type: 'button' }, 'All templates');
+  browse.addEventListener('click', () => { setTab('templates'); const r = $('.rail'); if (r && window.innerWidth <= 900) r.scrollIntoView({ behavior: 'smooth' }); });
+  head.append(hc, h('div', { class: 'piece-meta' }, h('div', { class: 'piece-fam' }, f.n), h('div', { class: 'piece-name' }, t.name),
+    h('div', { class: 'piece-size', id: 'pieceSizeVal' }, `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`), h('div', { class: 'piece-size-in', id: 'pieceSizeIn' }, `${inch(sz[0])} × ${inch(sz[1])}`), browse));
+  body.append(head);
   const sibs = TEMPLATES.filter(x => x.fam === t.fam);
   if (sibs.length > 1) {
     const row = h('div', { class: 'style-row', role: 'group', 'aria-label': 'Shape style' });
-    sibs.forEach(s => {
-      const c = h('canvas', { 'aria-hidden': 'true' }); drawPieceThumb(c, s, s.defaults, 96, 80);
-      const b = h('button', { class: 'style-btn', type: 'button', title: s.name, 'aria-label': s.name, 'aria-pressed': String(s.id === t.id) }, c, h('span', null, s.name));
-      b.addEventListener('click', () => chooseTemplate(s.id));
+    sibs.forEach(s2 => {
+      const c = h('canvas', { 'aria-hidden': 'true' }); drawPieceThumb(c, s2, s2.defaults, 96, 80);
+      const b = h('button', { class: 'style-btn', type: 'button', title: s2.name, 'aria-label': s2.name, 'aria-pressed': String(s2.id === t.id) }, c, h('span', null, s2.name));
+      b.addEventListener('click', () => chooseTemplate(s2.id));
       row.append(b);
     });
-    card.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Shape style'), row));
+    body.append(h('div', { class: 'field' }, h('span', { class: 'label' }, `Shape style · ${sibs.length} options`), row));
   }
+  const presets = SIZE_PRESETS[t.fam];
+  if (presets) {
+    const row = h('div', { class: 'chips', role: 'group', 'aria-label': 'Size presets' });
+    presets.forEach(ps => { const b = h('button', { class: 'chip', type: 'button', 'aria-pressed': String(presetActive(t, ps)) }, ps[0]); b.addEventListener('click', () => applySizePreset(ps)); row.append(b); });
+    body.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Quick sizes'), row));
+  }
+  const sec = (title) => body.append(h('div', { class: 'sec-sub' }, title));
+  sec(t.contour ? 'Outline' : 'Size & holes');
   t.params.forEach(p => {
     if (p.when && !p.when(S.tp)) return;
-    if (p.type === 'range') card.append(slider('tp-' + p.k, p.label, p.min, p.max, p.step, () => S.tp[p.k], v => { S.tp[p.k] = v; }, v => `${v} ${p.unit || ''}`.trim(), { onInput: pieceChanged, onChange: () => { refreshThumbs(); buildPieceCardSoon(); } }));
-    else if (p.type === 'toggle') card.append(switchCtl('tp-' + p.k, p.label, () => S.tp[p.k], v => { S.tp[p.k] = v; pieceChanged(); commit(); buildPieceCard(); refreshThumbs(); }));
-    else if (p.type === 'select') card.append(selectCtl('tp-' + p.k, p.label, p.options, () => S.tp[p.k], v => { S.tp[p.k] = v; pieceChanged(); commit(); buildPieceCard(); refreshThumbs(); }));
+    if (p.type === 'range') {
+      const isSize = SIZE_KEYS.includes(p.k) && p.unit === 'mm';
+      const fmt = isSize ? (v => `${v} mm · ${inch(v)}`) : (v => `${v} ${p.unit || ''}`.trim());
+      body.append(slider('tp-' + p.k, p.label, p.min, p.max, p.step, () => S.tp[p.k], v => { if (isSize) beginScale(); S.tp[p.k] = v; }, fmt,
+        { onInput: () => { pieceChanged(); if (isSize) { applyScale(); syncInspectorValues(); } }, onChange: () => { endScale(); refreshThumbs(); buildPieceCardSoon(); } }));
+    } else if (p.type === 'toggle') body.append(switchCtl('tp-' + p.k, p.label, () => S.tp[p.k], v => { S.tp[p.k] = v; pieceChanged(); commit(); buildInspector(); refreshThumbs(); }));
+    else if (p.type === 'select') body.append(selectCtl('tp-' + p.k, p.label, p.options, () => S.tp[p.k], v => { S.tp[p.k] = v; pieceChanged(); commit(); buildInspector(); refreshThumbs(); }));
   });
-  card.append(h('div', { class: 'divider' }));
-  card.append(h('div', { class: 'sec-sub' }, 'Border'));
-  card.append(segCtl(null, [['solid', 'Solid'], ['double', 'Double'], ['dotted', 'Dotted']], () => S.rimStyle, v => { S.rimStyle = v; if (!S.rim) S.rim = 1.2; baseCache.key = ''; invalidate(); commit(); buildPieceCard(); }, 'rimStyle'));
-  card.append(slider('rim', S.rimStyle === 'dotted' ? 'Dot size' : 'Border width', 0, 6, 0.1, () => S.rim, v => { S.rim = v; }, v => v ? v.toFixed(1) + ' mm' : 'Off', { onInput: () => { baseCache.key = ''; invalidate(); } }));
-  const plan = layerPlan();
-  if (S.rim > 0) card.append(slider('rimTone', 'Border height', 1, plan.nW, 1, () => clamp(Math.round(S.rimTone * plan.nW), 1, plan.nW), v => { S.rimTone = v / plan.nW; }, v => `${Math.round(v)} of ${plan.nW} layers`));
-  card.append(slider('margin', 'Base-color edge around design', 0, 5, 0.1, () => S.margin, v => { S.margin = v; }, v => v.toFixed(1) + ' mm', { onInput: () => { baseCache.key = ''; invalidate(); } }));
-  card.append(h('div', { class: 'divider' }));
-  card.append(h('div', { class: 'sec-sub' }, 'Back side'));
-  card.append(segCtl('Magnet pockets', [['none', 'None'], ['center', '1'], ['two', '2'], ['four', '4']], () => S.magnet.mode, v => { S.magnet.mode = v; S.magnet.auto = false; invalidate(); commit(); buildPieceCard(); }, 'magMode'));
-  if (S.magnet.mode !== 'none') {
-    card.append(h('div', { class: 'grid2' },
-      selectCtl('magD', 'Magnet diameter', [[6, '6 mm'], [8, '8 mm'], [10, '10 mm'], [12, '12 mm'], [15, '15 mm'], [20, '20 mm']], () => S.magnet.d, v => { S.magnet.d = +v; invalidate(); commit(); }),
-      selectCtl('magT', 'Magnet thickness', [[1, '1 mm'], [1.5, '1.5 mm'], [2, '2 mm'], [3, '3 mm']], () => S.magnet.depth, v => { S.magnet.depth = +v; invalidate(); commit(); buildPieceCard(); })));
-    card.append(plan.magnetOK ? h('p', { class: 'hint', style: 'margin:0' }, `Pockets are ${(S.magnet.d + 0.3).toFixed(1)} mm wide, ${fmtMM(plan.mz)} mm deep. Glue the magnets in after printing.`)
-      : h('div', { class: 'warn-note' }, `The base is too thin for ${S.magnet.depth} mm magnets. Add base layers until the pocket fits (it needs ${fmtMM(plan.mz + plan.lb * 1.5)} mm).`));
+  if (!t.contour) {
+    body.append(segCtl('Orientation', [[false, 'Upright'], [true, 'Sideways']], () => S.turn, v => setTurn(v), 'turnSeg'));
+    body.append(switchCtl('scaleDesign', 'Resize the design with the piece', () => S.scaleDesign, v => { S.scaleDesign = v; commit(); }));
   }
-  $('#panel-templates').prepend(card);
+  body.append(slider('baseThick', 'Base thickness', 0.6, 6, plan.lb, () => plan.baseH, v => { S.baseMM = v; }, v => `${fmtMM(layerPlan().baseH)} mm · ${layerPlan().nB} layers`, { onInput: () => { baseCache.key = ''; invalidate(); }, onChange: () => layersChanged() }));
+  sec('Border');
+  body.append(segCtl(null, [['solid', 'Solid'], ['double', 'Double'], ['dotted', 'Dotted']], () => S.rimStyle, v => { S.rimStyle = v; if (!S.rim) S.rim = 1.2; baseCache.key = ''; invalidate(); commit(); buildInspector(); }, 'rimStyle'));
+  body.append(slider('rim', S.rimStyle === 'dotted' ? 'Dot size' : 'Border width', 0, 6, 0.1, () => S.rim, v => { S.rim = v; }, v => v ? v.toFixed(1) + ' mm' : 'Off', { onInput: () => { baseCache.key = ''; invalidate(); }, onChange: buildInspectorSoon }));
+  if (S.rim > 0) {
+    if (isFull()) body.append(h('div', { class: 'field' }, h('span', { class: 'label' }, 'Border color'), palettePicker(clamp(S.full.rimPc | 0, 0, pal().length - 1), (i) => { S.full.rimPc = i; invalidate(); commit(); buildInspector(); }, 'rimPc')));
+    else body.append(slider('rimTone', 'Border height', 1, plan.nW, 1, () => clamp(Math.round(S.rimTone * plan.nW), 1, plan.nW), v => { S.rimTone = v / plan.nW; }, v => `${Math.round(v)} of ${plan.nW} layers`));
+  }
+  body.append(slider('margin', 'Base-color edge around design', 0, 5, 0.1, () => S.margin, v => { S.margin = v; }, v => v.toFixed(1) + ' mm', { onInput: () => { baseCache.key = ''; invalidate(); } }));
+  sec('Back side');
+  body.append(segCtl('Magnet pockets', [['none', 'None'], ['center', '1'], ['two', '2'], ['four', '4']], () => S.magnet.mode, v => { S.magnet.mode = v; S.magnet.auto = false; invalidate(); commit(); buildInspector(); }, 'magMode'));
+  if (S.magnet.mode !== 'none') {
+    body.append(h('div', { class: 'grid2' },
+      selectCtl('magD', 'Magnet diameter', [[6, '6 mm'], [8, '8 mm'], [10, '10 mm'], [12, '12 mm'], [15, '15 mm'], [20, '20 mm']], () => S.magnet.d, v => { S.magnet.d = +v; invalidate(); commit(); }),
+      selectCtl('magT', 'Magnet thickness', [[1, '1 mm'], [1.5, '1.5 mm'], [2, '2 mm'], [3, '3 mm']], () => S.magnet.depth, v => { S.magnet.depth = +v; invalidate(); commit(); buildInspector(); })));
+    body.append(plan.magnetOK ? h('p', { class: 'hint', style: 'margin:0' }, `Pockets are ${(S.magnet.d + 0.3).toFixed(1)} mm wide, ${fmtMM(plan.mz)} mm deep. Glue the magnets in after printing.`)
+      : h('div', { class: 'warn-note' }, `The base is too thin for ${S.magnet.depth} mm magnets. Raise the base thickness to at least ${fmtMM(plan.mz + plan.lb * 1.5)} mm.`));
+  }
 }
 let pcT = 0; function buildPieceCardSoon() { clearTimeout(pcT); pcT = setTimeout(buildPieceCard, 50); }
-function refreshThumbs() { const cur = $('#tplGrid .tcard[aria-pressed="true"] canvas'); if (cur) drawPieceThumb(cur, tplById(S.template), S.tp); const sv = $('#pieceSizeVal'); if (sv) { const sz = pieceSize(); sv.textContent = `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`; } }
+function refreshThumbs() {
+  const cur = $('#tplGrid .tcard[aria-pressed="true"] canvas'); if (cur) drawPieceThumb(cur, tplById(S.template), S.tp);
+  const hc = $('.piece-head canvas'); if (hc) drawPieceThumb(hc, tplById(S.template), S.tp, 168, 132, { turn: S.turn });
+  const sz = pieceSize(), sv = $('#pieceSizeVal'), si = $('#pieceSizeIn');
+  if (sv) sv.textContent = `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`; if (si) si.textContent = `${inch(sz[0])} × ${inch(sz[1])}`;
+}
 function pieceChanged() { pieceCache.key = ''; baseCache.key = ''; invalidate(); refreshThumbs(); }
 function chooseTemplate(id) {
   if (S.template === id) return;
@@ -2671,14 +3047,14 @@ function chooseTemplate(id) {
     if (pd && pd.type === 'range' && (keep[k] < pd.min || keep[k] > pd.max)) return;
     S.tp[k] = keep[k];
   });
-  if (prev.fam !== t.fam) S.baseMM = t.base;
+  if (prev.fam !== t.fam) { S.baseMM = t.base; S.turn = false; }
   if (t.magnet && S.magnet.mode === 'none') { S.magnet.mode = 'center'; S.magnet.auto = true; }
   if (!t.magnet && S.magnet.auto) { S.magnet.mode = 'none'; S.magnet.auto = false; }
   pieceCache.key = ''; baseCache.key = '';
   fitDesignToPiece();
   if (TEMPLATES.some(x => pieceName(x) === S.name || x.name === S.name) || ['Christmas Ornament', 'Untitled piece', ''].includes(S.name.trim())) S.name = pieceName(t);
   $('#projName').value = S.name;
-  three.framed = false; view.fitted = false; fitView(); buildTemplateGrid(); buildPieceCard(); buildInspector(); invalidate(); commit();
+  three.framed = false; view.fitted = false; fitView(); buildTemplateGrid(); if (!selId) inspTab = sideTab = 'piece'; buildInspector(); invalidate(); commit();
 }
 
 function buildAddPanel() {
@@ -2740,7 +3116,7 @@ function buildDesignList() {
   $('#elCount').textContent = S.els.length; $('#elEmpty').hidden = S.els.length > 0;
   const icon = (t) => t === 'text' ? '<svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>' : t === 'image' ? '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>' : t === 'pattern' ? '<svg viewBox="0 0 24 24"><path d="M3 9l6-6M3 15L15 3M3 21L21 3M9 21l12-12M15 21l6-6"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
   [...S.els].reverse().forEach(el => {
-    const sub = el.cut ? 'Cut out' : el.type === 'image' ? (el.mode === 'photo' ? 'Photo shading' : 'Two-tone') : el.type === 'pattern' ? 'Background pattern' : 'Raised';
+    const sub = isFull() ? (el.type === 'image' && el.mode === 'photo' && !el.cut ? 'Full color' : `Color ${effPc(el) + 1} · ${filamentName(pal()[effPc(el)].c)}`) : el.cut ? 'Cut out' : el.type === 'image' ? (el.mode === 'photo' ? 'Photo shading' : 'Two-tone') : el.type === 'pattern' ? 'Background pattern' : 'Raised';
     const eye = h('button', { class: 'icon-btn', title: el.hidden ? 'Show' : 'Hide', 'aria-label': el.hidden ? 'Show' : 'Hide', type: 'button', html: el.hidden ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0112 6c5 0 9 6 9 6a17 17 0 01-3 3.4M6.6 6.6C4.3 8.1 3 12 3 12s4 6 9 6a8.7 8.7 0 004.4-1.2"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>' });
     eye.addEventListener('click', (e) => { e.stopPropagation(); el.hidden = !el.hidden; structureChanged(); commit(); });
     const del = h('button', { class: 'icon-btn', title: 'Delete', 'aria-label': 'Delete', type: 'button', html: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>' });
@@ -2755,18 +3131,28 @@ function buildDesignList() {
 
 /* ---------------- inspector ---------------- */
 let fontCat = 'all';
+let inspTab = 'piece', sideTab = 'piece';
+function itemTitle(el) { return el.type === 'text' ? 'Text' : el.type === 'image' ? 'Image' : el.type === 'pattern' ? 'Pattern' : (ICONS[el.shape] || {}).n || 'Shape'; }
 function buildInspector() {
   syncers = [];
-  const root = $('#inspector'); root.innerHTML = '';
-  root.append(buildLayersCard());
+  const root = $('#inspector'), keep = root.scrollTop, prevTab = root.dataset.tab;
+  root.innerHTML = '';
   const el = selected();
-  if (!el) {
-    root.append(h('div', { class: 'empty' },
-      h('h3', null, 'Nothing selected'),
-      h('p', { class: 'hint', style: 'margin:0' }, 'Click something on the piece to edit it. Drag to move, use the corners to resize and the round handle to rotate. Patterns are picked from the Design tab.'),
-      h('p', { class: 'hint', style: 'margin:0' }, 'Add images, text, shapes and patterns from the ', h('b', null, 'Add'), ' tab, or start from an idea in ', h('b', null, 'Templates → Ideas'), '.')));
-    return;
-  }
+  if (inspTab === 'item' && !el) inspTab = sideTab;
+  const tabs = h('div', { class: 'itabs', role: 'tablist', 'aria-label': 'Settings' });
+  [['piece', 'Piece'], ['colors', 'Colors'], ['item', el ? itemTitle(el) : 'Item']].forEach(([id, n]) => {
+    const b = h('button', { class: 'itab', role: 'tab', type: 'button', id: 'itab-' + id, 'aria-selected': String(inspTab === id), disabled: id === 'item' && !el ? true : null, title: id === 'item' && !el ? 'Click something on the piece to edit it' : null }, n);
+    b.addEventListener('click', () => { inspTab = id; if (id !== 'item') sideTab = id; buildInspector(); $('#inspector').scrollTop = 0; });
+    tabs.append(b);
+  });
+  root.append(tabs);
+  if (inspTab === 'piece') buildPiecePanel(root);
+  else if (inspTab === 'colors') buildColorsPanel(root);
+  else buildItemPanel(root, el);
+  root.dataset.tab = inspTab;
+  if (prevTab === inspTab) root.scrollTop = keep;
+}
+function buildItemPanel(root, el) {
   const typeName = el.type === 'text' ? 'Text' : el.type === 'image' ? 'Image' : el.type === 'pattern' ? 'Pattern' : (ICONS[el.shape] || {}).n || 'Shape';
   const btn = (title, svg, fn) => { const b = h('button', { class: 'icon-btn', title, 'aria-label': title, type: 'button', html: svg }); b.addEventListener('click', fn); return b; };
   root.append(h('div', { class: 'insp-head' }, h('h2', null, typeName), h('div', { class: 'tb-group' },
@@ -2804,11 +3190,20 @@ function buildInspector() {
     body.append(h('button', { class: 'btn small', type: 'button', onclick: () => fitElementWidth(el) }, 'Fit to piece width'));
     body.append(switchCtl('insp-batch', 'Use for batch names (one piece per name)', () => el.batch, v => { S.els.forEach(e => { if (e.type === 'text') e.batch = false; }); el.batch = v; S.batch.on = v || S.batch.on; commit(); buildDesignList(); if (v) toast('Add the names in Export for printing → Batch names.'); }));
   } else if (el.type === 'image') {
-    body.append(segCtl('Style', [['stencil', 'Two-tone'], ['photo', 'Photo shading']], () => el.mode, v => { el.mode = v; if (v === 'photo') ensurePhotoDepth(); structureChanged(); commit(); }, 'insp-mode'));
+    body.append(segCtl('Style', isFull() ? [['stencil', 'One color'], ['photo', 'Full color']] : [['stencil', 'Two-tone'], ['photo', 'Photo shading']], () => el.mode, v => { el.mode = v; if (v === 'photo') ensurePhotoDepth(); structureChanged(); commit(); }, 'insp-mode'));
     if (el.mode === 'stencil') {
       body.append(segCtl('Raise these parts', [[true, 'Dark parts'], [false, 'Light parts']], () => el.raiseDark, v => { el.raiseDark = v; el.threshold = r2(otsu(stencilSource(IMG[el.img], v))); buildInspector(); invalidate(); commit(); }, 'insp-raise'));
       body.append(slider('insp-thr', 'Threshold', 0.05, 0.95, 0.01, () => el.threshold, v => { el.threshold = v; }, v => Math.round(v * 100) + '%'));
       body.append(slider('insp-smooth', 'Smooth edges', 0, 3, 0.1, () => el.smooth, v => { el.smooth = v; }, v => v.toFixed(1)));
+    } else if (isFull()) {
+      body.append(slider('insp-bp', 'Black point', 0, 0.9, 0.01, () => el.bp, v => { el.bp = Math.min(v, el.wp - 0.05); }, v => Math.round(v * 100) + '%'));
+      body.append(slider('insp-wp', 'White point', 0.1, 1, 0.01, () => el.wp, v => { el.wp = Math.max(v, el.bp + 0.05); }, v => Math.round(v * 100) + '%'));
+      body.append(slider('insp-mid', 'Midtones', -1, 1, 0.01, () => el.mid, v => { el.mid = v; }, v => (v > 0 ? '+' : '') + Math.round(v * 100)));
+      body.append(slider('insp-sat', 'Color boost', -0.6, 1, 0.01, () => el.sat, v => { el.sat = v; }, v => (v > 0 ? '+' : '') + Math.round(v * 100)));
+      body.append(slider('insp-detail', 'Smooth out noise', 0, 3, 0.1, () => el.detail, v => { el.detail = v; }, v => v.toFixed(1)));
+      body.append(slider('insp-clean', 'Clean up tiny spots', 0, 5, 1, () => el.clean, v => { el.clean = v; }, v => v ? `${v} pass${v > 1 ? 'es' : ''}` : 'Off'));
+      body.append(switchCtl('insp-invert', 'Invert (negative)', () => el.invert, v => { el.invert = v; invalidate(); commit(); }));
+      body.append(autoPaletteBox(el));
     } else {
       body.append(slider('insp-bp', 'Black point', 0, 0.9, 0.01, () => el.bp, v => { el.bp = Math.min(v, el.wp - 0.05); }, v => Math.round(v * 100) + '%'));
       body.append(slider('insp-wp', 'White point', 0.1, 1, 0.01, () => el.wp, v => { el.wp = Math.max(v, el.bp + 0.05); }, v => Math.round(v * 100) + '%'));
@@ -2869,6 +3264,15 @@ function buildInspector() {
       h('button', { class: 'btn small', type: 'button', onclick: () => { el.x = off[0]; syncInspectorValues(); invalidate(); commit(); } }, 'Center across'),
       h('button', { class: 'btn small', type: 'button', onclick: () => { el.y = off[1]; syncInspectorValues(); invalidate(); commit(); } }, 'Center down')));
   }
+  if (isFull()) {
+    sec('Color');
+    if (el.type === 'image' && el.mode === 'photo') body.append(h('p', { class: 'hint', style: 'margin:0' }, 'This picture uses your whole palette. Each color’s height is set in the Colors tab.'));
+    else {
+      body.append(palettePicker(effPc(el), (i) => { el.pc = i; el.cut = false; invalidate(); commit(); buildInspector(); buildDesignList(); }, 'insp-pc'));
+      body.append(h('p', { class: 'hint', style: 'margin:0' }, effPc(el) === 0 ? 'Base color: this cuts through anything under it, down to the base surface.' : `Prints in slot ${effPc(el) + 1}, raised ${pal()[effPc(el)].h} layer${pal()[effPc(el)].h === 1 ? '' : 's'}.`));
+    }
+    return;
+  }
   sec('Printing');
   body.append(segCtl('Prints as', [[false, 'Raised'], [true, 'Cut out']], () => el.cut, v => { el.cut = v; structureChanged(); commit(); }, 'insp-cut'));
   if (el.cut) body.append(h('p', { class: 'hint', style: 'margin:0' }, 'Cut out removes the top color wherever it overlaps, so the base color shows through. Put it on top of a panel, pattern or photo.'));
@@ -2887,10 +3291,113 @@ function swatchRow(list, cur, onPick, customId, label) {
   row.append(h('label', { class: 'sw-custom', title: 'Custom color' }, ci));
   return row;
 }
+function palettePicker(cur, onPick, id) {
+  const row = h('div', { class: 'pal-pick', role: 'group', id });
+  pal().forEach((p, i) => {
+    const b = h('button', { class: 'pp', type: 'button', 'aria-pressed': String(cur === i), title: `Slot ${i + 1} · ${filamentName(p.c)}` }, h('i', { style: `background:${p.c}` }), h('span', null, i === 0 ? 'Base' : String(i + 1)));
+    b.addEventListener('click', () => onPick(i)); row.append(b);
+  });
+  return row;
+}
+function labShare() {
+  if (!lastStats || !lastStats.lab) return null;
+  const n = pal().length, c = new Float64Array(n), lab = lastStats.lab, M0 = lastStats.base.M0; let all = 0;
+  for (let i = 0; i < lab.length; i++) if (M0[i] >= 0.5 && lab[i] < n) { c[lab[i]]++; all++; }
+  return Array.from(c, v => all ? v / all * 100 : 0);
+}
+function setMode(v) {
+  if (S.mode === v) return;
+  if (v === 'full' && !S.full.touched) {
+    const plan = layerPlan(), hh = clamp(Math.min(plan.nW, 6), 1, 40);
+    const P = [{ c: S.colors.base, h: 0 }, { c: S.colors.top, h: hh }];
+    if (S.accent.on) P.push({ c: S.accent.color, h: hh });
+    S.full.palette = P; S.full.touched = true;
+    S.els.forEach(e => { if (!e.cut) e.pc = (S.accent.on && plan.acc && toneLevel(e, plan) > plan.kA) ? 2 : 1; });
+    S.full.rimPc = 1;
+  }
+  S.mode = v; palOpen = -1; procCache.clear(); fullCache.clear(); effectCache.clear(); baseCache.key = ''; pieceCache.key = '';
+  invalidate(); commit(); buildInspector(); buildDesignList(); buildTemplateGrid();
+  toast(v === 'full' ? 'Full color: add colors and pick each item’s color. Needs an AMS.' : 'Layered: one base color with a top color stacked in thin layers.');
+}
+function setPalH(i, v) {
+  v = clamp(v | 0, 0, 40);
+  if (S.full.flat) pal().forEach(p => { p.h = v; }); else pal()[i].h = v;
+}
+let palOpen = -1;
+function buildColorsPanel(root) {
+  const body = h('div', { class: 'insp-body' }); root.append(body);
+  body.append(segCtl('Color mode', [['layer', 'Layered (1 spool swap)'], ['full', 'Full color (AMS)']], () => S.mode, v => setMode(v), 'modeSeg'));
+  body.append(h('p', { class: 'hint', style: 'margin:0' }, isFull()
+    ? 'Every spot gets one filament from your palette. Each color is its own part on its own AMS slot and can sit at its own height.'
+    : 'A base color, then a top color in thin layers. More top layers look brighter, so a single color swap gives you shading.'));
+  body.append(isFull() ? buildFullCard() : buildLayersCard());
+}
+function buildFullCard() {
+  const plan = layerPlan(), P = pal(), share = labShare();
+  const wrap = h('div', { class: 'card' });
+  wrap.append(h('div', { class: 'sec-title' }, h('span', null, `Palette · ${P.length} color${P.length > 1 ? 's' : ''}`), h('span', { class: 'val' }, plan.total.toFixed(2) + ' mm tall')));
+  wrap.append(h('div', { class: 'layer-row' }, h('span', { class: 'swatch-dot', style: `background:${P[0].c}` }),
+    h('span', null, h('div', { class: 'lname' }, 'Base layers'), h('div', { class: 'lsub' }, `${fmtMM(plan.baseH)} mm · 1–${plan.nB}`)),
+    stepperCtl('nB', () => plan.nB, () => { const p = layerPlan(); S.baseMM = p.FL + Math.min(80, p.nB) * p.lb; }, () => { const p = layerPlan(); S.baseMM = p.FL + Math.max(1, p.nB - 2) * p.lb; }, layersChanged)));
+  const ps = h('select', { class: 'sel', id: 'presetSel', 'aria-label': 'Print profile' }, PRESETS.map(p => h('option', { value: p.id, selected: S.print.preset === p.id }, `${p.name} — ${p.lb.toFixed(2)} / ${p.lw.toFixed(2)} mm`)));
+  ps.addEventListener('change', () => { S.print.preset = ps.value; layersChanged(); });
+  wrap.append(h('div', { class: 'field' }, h('label', { class: 'label', for: 'presetSel' }, 'Print profile (base / color layer height)'), ps));
+  const list = h('div', { class: 'pal-list' });
+  P.forEach((p, i) => {
+    const sw = h('button', { class: 'pal-sw', type: 'button', style: `background:${p.c}`, 'aria-label': `Change color ${i + 1}`, 'aria-expanded': String(palOpen === i) });
+    sw.addEventListener('click', () => { palOpen = palOpen === i ? -1 : i; buildInspector(); });
+    const meta = h('div', { class: 'pal-meta' }, h('b', null, filamentName(p.c)), h('span', { title: i === 0 ? 'Slot 1 is also the base color' : null }, `Slot ${i + 1}` + (share ? ` · ${share[i] < 0.5 && share[i] > 0 ? '<1' : share[i].toFixed(0)}%` : '')));
+    const stp = stepperCtl('palh' + i, () => p.h, () => setPalH(i, p.h + 1), () => setPalH(i, p.h - 1), layersChanged);
+    const del = (i > 0 && P.length > 2) ? h('button', { class: 'icon-btn', type: 'button', title: 'Remove color', 'aria-label': `Remove color ${i + 1}`, html: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>' }) : h('span');
+    if (del.tagName === 'BUTTON') del.addEventListener('click', () => {
+      P.splice(i, 1); S.els.forEach(e => { if (e.pc === i) e.pc = 0; else if (e.pc > i) e.pc--; });
+      if (S.full.rimPc === i) S.full.rimPc = 0; else if (S.full.rimPc > i) S.full.rimPc--;
+      palOpen = -1; fullCache.clear(); layersChanged(); buildDesignList();
+    });
+    list.append(h('div', { class: 'pal-row' }, sw, meta, h('div', { class: 'pal-h' }, stp, h('span', { class: 'pal-mm' }, p.h ? `${fmtMM(p.h * plan.lw)} mm` : 'flush')), del));
+    if (palOpen === i) {
+      const grid = h('div', { class: 'fil-grid' });
+      FILAMENTS.forEach(fl => { const b = h('button', { class: 'fil', type: 'button', title: fl.n, 'aria-pressed': String(fl.c.toLowerCase() === p.c.toLowerCase()) }, h('i', { style: `background:${fl.c}` }), h('span', null, fl.n)); b.addEventListener('click', () => { p.c = fl.c; palOpen = -1; fullCache.clear(); invalidate(); commit(); buildInspector(); buildDesignList(); }); grid.append(b); });
+      const ci = h('input', { type: 'color', value: p.c, 'aria-label': 'Custom color' });
+      ci.addEventListener('input', () => { p.c = ci.value; fullCache.clear(); invalidate(); });
+      ci.addEventListener('change', () => { commit(); buildInspector(); buildDesignList(); });
+      grid.append(h('label', { class: 'fil fil-custom' }, ci, h('span', null, 'Custom…')));
+      list.append(grid);
+    }
+  });
+  wrap.append(list);
+  if (P.length < 8) {
+    const add = h('button', { class: 'btn small', type: 'button' }, `+ Add a color (${P.length} of 8)`);
+    add.addEventListener('click', () => {
+      const used = new Set(P.map(p => p.c.toLowerCase())), fl = FILAMENTS.find(x => !used.has(x.c.toLowerCase())) || FILAMENTS[0];
+      P.push({ c: fl.c, h: S.full.flat ? P[0].h : (P[1] ? P[1].h : 5) }); palOpen = P.length - 1; fullCache.clear(); layersChanged();
+    });
+    wrap.append(add);
+  }
+  wrap.append(switchCtl('palFlat', 'Flat top (every color the same height)', () => S.full.flat, v => { S.full.flat = v; if (v) { const hh = Math.max(1, ...P.map(p => p.h)); P.forEach(p => { p.h = hh; }); } layersChanged(); }));
+  const img = S.els.find(e => e.type === 'image' && !e.hidden && e.mode === 'photo') || S.els.find(e => e.type === 'image' && !e.hidden);
+  if (img) wrap.append(autoPaletteBox(img));
+  wrap.append(h('p', { class: 'hint', style: 'margin:0' }, 'Each extra color adds purge waste and time on every layer it appears. 3–5 colors is a good balance for pictures.'));
+  return wrap;
+}
+let autoCount = 5;
+function autoPaletteBox(el) {
+  const box = h('div', { class: 'auto-pal' });
+  box.append(h('div', { class: 'field-row' }, h('span', { class: 'label' }, `Colors from “${(el.name || 'image').slice(0, 22)}”`), stepperCtl('autoCount', () => autoCount, () => { autoCount = Math.min(8, autoCount + 1); }, () => { autoCount = Math.max(2, autoCount - 1); }, () => { const o = $('#autoCount'); if (o) o.textContent = autoCount; })));
+  box.append(switchCtl('autoSnap', 'Match to real filament colors', () => S.full.snap, v => { S.full.snap = v; commit(); }));
+  const go = h('button', { class: 'btn small primary', type: 'button' }, 'Pick colors from this image');
+  go.addEventListener('click', () => {
+    if (!isFull()) setMode('full');
+    if (applyAutoPalette(el.img, autoCount, S.full.snap)) { S.full.touched = true; layersChanged(); buildDesignList(); toast(`Palette set to ${pal().length} colors from the image.`); }
+    else toast('That image has no visible pixels to pick colors from.');
+  });
+  box.append(go);
+  return box;
+}
 function buildLayersCard() {
   const plan = layerPlan(), lut = makeLUT(plan);
-  const card = h('div', { class: 'insp-body', style: 'padding-bottom:6px' }), wrap = h('div', { class: 'card' });
-  wrap.append(h('div', { class: 'sec-title' }, h('span', null, 'Layers & colors'), h('span', { class: 'val' }, plan.total.toFixed(2) + ' mm tall')));
+  const wrap = h('div', { class: 'card' });
+  wrap.append(h('div', { class: 'sec-title' }, h('span', null, 'Layers'), h('span', { class: 'val' }, plan.total.toFixed(2) + ' mm tall')));
   wrap.append(h('div', { class: 'layer-row' }, h('span', { class: 'swatch-dot', style: `background:${S.colors.base}` }),
     h('span', null, h('div', { class: 'lname' }, 'Base layers'), h('div', { class: 'lsub' }, `${fmtMM(plan.baseH)} mm · 1–${plan.nB}`)),
     stepperCtl('nB', () => plan.nB, () => { const p = layerPlan(); S.baseMM = p.FL + Math.min(80, p.nB) * p.lb; }, () => { const p = layerPlan(); S.baseMM = p.FL + Math.max(1, p.nB - 2) * p.lb; }, layersChanged)));
@@ -2914,16 +3421,16 @@ function buildLayersCard() {
   const swapBtn = h('button', { class: 'btn small ghost', type: 'button' }, 'Swap base and top colors');
   swapBtn.addEventListener('click', () => { const b = S.colors.base; S.colors.base = S.colors.top; S.colors.top = b; const tc = TOP_COLORS.find(c => c.c === S.colors.top); S.colors.td = tc ? tc.td : 4; procCache.clear(); invalidate(); commit(); buildInspector(); });
   wrap.append(swapBtn);
-  card.append(wrap);
   void lut;
-  return card;
+  return wrap;
 }
 function refreshDots() { const d = document.querySelectorAll('#inspector .swatch-dot'); if (d[0]) d[0].style.background = S.colors.base; if (d[1]) d[1].style.background = S.colors.top; }
-function layersChanged() { procCache.clear(); effectCache.clear(); baseCache.key = ''; invalidate(); commit(); buildInspector(); buildPieceCard(); if ($('#exportDlg').open) { exportEst = estimate(); refreshExportDialog(); } }
+function layersChanged() { procCache.clear(); effectCache.clear(); baseCache.key = ''; invalidate(); commit(); buildInspector(); if ($("#exportDlg").open) { exportEst = estimate(); refreshExportDialog(); } }
 
 /* ---------------- layer ribbon ---------------- */
 function updateStackRibbon() {
   const plan = layerPlan(), lut = makeLUT(plan);
+  if (plan.full) { updateColorRibbon(plan); return; }
   let used = plan.nW;
   if (lastStats) { let mx = 0; const lv = lastStats.lv; for (let i = 0; i < lv.length; i++) if (lv[i] > mx) mx = lv[i]; used = mx; }
   const rb = $('#ribbon'); rb.innerHTML = '';
@@ -2948,8 +3455,19 @@ function updateStackRibbon() {
   const sv = $('#pieceSizeVal'); if (sv) { const sz = pieceSize(); sv.textContent = `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`; }
 }
 
+function updateColorRibbon(plan) {
+  const P = pal(), share = labShare() || P.map(() => 0);
+  let used = 0; if (lastStats) { const lv = lastStats.lv; for (let i = 0; i < lv.length; i++) if (lv[i] > used) used = lv[i]; }
+  const rb = $('#ribbon'); rb.innerHTML = '';
+  P.forEach((p, i) => { if (share[i] > 0) rb.append(h('i', { style: `background:${p.c};flex-grow:${share[i]}`, title: `${filamentName(p.c)} · ${share[i].toFixed(1)}%` })); });
+  $('#stackMeta').innerHTML = `<b>Full color</b> · ${P.length} colors · ${plan.nB + used} layers · ${fmtMM(plan.baseH + used * plan.lw)} mm`;
+  const leg = $('#stackLegend'); leg.innerHTML = '';
+  P.forEach((p, i) => leg.append(h('span', null, h('i', { class: 'k', style: `background:${p.c}` }), `${i + 1} ${filamentName(p.c).toLowerCase()} · ${p.h ? p.h + ' layer' + (p.h > 1 ? 's' : '') : 'flush'}` + (share[i] ? ` · ${share[i] < 1 ? '<1' : share[i].toFixed(0)}%` : ''))));
+  const sv = $('#pieceSizeVal'); if (sv) { const sz = pieceSize(); sv.textContent = `${sz[0].toFixed(0)} × ${sz[1].toFixed(0)} mm`; }
+}
+
 /* ---------------- structure / selection events ---------------- */
-function selectionChanged() { buildInspector(); buildDesignList(); requestRender(); }
+function selectionChanged() { inspTab = selId ? 'item' : sideTab; buildInspector(); buildDesignList(); requestRender(); }
 function structureChanged() { buildInspector(); buildDesignList(); if (tplById(S.template).contour) { pieceCache.key = ''; } invalidate(); }
 let lastTplKey = '';
 function afterLoad() {
@@ -2960,6 +3478,10 @@ function afterLoad() {
   buildTemplateGrid(); buildPieceCard(); buildInspector(); buildDesignList(); updateUndoButtons();
   if (!view.fitted && view.w > 10) fitView();
   invalidate(); scheduleSave();
+}
+{
+  const si = $('#tplSearch');
+  if (si) { si.placeholder = `Search ${TEMPLATES.length} templates…`; let st = 0; si.addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { tplQuery = si.value.trim(); buildTemplateGrid(); }, 90); }); si.addEventListener('keydown', e => { if (e.key === 'Escape') { si.value = ''; tplQuery = ''; buildTemplateGrid(); } }); }
 }
 
 /* ---------------- model building (shared by 3D + export) ---------------- */
@@ -2974,12 +3496,13 @@ async function buildModel(pxmm, onProgress, token) {
   const plan = layerPlan();
   const g = pieceInfo(); const bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1];
   const maxPx = 12e6; if (bw * bh * pxmm * pxmm > maxPx) pxmm = Math.sqrt(maxPx / (bw * bh));
-  const base = buildBase(pxmm), des = buildDesign(base, plan);
+  const base = buildBase(pxmm);
   const { W, H } = base, N = W * H;
   const tf = { sx: 1 / pxmm, tx: base.x0, sy: -1 / pxmm, ty: -base.y0 };
   const speck = Math.max(0, S.print.speck), tol = 0.22;
   const cancelled = () => token != null && token !== buildToken;
-  onProgress && onProgress(0.04, 'Tracing the base'); await tick(); if (cancelled()) return null;
+  const prog = (p, t) => onProgress && onProgress(p, t);
+  prog(0.04, 'Tracing the base'); await tick(); if (cancelled()) return null;
   const baseB = new LACore.MeshBuilder();
   const basePolys = LACore.fieldToPolygons(base.M0, W, H, tf, { tolPx: tol, minArea: 1 });
   const spots = magnetSpots();
@@ -2989,43 +3512,69 @@ async function buildModel(pxmm, onProgress, token) {
     baseB.addPolys(LACore.fieldToPolygons(F, W, H, tf, { tolPx: tol, minArea: 1 }), 0, plan.mz);
     baseB.addPolys(basePolys, plan.mz - 0.002, plan.baseH); // tiny overlap keeps the two shells from sharing vertices
   } else baseB.addPolys(basePolys, 0, plan.baseH);
-  const { P, groups, Cc } = des, slabs = [];
-  let prev = new Float32Array(N), cur = new Float32Array(N), prevStart = 0, havePrev = false, lastK = 0;
-  const finish = (field, k0, k1) => {
+  const slabs = []; let lastK = 0;
+  const addSlab = (field, z0, z1, extra) => {
     const polys = LACore.fieldToPolygons(field, W, H, tf, { tolPx: tol, minArea: speck });
-    const mb = new LACore.MeshBuilder(), z0 = plan.baseH + (k0 - 1) * plan.lw - (k0 > 1 ? 0.002 : 0), z1 = plan.baseH + k1 * plan.lw;
-    mb.addPolys(polys, z0, z1);
-    const m = mb.finish(); if (m.indices.length) slabs.push({ k0, k1, z0, z1, mesh: m, accent: plan.acc && k0 > plan.kA });
+    const mb = new LACore.MeshBuilder(); mb.addPolys(polys, z0, z1);
+    const m = mb.finish(); if (m.indices.length) slabs.push(Object.assign({ z0, z1, mesh: m }, extra));
   };
-  for (let k = 1; k <= plan.nW; k++) {
-    let any = false;
-    for (let i = 0; i < N; i++) {
-      let v = 0;
-      if (P) { v = P[i] * plan.nW - (k - 1); v = v < 0 ? 0 : v > 1 ? 1 : v; }
-      for (let gI = 0; gI < groups.length; gI++) { const G = groups[gI]; if (G.level < k) break; const f = G.F[i]; if (f > v) v = f; }
-      const c = Cc[i]; if (c < v) v = c;
-      cur[i] = v; if (v >= 0.5) any = true;
+  if (plan.full) {
+    prog(0.1, 'Mapping colors'); await tick(); if (cancelled()) return null;
+    const lab = buildLabels(base, plan), P = pal();
+    for (let c = 0; c < P.length; c++) {
+      const hc = P[c].h | 0;
+      if (hc > 0) {
+        const F = new Float32Array(N); let any = false;
+        for (let i = 0; i < N; i++) if (lab[i] === c) { const m = base.M0[i]; F[i] = m; if (m >= 0.5) any = true; }
+        if (any) { addSlab(F, plan.baseH, plan.baseH + hc * plan.lw, { k0: 1, k1: hc, pal: c, rgb: hexToRgb(P[c].c) }); lastK = Math.max(lastK, hc); }
+      }
+      prog(0.12 + 0.82 * (c + 1) / P.length, `Tracing color ${c + 1} of ${P.length}`);
+      await tick(); if (cancelled()) return null;
     }
-    if (!any) break;
-    let same = havePrev && !(plan.acc && k === plan.kA + 1);
-    if (same) for (let i = 0; i < N; i++) if (cur[i] !== prev[i]) { same = false; break; }
-    if (!same) { if (havePrev) finish(prev, prevStart, k - 1); const t = prev; prev = cur; cur = t; prevStart = k; havePrev = true; }
-    lastK = k;
-    onProgress && onProgress(0.06 + 0.88 * k / plan.nW, `Tracing top layer ${k} of ${plan.nW}`);
-    await tick(); if (cancelled()) return null;
+  } else {
+    const des = buildDesign(base, plan), lut = makeLUT(plan), { P, groups, Cc } = des;
+    let prev = new Float32Array(N), cur = new Float32Array(N), prevStart = 0, havePrev = false;
+    const finish = (field, k0, k1) => addSlab(field, plan.baseH + (k0 - 1) * plan.lw - (k0 > 1 ? 0.002 : 0), plan.baseH + k1 * plan.lw, { k0, k1, accent: plan.acc && k0 > plan.kA, rgb: lut[k1] });
+    for (let k = 1; k <= plan.nW; k++) {
+      let any = false;
+      for (let i = 0; i < N; i++) {
+        let v = 0;
+        if (P) { v = P[i] * plan.nW - (k - 1); v = v < 0 ? 0 : v > 1 ? 1 : v; }
+        for (let gI = 0; gI < groups.length; gI++) { const G = groups[gI]; if (G.level < k) break; const f = G.F[i]; if (f > v) v = f; }
+        const c = Cc[i]; if (c < v) v = c;
+        cur[i] = v; if (v >= 0.5) any = true;
+      }
+      if (!any) break;
+      let same = havePrev && !(plan.acc && k === plan.kA + 1);
+      if (same) for (let i = 0; i < N; i++) if (cur[i] !== prev[i]) { same = false; break; }
+      if (!same) { if (havePrev) finish(prev, prevStart, k - 1); const t = prev; prev = cur; cur = t; prevStart = k; havePrev = true; }
+      lastK = k;
+      prog(0.06 + 0.88 * k / plan.nW, `Tracing top layer ${k} of ${plan.nW}`);
+      await tick(); if (cancelled()) return null;
+    }
+    if (havePrev) finish(prev, prevStart, lastK);
   }
-  if (havePrev) finish(prev, prevStart, lastK);
   const base_mesh = baseB.finish();
-  const top_mesh = mergeMeshes(slabs.filter(s => !s.accent).map(s => s.mesh));
-  const acc_mesh = mergeMeshes(slabs.filter(s => s.accent).map(s => s.mesh));
-  const b = LACore.meshBounds([base_mesh, top_mesh, acc_mesh].filter(m => m.positions.length));
+  const b = LACore.meshBounds([base_mesh].concat(slabs.map(s => s.mesh)));
   const center = [(b[0] + b[3]) / 2, (b[1] + b[4]) / 2];
   const shift = (m) => { const p = m.positions; for (let i = 0; i < p.length; i += 3) { p[i] -= center[0]; p[i + 1] -= center[1]; } };
-  [base_mesh, top_mesh, acc_mesh].forEach(shift); slabs.forEach(s => shift(s.mesh));
-  onProgress && onProgress(0.97, 'Finishing');
-  return { plan, base: base_mesh, top: top_mesh, accent: acc_mesh, slabs, usedLevels: lastK, size: [b[3] - b[0], b[4] - b[1], b[5]], magnets: spots.length && plan.magnetOK ? spots.length : 0 };
+  shift(base_mesh); slabs.forEach(s => shift(s.mesh));
+  const parts = [];
+  const join = (list) => list.length === 1 ? list[0] : mergeMeshes(list);
+  if (plan.full) {
+    pal().forEach((p, c) => {
+      const meshes = slabs.filter(s => s.pal === c).map(s => s.mesh); if (c === 0) meshes.unshift(base_mesh);
+      if (meshes.length) parts.push({ key: 'c' + c, name: `Color ${c + 1} (${filamentName(p.c).toLowerCase()})`, mesh: join(meshes), color: p.c, slot: c + 1 });
+    });
+  } else {
+    parts.push({ key: 'base', name: 'Base (' + colorName(S.colors.base, BASE_COLORS) + ')', mesh: base_mesh, color: S.colors.base, slot: 1 });
+    const top = slabs.filter(s => !s.accent).map(s => s.mesh), acc = slabs.filter(s => s.accent).map(s => s.mesh);
+    if (top.length) parts.push({ key: 'top', name: 'Top (' + colorName(S.colors.top, TOP_COLORS) + ')', mesh: join(top), color: S.colors.top, slot: 2 });
+    if (acc.length) parts.push({ key: 'accent', name: 'Accent (' + colorName(S.accent.color, ACCENT_COLORS) + ')', mesh: join(acc), color: S.accent.color, slot: 3 });
+  }
+  prog(0.97, 'Finishing');
+  return { plan, base: base_mesh, slabs, parts, usedLevels: lastK, size: [b[3] - b[0], b[4] - b[1], b[5]], magnets: spots.length && plan.magnetOK ? spots.length : 0 };
 }
-
 /* ---------------- 3D view ---------------- */
 const three = { ready: false };
 function init3D() {
@@ -3036,10 +3585,12 @@ function init3D() {
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.localClippingEnabled = true;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0d0f12);
   const cam = new THREE.PerspectiveCamera(35, 1, 0.5, 5000); cam.up.set(0, 0, 1);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x30343c, 0.55));
-  const d1 = new THREE.DirectionalLight(0xffffff, 0.85); d1.position.set(-0.6, -1, 1.4); scene.add(d1);
-  const d2 = new THREE.DirectionalLight(0xbfdcff, 0.35); d2.position.set(1, 0.8, 0.6); scene.add(d2);
-  const d3 = new THREE.DirectionalLight(0xffffff, 0.75); d3.position.set(0, 0, -1); scene.add(d3);
+  // Lights are calibrated so an upward-facing surface receives exactly 1.0 (0.45 ambient + 0.66 × cos 33°):
+  // tops show the same color as the design view, walls get darker for depth, and the underside light
+  // only reaches faces pointing down.
+  scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+  const d1 = new THREE.DirectionalLight(0xffffff, 0.55 / (1 / Math.hypot(0.35, 0.55, 1))); d1.position.set(-0.35, -0.55, 1); scene.add(d1);
+  const d3 = new THREE.DirectionalLight(0xffffff, 0.45); d3.position.set(0.3, 0.4, -1); scene.add(d3);
   const grid = new THREE.GridHelper(400, 40, 0x2a2f37, 0x1d2128); grid.rotation.x = Math.PI / 2; grid.position.z = -0.02; scene.add(grid);
   const group = new THREE.Group(); scene.add(group);
   const clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1000);
@@ -3060,7 +3611,11 @@ function init3D() {
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   canvas.addEventListener('wheel', (e) => { e.preventDefault(); three.radius = clamp(three.radius * Math.exp(e.deltaY * 0.0012), 10, 3000); draw3D(); }, { passive: false });
   $('#clipRange').addEventListener('input', () => applyClip());
-  $('#flipView').addEventListener('click', () => { three.phi = three.phi < Math.PI / 2 ? Math.PI - 0.6 : 0.95; draw3D(); });
+  const views = { angle: [0.95, -Math.PI / 2 + 0.5], top: [0.0005, -Math.PI / 2], back: [Math.PI - 0.6, -Math.PI / 2 + 0.5] };
+  document.querySelectorAll('#view3dSeg button').forEach(b => b.addEventListener('click', () => {
+    const v = views[b.dataset.v]; three.phi = v[0]; three.theta = v[1]; three.target.set(0, 0, three.model ? three.model.size[2] / 2 : 1);
+    document.querySelectorAll('#view3dSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); draw3D();
+  }));
   return true;
 }
 function draw3D() {
@@ -3084,16 +3639,16 @@ function previewPxmm(draft) {
 function showModel(model) {
   const { group } = three;
   while (group.children.length) { const c = group.children.pop(); c.geometry.dispose(); c.material.dispose(); }
-  const plan = model.plan, lut = makeLUT(plan);
   const mk = (m, rgb) => {
     if (!m.indices.length) return;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(m.positions, 3)); geo.setIndex(new THREE.BufferAttribute(m.indices, 1));
     geo.computeBoundingSphere();
-    group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(rgbCss(rgb)), roughness: 0.78, metalness: 0, flatShading: true, side: THREE.DoubleSide, clippingPlanes: [three.clip] })));
+    // Phong with no specular is a pure Lambert surface, so lit color = filament color × light (no shine that would wash colors out)
+    group.add(new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: new THREE.Color(rgbCss(rgb)), specular: 0x000000, shininess: 0, flatShading: true, side: THREE.DoubleSide, clippingPlanes: [three.clip] })));
   };
-  mk(model.base, lut[0]);
-  model.slabs.forEach(s => mk(s.mesh, lut[s.k1]));
+  mk(model.base, hexToRgb(baseHex()));
+  model.slabs.forEach(s => mk(s.mesh, s.rgb));
   three.model = model;
 }
 async function rebuild3D() {
@@ -3131,7 +3686,7 @@ function applyClip() {
   three.clip.constant = L >= total ? 1000 : layerZ(plan, L) + 1e-4; rangeFill(cr);
   $('#clipVal').textContent = L >= total ? `all ${total}` : `${L} of ${total}`;
   const n = L - plan.nB;
-  $('#clipHint').textContent = L <= plan.nB ? `Base color · ${fmtMM(layerZ(plan, L))} mm` : n === 1 ? 'Color change here · first top-color layer' : plan.acc && n === plan.kA + 1 ? 'Second change here · first accent layer' : (plan.acc && n > plan.kA ? 'Accent color' : 'Top color') + ` · ${fmtMM(layerZ(plan, L))} mm`;
+  $('#clipHint').textContent = L <= plan.nB ? `Base · ${fmtMM(layerZ(plan, L))} mm` : plan.full ? `Color layer ${n} · ${fmtMM(layerZ(plan, L))} mm` : n === 1 ? 'Color change here · first top-color layer' : plan.acc && n === plan.kA + 1 ? 'Second change here · first accent layer' : (plan.acc && n > plan.kA ? 'Accent color' : 'Top color') + ` · ${fmtMM(layerZ(plan, L))} mm`;
   draw3D();
 }
 function setView(v3) {
@@ -3155,45 +3710,66 @@ function colorName(c, list) { const f = list.find(x => x.c.toLowerCase() === (c 
 function guideText(plan, used, grams, size, extra) {
   used = used == null ? plan.nW : used;
   const s = S.print, inf = objectSettings(plan).sparse_infill_density, pad = (t, n) => (t + ' '.repeat(n)).slice(0, n), L = [];
-  const topEnd = plan.acc ? Math.min(used, plan.kA) : used, hasAcc = plan.acc && used > plan.kA;
   L.push('LAYER ART STUDIO — PRINT GUIDE', S.name);
   if (size) L.push(`${size[0].toFixed(1)} × ${size[1].toFixed(1)} mm, ${size[2].toFixed(2)} mm tall`);
   if (extra) L.push(extra);
-  L.push('', `Profile: ${plan.pr.name}`, `  First layer ${plan.FL.toFixed(2)} mm · base layers ${plan.lb.toFixed(2)} mm · top layers ${plan.lw.toFixed(2)} mm`, '', 'LAYERS');
-  L.push(`  ${pad(`1–${plan.nB}`, 9)}base color (${colorName(S.colors.base, BASE_COLORS)})   0.00 → ${fmtMM(plan.baseH)} mm`);
-  if (used > 0) {
-    L.push(`  ${pad(`${plan.nB + 1}–${plan.nB + topEnd}`, 9)}top color (${colorName(S.colors.top, TOP_COLORS)})   → ${fmtMM(plan.baseH + topEnd * plan.lw)} mm`);
-    if (hasAcc) L.push(`  ${pad(`${plan.swap2Layer}–${plan.nB + used}`, 9)}accent (${colorName(S.accent.color, ACCENT_COLORS)})   → ${fmtMM(plan.baseH + used * plan.lw)} mm`);
-    L.push(`  Color change at layer ${plan.swapLayer} (slider shows ${fmtMM(plan.swapZ)} mm)`);
-    if (hasAcc) L.push(`  Second change at layer ${plan.swap2Layer} (slider shows ${fmtMM(plan.swap2Z)} mm)`);
-  }
-  L.push('');
-  if (s.swap === 'ams') {
-    L.push('AMS / MULTI-COLOR', `  Parts are already on filament 1 (base), 2 (top)${hasAcc ? ', 3 (accent)' : ''}.`, '  Load the colors in those slots, slice, print.');
+  L.push('', `Profile: ${plan.pr.name}`, `  First layer ${plan.FL.toFixed(2)} mm · base layers ${plan.lb.toFixed(2)} mm · top layers ${plan.lw.toFixed(2)} mm`, '');
+  if (plan.full) {
+    const P = pal(), share = (grams && grams.share) || null;
+    L.push('FULL COLOR — ONE PART PER FILAMENT SLOT', `  Base: layers 1–${plan.nB} (0.00 → ${fmtMM(plan.baseH)} mm) in slot 1.`, '  Colors on top start at layer ' + (plan.nB + 1) + ':');
+    P.forEach((p, c) => {
+      const hgt = p.h | 0, pct = share ? share[c] : null;
+      if (c > 0 && share && pct < 0.05) return;
+      L.push(`  Slot ${c + 1}  ${pad(filamentName(p.c).toLowerCase(), 13)} ${hgt ? `raised ${hgt} layer${hgt > 1 ? 's' : ''} (${fmtMM(hgt * plan.lw)} mm)` : 'flush with the base'}` + (pct != null ? ` · ${pct.toFixed(0)}% of top` : '') + (c === 0 ? ' · also the base' : ''));
+    });
+    L.push('', 'AMS', '  Load each color in the slot listed above (Bambu Studio adds the extra', '  filament slots when it opens the file), slice and print. Fewer colors', '  means less purge waste and a faster print.');
   } else {
-    L.push('MANUAL SWAP (ONE NOZZLE, NO AMS)', `  1. Slice, then drag the layer slider to layer ${plan.swapLayer}.`, '  2. Right-click the + on the slider and choose “Add pause”', '     (PrusaSlicer: “Add color change”).');
-    if (hasAcc) L.push(`  3. Do the same at layer ${plan.swap2Layer} for the accent color.`);
-    L.push(`  ${hasAcc ? 4 : 3}. Print with the base color. At each pause, unload, load the`, '     next color, purge until it runs clean, and resume.');
+    const topEnd = plan.acc ? Math.min(used, plan.kA) : used, hasAcc = plan.acc && used > plan.kA;
+    L.push('LAYERS', `  ${pad(`1–${plan.nB}`, 9)}base color (${colorName(S.colors.base, BASE_COLORS)})   0.00 → ${fmtMM(plan.baseH)} mm`);
+    if (used > 0) {
+      L.push(`  ${pad(`${plan.nB + 1}–${plan.nB + topEnd}`, 9)}top color (${colorName(S.colors.top, TOP_COLORS)})   → ${fmtMM(plan.baseH + topEnd * plan.lw)} mm`);
+      if (hasAcc) L.push(`  ${pad(`${plan.swap2Layer}–${plan.nB + used}`, 9)}accent (${colorName(S.accent.color, ACCENT_COLORS)})   → ${fmtMM(plan.baseH + used * plan.lw)} mm`);
+      L.push(`  Color change at layer ${plan.swapLayer} (slider shows ${fmtMM(plan.swapZ)} mm)`);
+      if (hasAcc) L.push(`  Second change at layer ${plan.swap2Layer} (slider shows ${fmtMM(plan.swap2Z)} mm)`);
+    }
+    L.push('');
+    if (s.swap === 'ams') L.push('AMS / MULTI-COLOR', `  Parts are already on filament 1 (base), 2 (top)${hasAcc ? ', 3 (accent)' : ''}.`, '  Load the colors in those slots, slice, print.');
+    else {
+      L.push('MANUAL SWAP (ONE NOZZLE, NO AMS)', `  1. Slice, then drag the layer slider to layer ${plan.swapLayer}.`, '  2. Right-click the + on the slider and choose “Add pause”', '     (PrusaSlicer: “Add color change”).');
+      if (hasAcc) L.push(`  3. Do the same at layer ${plan.swap2Layer} for the accent color.`);
+      L.push(`  ${hasAcc ? 4 : 3}. Print with the base color. At each pause, unload, load the`, '     next color, purge until it runs clean, and resume.');
+    }
   }
   if (plan.magnet && plan.magnetOK) L.push('', 'MAGNETS', `  Pockets on the back: ${(S.magnet.d + 0.3).toFixed(1)} mm wide, ${fmtMM(plan.mz)} mm deep.`, `  Glue ${S.magnet.d} × ${S.magnet.depth} mm magnets in after printing.`);
   L.push('', 'SETTINGS (already in the Bambu / Orca 3MF)', `  Layer height ${plan.lb.toFixed(2)} mm` + (plan.lb !== plan.lw ? ` · height range from ${fmtMM(plan.baseH)} mm: ${plan.lw.toFixed(2)} mm` : ''));
-  L.push(`  Walls ${s.walls} · Infill ${inf} · Supports off · Brim off · Ironing ${s.ironing ? 'top' : 'off'}`, `  First layer height must be ${plan.FL.toFixed(2)} mm so the color change lands exactly.`);
-  if (grams) L.push('', `Filament: base ≈ ${grams[0].toFixed(1)} g · top ≈ ${grams[1].toFixed(1)} g` + (grams[2] ? ` · accent ≈ ${grams[2].toFixed(1)} g` : '') + ' (PLA)');
+  L.push(`  Walls ${s.walls} · Infill ${inf} · Supports off · Brim off · Ironing ${s.ironing ? 'top' : 'off'}`, `  First layer height must be ${plan.FL.toFixed(2)} mm so the layers line up.`);
+  if (grams && grams.parts) L.push('', 'Filament (PLA): ' + grams.parts.map(([n, g]) => `${n} ≈ ${g < 0.05 ? '<0.1' : g.toFixed(1)} g`).join(' · '));
   return L.join('\n');
 }
 let exportEst = null;
 function estimate() {
   const plan = layerPlan(), g = pieceInfo(), area = (g.bb[2] - g.bb[0]) * (g.bb[3] - g.bb[1]);
-  const px = clamp(Math.sqrt(400000 / area), 1.5, 4);
-  const base = buildBase(px), des = buildDesign(base, plan), lv = levelMap(base, des, plan), a = 1 / (px * px);
-  let bA = 0, wV = 0, aV = 0, maxL = 0;
+  const px = clamp(Math.sqrt(400000 / area), 1.5, 4), a = 1 / (px * px);
+  const base = buildBase(px), pm = pixelModel(base, plan), lv = pm.lv, lab = pm.lab;
+  let bA = 0, maxL = 0; const vol = {};
+  const add = (k, v) => { vol[k] = (vol[k] || 0) + v; };
+  const cnt = lab ? new Float64Array(pal().length) : null; let cntAll = 0;
   for (let i = 0; i < lv.length; i++) {
-    if (base.M0[i] >= 0.5) bA += a;
-    const n = lv[i]; if (n > maxL) maxL = n;
-    if (plan.acc) { wV += Math.min(n, plan.kA) * plan.lw * a; aV += Math.max(0, n - plan.kA) * plan.lw * a; } else wV += n * plan.lw * a;
+    if (base.M0[i] < 0.5) continue;
+    bA += a; const n = lv[i]; if (n > maxL) maxL = n;
+    if (lab) { add(lab[i], n * plan.lw * a); cnt[lab[i]]++; cntAll++; }
+    else if (plan.acc) { add('top', Math.min(n, plan.kA) * plan.lw * a); add('accent', Math.max(0, n - plan.kA) * plan.lw * a); }
+    else add('top', n * plan.lw * a);
   }
   baseCache.key = '';
-  return { grams: [bA * plan.baseH * 1.24 / 1000, wV * 1.24 / 1000, aV * 1.24 / 1000], used: maxL, size: base.size };
+  const gr = (v) => v * 1.24 / 1000, parts = [];
+  if (lab) {
+    pal().forEach((p, c) => { const v = (vol[c] || 0) + (c === 0 ? bA * plan.baseH : 0); if (v > 0.5 || c === 0) parts.push([`slot ${c + 1} ${filamentName(p.c).toLowerCase()}`, gr(v), c]); });
+  } else {
+    parts.push(['base', gr(bA * plan.baseH)]); parts.push(['top', gr(vol.top || 0)]); if (vol.accent > 0.5) parts.push(['accent', gr(vol.accent)]);
+  }
+  const grams = { parts, share: cnt ? Array.from(cnt, v => cntAll ? v / cntAll * 100 : 0) : null };
+  return { grams, used: maxL, size: base.size };
 }
 function batchEl() { return S.els.find(e => e.type === 'text' && e.batch && !e.hidden) || null; }
 function batchNames() { return (S.batch.names || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean).slice(0, 200); }
@@ -3213,7 +3789,8 @@ function buildExportControls() {
     pg.append(b);
   });
   const sc = $('#swapCards'); sc.innerHTML = '';
-  [['ams', 'AMS / multi-color', 'Colors loaded in slots. The printer switches by itself at the right layer.'], ['manual', 'Manual swap', 'One spool at a time. Add a pause at the layer in the guide, then swap.']].forEach(([v, n, d]) => {
+  if (isFull()) sc.append(h('div', { class: 'opt', 'aria-pressed': 'true' }, h('span', { class: 'on' }, `AMS · ${pal().length} filament slots`), h('span', { class: 'od' }, 'Full color prints every color as its own part, so it needs an AMS or a multi-tool printer. Switch to Layered colors for one-spool printing.')));
+  else [['ams', 'AMS / multi-color', 'Colors loaded in slots. The printer switches by itself at the right layer.'], ['manual', 'Manual swap', 'One spool at a time. Add a pause at the layer in the guide, then swap.']].forEach(([v, n, d]) => {
     const b = h('button', { class: 'opt', type: 'button', 'aria-pressed': String(S.print.swap === v) }, h('span', { class: 'on' }, n), h('span', { class: 'od' }, d));
     b.addEventListener('click', () => { S.print.swap = v; commit(); buildExportControls(); refreshExportDialog(); }); sc.append(b);
   });
@@ -3246,14 +3823,24 @@ function buildExportControls() {
   ab.append(h('div', { style: 'grid-column:1/-1' }, switchCtl('ironSel', 'Iron the top surface (smoother, slower)', () => S.print.ironing, v => { S.print.ironing = v; commit(); refreshExportDialog(); })));
 }
 function refreshExportDialog() {
-  const plan = layerPlan(), est = exportEst || { grams: [0, 0, 0], used: plan.nW, size: pieceSize() };
+  const plan = layerPlan(), est = exportEst || { grams: null, used: plan.nW, size: pieceSize() };
   const used = est.used, total = plan.nB + used, sz = est.size && est.size[0] ? est.size : pieceSize(), lut = makeLUT(plan);
   const vb = $('#vbar'); vb.innerHTML = '';
   const H = plan.baseH + used * plan.lw, px = 150 / Math.max(0.1, H);
-  for (let L = 1; L <= total; L++) { const th = L === 1 ? plan.FL : L <= plan.nB ? plan.lb : plan.lw; vb.append(h('i', { style: `height:${th * px}px;background:${rgbCss(lut[Math.max(0, L - plan.nB)])}` })); }
+  const P = isFull() ? pal() : null, share = est.grams && est.grams.share;
+  const layerColor = (n) => {
+    if (!P) return rgbCss(lut[n]);
+    if (n <= 0) return P[0].c;
+    const on = P.map((p, c) => [p.c, (p.h | 0) >= n ? Math.max(share ? share[c] : 1, 0.0001) : 0]).filter(x => x[1] > 0);
+    if (!on.length) return P[0].c;
+    const tot = on.reduce((a, x) => a + x[1], 0); let acc = 0;
+    return 'linear-gradient(90deg,' + on.map(([c, w]) => { const a0 = acc; acc += w / tot * 100; return `${c} ${a0.toFixed(1)}% ${acc.toFixed(1)}%`; }).join(',') + ')';
+  };
+  for (let L = 1; L <= total; L++) { const th = L === 1 ? plan.FL : L <= plan.nB ? plan.lb : plan.lw; vb.append(h('i', { style: `height:${th * px}px;background:${layerColor(Math.max(0, L - plan.nB))}` })); }
   const vl = $('#vlabels'); vl.innerHTML = '';
   const labs = [[plan.baseH / 2 * px, `<b>${plan.nB}</b> base layers · 0 → ${fmtMM(plan.baseH)} mm`, '']];
-  if (used) {
+  if (used && P) labs.push([(plan.baseH + H) / 2 * px, `up to <b>${used}</b> color layers · ${fmtMM(H)} mm`, '']);
+  else if (used) {
     labs.push([plan.baseH * px, `⇄ color change at layer <b>${plan.swapLayer}</b>`, 'swapl']);
     const topEnd = plan.acc ? Math.min(used, plan.kA) : used;
     labs.push([(plan.baseH * 2 + topEnd * plan.lw) / 2 * px, `<b>${topEnd}</b> top layers`, '']);
@@ -3266,17 +3853,21 @@ function refreshExportDialog() {
   const st = $('#sumTable'); st.innerHTML = '';
   const row = (k, v) => st.append(h('dt', null, k), h('dd', null, v));
   row('Size', `${sz[0].toFixed(1)} × ${sz[1].toFixed(1)} × ${fmtMM(H)} mm`);
-  row('Layers', `${total} (${plan.nB} base + ${used} top)`);
-  row('Color change', used ? `layer ${plan.swapLayer} · ${fmtMM(plan.swapZ)} mm` + (plan.acc && used > plan.kA ? ` · ${plan.swap2Layer}` : '') : 'none');
-  row('Filament', `≈ ${est.grams[0].toFixed(1)} g + ${est.grams[1].toFixed(1)} g` + (est.grams[2] > 0.05 ? ` + ${est.grams[2].toFixed(1)} g` : ''));
+  row('Layers', `${total} (${plan.nB} base + ${used} ${P ? 'color' : 'top'})`);
+  if (P) row('Colors', `${P.filter((p, c) => c === 0 || !share || share[c] >= 0.05).length} of ${P.length} used`);
+  else row('Color change', used ? `layer ${plan.swapLayer} · ${fmtMM(plan.swapZ)} mm` + (plan.acc && used > plan.kA ? ` · ${plan.swap2Layer}` : '') : 'none');
+  const gfmt = (g) => (g < 0.05 ? '<0.1' : g.toFixed(1)) + ' g';
+  if (est.grams && P) row('Filament', h('span', { class: 'gram-list' }, est.grams.parts.map((p, i) => h('span', null, h('i', { style: `background:${P[p[2]] ? P[p[2]].c : '#888'}`, title: p[0] }), gfmt(p[1])))));
+  else if (est.grams) row('Filament', '≈ ' + est.grams.parts.map(p => gfmt(p[1])).join(' + '));
   row('Fits the bed', fits ? `yes (${bed.w} × ${bed.h})` : `no — ${bed.w} × ${bed.h} bed`);
   const be = batchEl(), names = batchNames(), doBatch = !!(be && S.batch.on && names.length);
   if (be) { const bc = $('#batchCount'); if (bc) bc.textContent = `${names.length} name${names.length === 1 ? '' : 's'}`; }
   $('#guideText').textContent = guideText(plan, used, est.grams, [sz[0], sz[1], H], doBatch ? `Batch: ${names.length} pieces` : '');
   let msg = '';
-  if (!used) msg = 'There is no top-color design yet, so it will print in one color.';
+  if (!used) msg = P ? 'Every color is flush with the base. Raise at least one color to give the piece relief.' : 'There is no top-color design yet, so it will print in one color.';
   else if (!fits) msg = 'This piece is bigger than the selected printer bed.';
   if (plan.magnet && !plan.magnetOK) msg = 'Magnet pockets are skipped: the base is too thin. Add base layers.';
+  if (P && S.print.format === 'stl1') msg = 'A single STL loses the colors. Use the 3MF or STL per color for full color.';
   if (doBatch && S.print.format === 'png') msg = 'Batch makes one PNG per name.';
   $('#exportStatus').textContent = msg;
   $('#doExport').lastChild.textContent = doBatch ? `Download ${names.length}` : 'Download';
@@ -3306,14 +3897,12 @@ async function previewPNG(maxPx, opts) {
   return out;
 }
 function exportParts(model, ams) {
-  const parts = [{ name: 'Base (' + colorName(S.colors.base, BASE_COLORS) + ')', mesh: model.base, color: S.colors.base, extruder: 1 },
-    { name: 'Top (' + colorName(S.colors.top, TOP_COLORS) + ')', mesh: model.top, color: S.colors.top, extruder: ams ? 2 : 1 }];
-  if (model.accent.indices.length) parts.push({ name: 'Accent (' + colorName(S.accent.color, ACCENT_COLORS) + ')', mesh: model.accent, color: S.accent.color, extruder: ams ? 3 : 1 });
-  return parts;
+  if (isFull()) ams = true;
+  return model.parts.map(p => ({ name: p.name, mesh: p.mesh, color: p.color, extruder: ams ? p.slot : 1 }));
 }
 function pkg3MF(objects, plan, bambu, thumb, guide) {
   const pauses = [];
-  if (S.print.swap === 'manual') { pauses.push({ z: r4(plan.swapZ), color: S.colors.top }); if (plan.acc) pauses.push({ z: r4(plan.swap2Z), color: S.accent.color }); }
+  if (S.print.swap === 'manual' && !plan.full) { pauses.push({ z: r4(plan.swapZ), color: S.colors.top }); if (plan.acc) pauses.push({ z: r4(plan.swap2Z), color: S.accent.color }); }
   const pkg = LACore.build3MF({ name: S.name || 'Layer Art', bambu, objects, objectSettings: objectSettings(plan),
     layerRanges: plan.lb !== plan.lw ? [{ min: r4(plan.baseH), max: r4(plan.baseH + plan.whiteH + 2), settings: { layer_height: plan.lw.toFixed(2) } }] : [],
     pauses, thumbnail: thumb });
@@ -3327,13 +3916,13 @@ async function exportOne(fmt, res, prog, token, label) {
   if (fmt === 'png') { const c = await previewPNG(2400, { shadow: true }); return { files: { [name + '.png']: await canvasPNG(c) } }; }
   const model = await buildModel(res.pxmm, prog, token);
   if (!model) throw new Error('cancelled');
-  const plan = model.plan, grams = [LACore.meshVolume(model.base), model.top.indices.length ? LACore.meshVolume(model.top) : 0, model.accent.indices.length ? LACore.meshVolume(model.accent) : 0].map(v => v * 1.24 / 1000);
+  const plan = model.plan, est = exportEst || estimate();
+  const grams = { parts: model.parts.map(p => [p.name.toLowerCase(), LACore.meshVolume(p.mesh) * 1.24 / 1000]), share: est.grams ? est.grams.share : null };
   const guide = guideText(plan, model.usedLevels, grams, model.size, label ? `Name: ${label}` : '');
-  if (fmt === 'stl1') return { model, guide, files: { [name + '.stl']: LACore.stlBinary([model.base, model.top, model.accent]) } };
+  if (fmt === 'stl1') return { model, guide, files: { [name + '.stl']: LACore.stlBinary(model.parts.map(p => p.mesh)) } };
   if (fmt === 'stl2') {
-    const f = { [`${name}-1-base-${colorName(S.colors.base, BASE_COLORS)}.stl`]: LACore.stlBinary([model.base]) };
-    if (model.top.indices.length) f[`${name}-2-top-${colorName(S.colors.top, TOP_COLORS)}.stl`] = LACore.stlBinary([model.top]);
-    if (model.accent.indices.length) f[`${name}-3-accent-${colorName(S.accent.color, ACCENT_COLORS)}.stl`] = LACore.stlBinary([model.accent]);
+    const f = {};
+    model.parts.forEach(p => { f[`${name}-${p.slot}-${slug(p.name)}.stl`] = LACore.stlBinary([p.mesh]); });
     f[label ? `${name}-PRINT-GUIDE.txt` : 'PRINT-GUIDE.txt'] = enc.encode(guide);
     return { model, guide, files: f };
   }
@@ -3357,7 +3946,7 @@ async function doExport() {
       if (keys.length === 1) { const k = keys[0]; download(out.files[k], k, k.endsWith('.png') ? 'image/png' : k.endsWith('.stl') ? 'model/stl' : 'model/3mf'); }
       else download(fflate.zipSync(out.files, { level: 6 }), `${slug(S.name)}-stl.zip`, 'application/zip');
       const plan = layerPlan();
-      status.textContent = fmt === 'png' ? 'Saved the preview image.' : `Saved. Color change at layer ${plan.swapLayer} (${fmtMM(plan.swapZ)} mm).`;
+      status.textContent = fmt === 'png' ? 'Saved the preview image.' : plan.full ? `Saved. ${pal().length} colors on AMS slots 1–${pal().length}.` : `Saved. Color change at layer ${plan.swapLayer} (${fmtMM(plan.swapZ)} mm).`;
     } else {
       const all = {}, models = [];
       for (let i = 0; i < names.length; i++) {
@@ -3461,8 +4050,18 @@ const IDEAS = [
   { n: 'Welcome sign', make: () => ({ template: 'sign-arch', rim: 1.6, rimStyle: 'double', els: [T({ text: 'Welcome', font: 'Great Vibes', size: 30, y: -6, thicken: 0.35 }), T({ text: 'THE MILLERS', font: 'Cinzel', size: 10, y: 20, spacing: 0.12 }), SH({ shape: 'leaf', w: 11, h: 11, x: -50, y: 20, rot: -60 }), SH({ shape: 'leaf', w: 11, h: 11, x: 50, y: 20, rot: 60 })] }) },
   { n: 'Coaster set', make: () => ({ template: 'co-round', rim: 1.4, rimStyle: 'dotted', els: [PT({ pattern: 'honeycomb', size: 8, thick: 0.18, tone: 0.34 }), SH({ shape: 'circle', w: 52, h: 52 }), T({ text: 'CHEERS', font: 'Righteous', size: 9, cut: true, spacing: 0.08 })] }) },
   { n: 'Photo ornament', make: () => { const key = sampleMoonKey(); return { template: 'orn-round', rim: 1.4, whiteMM: 1.28, els: [elDefaults({ type: 'image', img: key, name: 'Sample photo', mode: 'photo', w: 54, mask: 'circle', frame: 1.2, y: -2 }), T({ text: 'GOODNIGHT MOON', font: 'Fredoka', size: 5.5, curve: -0.38, y: 30, spacing: 0.1 })] }; } },
+  { n: 'Full-color sunset coaster', full: true, make: () => { const key = sampleSunsetKey(); return { template: 'co-round', rim: 1.6, mode: 'full', full: { palette: [{ c: '#161616', h: 0 }], rimPc: 0 }, autoPal: { key, count: 6 }, els: [elDefaults({ type: 'image', img: key, name: 'Sunset', mode: 'photo', w: 88, mask: 'circle', frame: 0, pc: 1 })] }; } },
+  { n: 'Full-color name keychain', full: true, make: () => ({ template: 'kc-round', rim: 1.2, mode: 'full', full: { palette: [{ c: '#161616', h: 0 }, { c: '#f4f4ef', h: 4 }, { c: '#c12e1f', h: 6 }], rimPc: 1 }, els: [SH({ shape: 'circle', w: 30, h: 30, pc: 1 }), T({ text: 'Mia', font: 'Pacifico', size: 11, pc: 2, thicken: 0.15 })] }) },
+  { n: 'Full-color Christmas ornament', full: true, make: () => ({ template: 'orn-round', rim: 1.6, rimStyle: 'double', mode: 'full', full: { palette: [{ c: '#161616', h: 0 }, { c: '#c12e1f', h: 5 }, { c: '#00ae42', h: 5 }, { c: '#f4f4ef', h: 7 }, { c: '#e4bd68', h: 7 }], rimPc: 4 }, els: [SH({ shape: 'circle', w: 60, h: 60, pc: 1 }), SH({ shape: 'holly', w: 22, h: 22, y: -16, pc: 2 }), T({ text: 'Merry', font: 'Pacifico', size: 12, y: 4, pc: 3, thicken: 0.15 }), T({ text: 'CHRISTMAS', font: 'Fredoka', size: 6.5, y: 18, spacing: 0.12, pc: 4 }), SH({ shape: 'star', w: 6, h: 6, x: -19, y: -13, pc: 4 }), SH({ shape: 'star', w: 6, h: 6, x: 19, y: -13, pc: 4 })] }) },
   { n: 'Teacher gift tag', make: () => ({ template: 'tag-gift', rim: 1, els: [T({ text: 'THANK\nYOU', font: 'Archivo Black', size: 9, lineH: 1.05, y: 8 }), SH({ shape: 'heart', w: 10, h: 10, y: 30 }), T({ text: 'Mrs. Smith', font: 'Satisfy', size: 7, y: -12, thicken: 0.15 })] }) },
 ];
+function applyIdeaMode(d) {
+  if (d.mode === 'full') {
+    S.mode = 'full'; S.full = Object.assign({ flat: false, snap: true, rimPc: 1 }, d.full, { touched: true, palette: d.full.palette.map(p => Object.assign({}, p)) });
+    if (d.autoPal) applyAutoPalette(d.autoPal.key, d.autoPal.count, S.full.snap);
+  } else S.mode = 'layer';
+  fullCache.clear();
+}
 function applyIdea(idea) {
   const d = idea.make(), t = tplById(d.template);
   S.template = t.id; S.tp = Object.assign({}, t.defaults, d.tp || {}); S.baseMM = d.baseMM || t.base;
@@ -3471,6 +4070,7 @@ function applyIdea(idea) {
   S.whiteMM = d.whiteMM || 0.96;
   S.magnet = Object.assign({}, S.magnet, { mode: t.magnet ? 'center' : 'none', auto: !!t.magnet });
   S.els = d.els.map(e => Object.assign(e, { id: uid() }));
+  applyIdeaMode(d); S.turn = false; palOpen = -1;
   S.name = idea.n; selId = null; S.designId = null;
   view.fitted = false; three.framed = false; afterLoad(); commit();
   toast('Idea loaded. Undo (Ctrl+Z) brings back your previous design.');
@@ -3480,7 +4080,7 @@ function buildIdeasGrid(grid) {
   grid.append(h('div', { class: 'fam-head' }, h('span', null, 'Start from an idea'), h('span', { class: 'val' }, `${IDEAS.length} ideas`)));
   IDEAS.forEach((idea, i) => {
     const img = h('img', { alt: '', class: 'idea-img' });
-    const b = h('button', { class: 'tcard', type: 'button', title: idea.n }, img, h('span', { class: 'tname' }, idea.n), h('span', { class: 'tsize' }, tplById(idea.make().template).name));
+    const b = h('button', { class: 'tcard', type: 'button', title: idea.n }, img, h('span', { class: 'tname' }, idea.n), h('span', { class: 'tsize' }, (idea.full ? 'Full color · ' : '') + tplById(idea.make().template).name));
     b.addEventListener('click', () => applyIdea(idea));
     grid.append(b);
     const src = ideaThumbs.get(i);
@@ -3492,13 +4092,14 @@ function ideaThumb(idea, i) {
   try {
     const d = idea.make(), t = tplById(d.template);
     S = migrate(Object.assign(JSON.parse(JSON.stringify(saved)), { template: t.id, tp: Object.assign({}, t.defaults, d.tp || {}), baseMM: d.baseMM || t.base, rim: d.rim == null ? 1.4 : d.rim, rimStyle: d.rimStyle || 'solid', rimTone: 1, margin: d.margin == null ? 1 : d.margin, accent: Object.assign({}, saved.accent, d.accent || { on: false }), whiteMM: d.whiteMM || saved.whiteMM, magnet: { mode: 'none', d: 10, depth: 2 }, els: d.els }));
+    applyIdeaMode(d); S.turn = false;
     pieceCache = { key: '', info: null }; baseCache = { key: '', val: null };
     const g = pieceInfo(), bw = g.bb[2] - g.bb[0], bh = g.bb[3] - g.bb[1], W = 220, H = 176;
     const r = renderPiece(Math.min((W - 24) / bw, (H - 22) / bh));
     const c = mkCanvas(W, H), x = c.getContext('2d'); x.fillStyle = '#1a1c1f'; x.fillRect(0, 0, W, H);
     x.shadowColor = 'rgba(0,0,0,.5)'; x.shadowBlur = 8; x.shadowOffsetY = 3; x.drawImage(r.canvas, (W - r.base.W) / 2, (H - r.base.H) / 2);
     const url = c.toDataURL('image/png'); ideaThumbs.set(i, url); return url;
-  } finally { S = saved; pieceCache = savedPiece; baseCache = savedBase; }
+  } finally { S = saved; pieceCache = savedPiece; baseCache = savedBase; fullCache.clear(); }
 }
 
 /* ---------------- project files ---------------- */
@@ -3539,12 +4140,12 @@ async function init() {
   if (!loaded) S = defaultState();
   $('#projName').value = S.name;
   lastTplKey = S.template + JSON.stringify(S.tp);
-  buildTemplateGrid(); buildPieceCard(); buildAddPanel(); buildInspector(); buildDesignList();
+  buildTemplateGrid(); buildAddPanel(); buildInspector(); buildDesignList();
   hist.last = snapshot(); updateUndoButtons();
   new ResizeObserver(() => resize2D()).observe(vp);
   resize2D();
   if (document.fonts) document.fonts.ready.then(() => { textCache.clear(); effectCache.clear(); pieceCache.key = ''; baseCache.key = ''; invalidate(); });
-  window.__layerArt = { get S() { return S; }, buildModel, LACore, layerPlan, estimate, setView, TEMPLATES, IDEAS, applyIdea, chooseTemplate, renderPiece, exportOne, RES };
+  window.__layerArt = { get S() { return S; }, buildModel, LACore, layerPlan, estimate, setView, TEMPLATES, IDEAS, applyIdea, chooseTemplate, renderPiece, exportOne, RES, isFull, pal, applyAutoPalette, setMode, pixelModel, pieceInfo, setTurn, applySizePreset, SIZE_PRESETS };
 }
 init();
 
