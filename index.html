@@ -210,6 +210,11 @@ footer { border-top: 1px solid var(--line); margin-top: 28px; }
   .hero { padding: 36px 0 56px; }
   .actions { margin-top: 22px; }
 }
+/* keep the footer at the bottom of the window on tall screens */
+body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+main { flex: 1 0 auto; width: 100%; }
+footer { flex-shrink: 0; }
+
 /* desktop: trim extra empty space so the page fits without scrolling */
 @media (min-width: 1041px) {
   .hero { padding: 44px 0 52px; }
