@@ -210,6 +210,13 @@ footer { border-top: 1px solid var(--line); margin-top: 28px; }
   .hero { padding: 36px 0 56px; }
   .actions { margin-top: 22px; }
 }
+/* desktop: trim extra empty space so the page fits without scrolling */
+@media (min-width: 1041px) {
+  .hero { padding: 44px 0 52px; }
+  .cat { padding: 24px 0; }
+  footer { margin-top: 0; }
+  .foot { padding-top: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
