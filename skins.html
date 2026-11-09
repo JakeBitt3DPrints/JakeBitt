@@ -482,6 +482,7 @@ details.guide .gb{animation:panelIn .2s ease}
 }
 </style>
 <link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/site.js"></script>
 </head>
 <body>
 <div class="app" id="app">
@@ -2843,11 +2844,11 @@ function baseHoles(d) {
   for (let i = 0; i < n * n; i++) if (m.layer[i] === 0 && a[i * 4 + 3] === 0) h++;
   return h;
 }
-function downloadPNG(legacy = false, skipCheck = false) {
+async function downloadPNG(legacy = false, skipCheck = false) {
   const d = S.doc; if (!d) return;
   if (!skipCheck && S.set.checkOnDownload) {
     const h = baseHoles(d);
-    if (h && !confirm(`Heads up: ${h} pixels on the base layer are see-through. Minecraft shows those as solid (usually black).\n\nPress OK to download anyway, or Cancel and use Fill base holes in the Adjust tab.`)) return;
+    if (h && !await jbConfirm(`${h} pixels on the base layer are see-through. Minecraft shows those as solid (usually black).\n\nYou can download anyway, or cancel and use Fill base holes in the Adjust tab.`, { title: 'Some pixels are see-through', ok: 'Download anyway' })) return;
   }
   if (legacy && d.size !== 64) { toast('The old 64x32 format only works for 64x64 skins', true); return; }
   exportCanvas(d, legacy).toBlob(b => { downloadBlob(b, safeName(d.name) + (legacy ? '_legacy' : '') + '.png'); d.dirty = false; renderTabs(); toast(legacy ? 'Saved in the old 64x32 format (left limbs and most outer layers are dropped)' : 'Skin downloaded'); }, 'image/png');
@@ -3372,7 +3373,7 @@ function initPicker() {
   $('#cpCopyFmt').onchange = () => $('#cpCopy').click();
   $('#cpPaste').onclick = async () => {
     try { const t = await navigator.clipboard.readText(); const c = C.parse(t); if (c) { setColor(S.slot, c); addRecent(c); toast('Pasted ' + C.hex(c)); } else toast("Your clipboard doesn't have a color in it", true); }
-    catch { const t = prompt('Paste a color (hex, rgb(), hsl() or a name)'); const c = C.parse(t); if (c) setColor(S.slot, c), addRecent(c); else if (t) toast("That isn't a color", true); }
+    catch { const t = await jbPrompt('Paste a color: hex, rgb(), hsl() or a name like tomato.', '', { title: 'Paste a color', ok: 'Use color', placeholder: '#38bdf8' }); const c = C.parse(t); if (c) setColor(S.slot, c), addRecent(c); else if (t) toast("That isn't a color", true); }
   };
   $('#cpScreen').onclick = async () => {
     if (!window.EyeDropper) { toast("Screen picking works in Chrome and Edge on desktop", true); return; }
@@ -3383,7 +3384,7 @@ function initPicker() {
   sel.onchange = renderSwatches;
   renderSwatches(); syncPicker(); syncWells();
 }
-async function copyText(txt) { try { await navigator.clipboard.writeText(txt); toast('Copied ' + txt); } catch { prompt('Copy this:', txt); } }
+async function copyText(txt) { try { await navigator.clipboard.writeText(txt); toast('Copied ' + txt); } catch { await jbPrompt('Your browser blocked copying. Select the text below and copy it.', txt, { title: 'Copy this', ok: 'Done' }); } }
 function addSaved(c) { if (!S.saved.some(s => C.hex(s, true) === C.hex(c, true))) S.saved.push([...c]); renderSwatches(); savePrefs(); }
 function syncPickerKeepText() { const c = S.colors[S.slot]; const [h, s, v] = C.rgb2hsv(c[0], c[1], c[2]); if (s > 0 && v > 0) CP.h = h; CP.s = s; CP.v = v; CP.a = c[3]; drawSV(); syncFields(); }
 const PALETTES = {
@@ -3563,7 +3564,7 @@ function renderLayers() {
 }
 function countOpaque(L) { let n = 0; const a = L.img.data; for (let i = 3; i < a.length; i += 4) if (a[i]) n++; return n; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
-function renameLayer(L) { const n = prompt('Layer name', L.name); if (n) { L.name = n.slice(0, 40); renderLayers(); scheduleAutosave(); } }
+async function renameLayer(L) { const n = await jbPrompt('Layer name', L.name, { ok: 'Rename' }); if (n) { L.name = n.slice(0, 40); renderLayers(); scheduleAutosave(); } }
 function initLayersPanel() {
   $('#layerList').addEventListener('click', e => {
     const row = e.target.closest('.layer'); if (!row) return; const d = S.doc, i = +row.dataset.i, L = d.layers[i];
@@ -3714,14 +3715,14 @@ function initPosePanel() {
     const q = S.pose[p]; Object.assign(S.pose[m], { rx: q.rx, ry: -q.ry, rz: -q.rz, px: -q.px, py: q.py, pz: q.pz });
     poseChanged(); toast(`${POSE_NAMES[p]} copied to ${POSE_NAMES[m].toLowerCase()}`);
   };
-  $('#poseSave').onclick = () => { const n = prompt('Name this pose', 'My pose'); if (!n) return; S.poses.push({ name: n.slice(0, 30), pose: JSON.parse(JSON.stringify(S.pose)) }); S.poseName = 'saved:' + (S.poses.length - 1); renderPosePanel(); syncPoseSel(); savePrefs(); toast('Pose saved'); };
+  $('#poseSave').onclick = async () => { const n = await jbPrompt('Name this pose', 'My pose'); if (!n) return; S.poses.push({ name: n.slice(0, 30), pose: JSON.parse(JSON.stringify(S.pose)) }); S.poseName = 'saved:' + (S.poses.length - 1); renderPosePanel(); syncPoseSel(); savePrefs(); toast('Pose saved'); };
   $('#poseSaved').addEventListener('click', e => {
     const l = e.target.closest('[data-load]'), dl = e.target.closest('[data-del]');
     if (l) { const p = S.poses[+l.dataset.load]; S.pose = normalizePose(p.pose); S.poseName = 'saved:' + l.dataset.load; applyPose(0); renderPosePanel(); syncPoseSel(); savePrefs(); }
     if (dl) { S.poses.splice(+dl.dataset.del, 1); if (String(S.poseName).startsWith('saved:')) S.poseName = 'custom'; renderPosePanel(); syncPoseSel(); savePrefs(); }
   });
   $('#poseExport').onclick = () => copyText(btoa(JSON.stringify(S.pose)));
-  $('#poseImport').onclick = () => { const t = prompt('Paste a pose code'); if (!t) return; try { S.pose = normalizePose(JSON.parse(atob(t.trim()))); poseChanged(); renderPosePanel(); toast('Pose loaded'); } catch { toast("That pose code didn't work", true); } };
+  $('#poseImport').onclick = async () => { const t = await jbPrompt('Paste a pose code that someone shared with you.', '', { title: 'Import a pose', ok: 'Import' }); if (!t) return; try { S.pose = normalizePose(JSON.parse(atob(t.trim()))); poseChanged(); renderPosePanel(); toast('Pose loaded'); } catch { toast("That pose code didn't work", true); } };
   $('#poseSel').onchange = e => {
     const v = e.target.value;
     if (v.startsWith('saved:')) { const p = S.poses[+v.slice(6)]; if (p) { S.pose = normalizePose(p.pose); S.poseName = v; applyPose(0); } }
@@ -4010,9 +4011,9 @@ function setModel(slim) {
   d.slim = slim; buildModel(); markChanged(d); renderSkinPanel(); renderTransfer(); V2.maskKey = '';
   toast(slim ? 'Switched to slim (3px arms)' : 'Switched to classic (4px arms)');
 }
-function setResolution(size) {
+async function setResolution(size) {
   const d = S.doc; if (d.size === size) return;
-  if (size < d.size && !confirm(`Shrink to ${size}x${size}? Fine details will be merged.`)) { $('#resSel').value = String(d.size); return; }
+  if (size < d.size && !await jbConfirm(`Fine details will be merged when the skin shrinks to ${size}x${size}.`, { title: `Shrink to ${size}x${size}?`, ok: 'Shrink' })) { $('#resSel').value = String(d.size); return; }
   pushUndo(d);
   const from = d.size;
   d.layers = d.layers.map(L => { const N = makeLayer(size, L.name, resampleBuf(L.img.data, from, size)); N.id = L.id; N.visible = L.visible; N.opacity = L.opacity; return N; });
@@ -4130,14 +4131,14 @@ function initSettings() {
   $('#setKeys').onchange = e => setSetting('keys', e.target.checked);
   $('#setMotion').onchange = e => setSetting('reduceMotion', e.target.checked);
   $('#autosaveChk').onchange = e => { try { localStorage.setItem('skinstudio.autosave', e.target.checked ? '1' : '0'); } catch { } if (e.target.checked) scheduleAutosave(); else setSaveState(); };
-  $('#clearSaved').onclick = async () => { if (!confirm('Forget everything saved in this browser (tabs, restore points and closed tabs)? Your open tabs stay open until you close the page.')) return; try { localStorage.removeItem('skinstudio.docs'); } catch { } await Store.set('docs', null); await Store.set('points', []); await Store.set('closed', []); toast('Saved data cleared'); if (curPanel === 'skin') renderBackups(); };
+  $('#clearSaved').onclick = async () => { if (!await jbConfirm('Forget everything saved in this browser (tabs, restore points and closed tabs)? Your open tabs stay open until you close the page.')) return; try { localStorage.removeItem('skinstudio.docs'); } catch { } await Store.set('docs', null); await Store.set('points', []); await Store.set('closed', []); toast('Saved data cleared'); if (curPanel === 'skin') renderBackups(); };
   $('#setHl').onchange = e => { setSetting('hlStyle', e.target.value); if (S.highlight) setHighlight([...S.highlight.keys]); };
   $('#setInertia').onchange = e => setSetting('inertia', e.target.checked);
   $('#setSens').oninput = e => setSetting('sens', +e.target.value);
   $('#setPoints').onchange = e => setSetting('restorePoints', e.target.checked);
   $('#setCheckDl').onchange = e => setSetting('checkOnDownload', e.target.checked);
   $('#setUiAnim').onchange = e => setSetting('uiAnim', e.target.checked);
-  $('#resetSettings').onclick = () => { if (!confirm('Reset all settings to default?')) return; S.set = defaultSettings(); S.light = false; S.grid3d = true; S.grid2d = true; S.outlines = true; applySettings(); makeMaterials(); savePrefs(); toast('Settings reset'); };
+  $('#resetSettings').onclick = async () => { if (!await jbConfirm('Everything in Settings goes back to how it started. Your skins are not affected.', { title: 'Reset all settings?', ok: 'Reset' })) return; S.set = defaultSettings(); S.light = false; S.grid3d = true; S.grid2d = true; S.outlines = true; applySettings(); makeMaterials(); savePrefs(); toast('Settings reset'); };
 }
 
 /* =====================================================================
@@ -4269,8 +4270,8 @@ function switchDoc(d) {
   $('#locOut').dataset.hex = '';
   buildModel(); setupTexture(); fit2d(); renderTabs(); renderLayers(); renderSkinPanel(); refreshPanel(); updateUndoBtns(); updateSelbar();
 }
-function closeDoc(d) {
-  if (d.dirty && S.set.confirmClose && !confirm(`Close "${d.name}"? It has changes you haven't downloaded.`)) return;
+async function closeDoc(d) {
+  if (d.dirty && S.set.confirmClose && !await jbConfirm(`"${d.name}" has changes you haven't downloaded yet.`, { title: 'Close this skin?', ok: 'Close', danger: true })) return;
   rememberClosed(d);
   const i = S.docs.indexOf(d); S.docs.splice(i, 1);
   if (!S.docs.length) { S.doc = null; addDoc(makeTemplate('starter', S.set.model === 'slim', 64, 'My skin')); }
@@ -4284,7 +4285,7 @@ function initTabs() {
     switchDoc(d);
   });
   $('#tabs').addEventListener('auxclick', e => { if (e.button === 1) { const t = e.target.closest('.tab'); if (t) closeDoc(S.docs.find(x => x.id === t.dataset.id)); } });
-  $('#tabs').addEventListener('dblclick', e => { const t = e.target.closest('.tab'); if (!t) return; const d = S.docs.find(x => x.id === t.dataset.id); const n = prompt('Rename skin', d.name); if (n) { d.name = n.slice(0, 40); renderTabs(); renderSkinPanel(); buildNameTag(); scheduleAutosave(); } });
+  $('#tabs').addEventListener('dblclick', async e => { const t = e.target.closest('.tab'); if (!t) return; const d = S.docs.find(x => x.id === t.dataset.id); const n = await jbPrompt('Rename skin', d.name, { ok: 'Rename' }); if (n) { d.name = n.slice(0, 40); renderTabs(); renderSkinPanel(); buildNameTag(); scheduleAutosave(); } });
 }
 
 /* =====================================================================

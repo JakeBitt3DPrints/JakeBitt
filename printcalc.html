@@ -209,6 +209,7 @@
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   </style>
   <link rel="stylesheet" href="/assets/site.css">
+  <script src="/assets/site.js"></script>
 </head>
 <body>
 
@@ -1141,12 +1142,14 @@ if (!Array.isArray(savedPrints)) {
 }
 const persistSaves = () => persist('jb_prints_v2', savedPrints);
 
-function savePrint(mode){
+async function savePrint(mode){
   const data = clone(mode === 'quick' ? quick : full);
   let name = (data.name || '').trim();
   if (!name) {
-    name = prompt('Name this print:', mode === 'quick' ? 'Quick Print' : 'My Part') || '';
-    name = name.trim(); if (!name) return;
+    const fallback = mode === 'quick' ? 'Quick print' : 'My part';
+    const typed = await jbPrompt('Give this print a name so you can find it later.', fallback, { title: 'Save this print', ok: 'Save' });
+    if (typed === null) return;
+    name = typed.trim() || fallback;
     data.name = name; (mode === 'quick' ? quick : full).name = name; syncInputs();
   }
   savedPrints.unshift({ id:uid(), mode, name, savedAt:new Date().toISOString(), data });
@@ -1203,14 +1206,14 @@ function dupSave(id){
   const c = clone(s); c.id = uid(); c.name = s.name + ' (copy)'; c.data.name = c.name; c.savedAt = new Date().toISOString();
   savedPrints.splice(savedPrints.indexOf(s), 0, c); persistSaves(); renderSaves(); showToast('Duplicated');
 }
-function deleteSave(id){
+async function deleteSave(id){
   const s = savedPrints.find(x => x.id === id); if (!s) return;
-  if (!confirm('Delete "' + s.name + '"?')) return;
+  if (!await jbConfirm('Delete "' + s.name + '"?', { title: 'Delete saved print', ok: 'Delete', danger: true })) return;
   savedPrints = savedPrints.filter(x => x.id !== id); persistSaves(); renderSaves(); showToast('Deleted');
 }
-function clearAllSaves(){
+async function clearAllSaves(){
   if (!savedPrints.length) return;
-  if (!confirm('Delete all ' + savedPrints.length + ' saved prints? This can\u2019t be undone.')) return;
+  if (!await jbConfirm('Delete all ' + savedPrints.length + ' saved prints? This can\u2019t be undone.', { title: 'Clear saved prints', ok: 'Delete all', danger: true })) return;
   savedPrints = []; persistSaves(); renderSaves(); showToast('All saves cleared');
 }
 function exportAll(){
@@ -1225,7 +1228,7 @@ function exportAll(){
 function importAll(e){
   const file = e.target.files[0]; if (!file) return;
   const rd = new FileReader();
-  rd.onload = ev => {
+  rd.onload = async ev => {
     try {
       const d = JSON.parse(ev.target.result);
       let nSaves = 0, nP = 0, nF = 0;
@@ -1239,7 +1242,7 @@ function importAll(e){
         }
         if (Array.isArray(d.printers)) d.printers.forEach(p => { if (p && p.name && !printers.some(x => x.id === p.id)) { printers.push({ id:p.id || uid(), name:String(p.name), watts:num(p.watts), cost:num(p.cost), life:num(p.life)||3, maint:num(p.maint), uptime:num(p.uptime)||50 }); nP++; } });
         if (Array.isArray(d.filaments)) d.filaments.forEach(f => { if (f && f.name && !filaments.some(x => x.id === f.id)) { filaments.push({ id:f.id || uid(), name:String(f.name), material:String(f.material||''), color:/^#[0-9a-f]{6}$/i.test(f.color) ? f.color : '#38bdf8', spoolPrice:f.spoolPrice ?? '', spoolG:num(f.spoolG)||1000, costKg:num(f.costKg) }); nF++; } });
-        if (d.settings && typeof d.settings === 'object' && confirm('Also replace your current settings with the ones in this backup?')) {
+        if (d.settings && typeof d.settings === 'object' && await jbConfirm('Also replace your current settings with the ones in this backup?', { title: 'Import settings too?', ok: 'Replace settings', cancel: 'Keep mine' })) {
           settings = Object.assign({}, DEFAULT_SETTINGS, d.settings); saveSettingsStore();
         }
       } else throw 0;
@@ -1298,9 +1301,9 @@ function savePrinterForm(){
   persist('jb_printers_v2', printers); closeForm('printerForm'); afterProfilesChanged();
   showToast(ex ? 'Printer updated \u2713' : 'Printer added \u2713');
 }
-function deletePrinter(id){
+async function deletePrinter(id){
   if (printers.length <= 1) { showToast('Keep at least one printer'); return; }
-  const p = printers.find(x => x.id === id); if (!p || !confirm('Delete printer "' + p.name + '"?')) return;
+  const p = printers.find(x => x.id === id); if (!p || !await jbConfirm('Delete printer "' + p.name + '"?', { title: 'Delete printer', ok: 'Delete', danger: true })) return;
   printers = printers.filter(x => x.id !== id);
   if (settings.defaultPrinter === id) { settings.defaultPrinter = ''; saveSettingsStore(); }
   persist('jb_printers_v2', printers); afterProfilesChanged();
@@ -1337,8 +1340,8 @@ function saveFilamentForm(){
   persist('jb_filaments_v2', filaments); closeForm('filamentForm'); afterProfilesChanged();
   showToast(ex ? 'Filament updated \u2713' : 'Filament added \u2713');
 }
-function deleteFilament(id){
-  const f = filaments.find(x => x.id === id); if (!f || !confirm('Delete filament "' + f.name + '"?')) return;
+async function deleteFilament(id){
+  const f = filaments.find(x => x.id === id); if (!f || !await jbConfirm('Delete filament "' + f.name + '"?', { title: 'Delete filament', ok: 'Delete', danger: true })) return;
   filaments = filaments.filter(x => x.id !== id);
   if (settings.defaultFilament === id) { settings.defaultFilament = ''; saveSettingsStore(); }
   persist('jb_filaments_v2', filaments); afterProfilesChanged();
