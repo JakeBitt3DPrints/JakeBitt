@@ -466,6 +466,7 @@
       <div class="card-title">Saved Prints</div>
       <div class="saves-toolbar">
         <input type="search" id="saveSearch" placeholder="Search saved prints..." oninput="renderSaves()">
+        <button class="icon-btn" onclick="printPriceList()" title="Printable price list of your saved quick prints"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Price list</button>
         <button class="icon-btn" style="color:var(--red)" onclick="clearAllSaves()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>Clear all</button>
       </div>
       <div class="saves-list" id="savesList"></div>
@@ -474,8 +475,8 @@
       <div class="card-title">Backup</div>
       <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Everything is stored in this browser only. Export a backup to move it to another device. Imports add to what's here; old calculator exports work too.</p>
       <div class="saves-toolbar" style="margin-bottom:0">
-        <button class="icon-btn" onclick="exportAll()">&#11015; Export Backup</button>
-        <button class="icon-btn" onclick="document.getElementById('importFile').click()">&#11014; Import Backup</button>
+        <button class="icon-btn" onclick="exportAll()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export backup</button>
+        <button class="icon-btn" onclick="document.getElementById('importFile').click()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"/></svg>Import backup</button>
         <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importAll(event)">
       </div>
     </div>
@@ -1445,6 +1446,47 @@ requestAnimationFrame(() => requestAnimationFrame(() => $('tab-content-quick').c
 if (!settings.state && !load('jb_seen_v2', false)) {
   persist('jb_seen_v2', true);
   setTimeout(() => showToast('Tip: set your state in Settings for automatic tax & power rates'), 800);
+}
+
+/* ===== PRINTABLE PRICE LIST ===== */
+function printPriceList(){
+  const rows = savedPrints.filter(s => s.mode === 'quick').map(s => {
+    try {
+      const keep = quick; quick = fixModel(clone(s.data), defQuick());
+      const pc = plateCosts(quick), copies = Math.max(1, Math.floor(num(quick.copies)) || 1);
+      const cost = pc.print / copies + num(quick.laborMin) / 60 * num(settings.laborRate) + num(quick.extra);
+      const r = priceAt(cost, num(quick.margin) || 60); quick = keep;
+      return r.ok ? { name: s.name, price: money(r.sticker) } : null;
+    } catch { return null; }
+  }).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  if (!rows.length) { showToast('Save some prints from Quick mode first'); return; }
+  const skipped = savedPrints.length - rows.length;
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Allow pop-ups to open the price list'); return; }
+  const e = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]);
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Price list</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,700&display=swap">
+<style>
+  *{box-sizing:border-box} body{margin:0;font-family:"DM Sans",system-ui,sans-serif;color:#111418;background:#fff}
+  .page{max-width:760px;margin:0 auto;padding:48px 40px}
+  h1{font:800 44px/1.05 "Bricolage Grotesque","DM Sans",sans-serif;letter-spacing:-.03em;margin:0 0 6px}
+  .sub{color:#5b6472;margin:0 0 28px;font-size:15px}
+  ul{list-style:none;margin:0;padding:0}
+  li{display:flex;align-items:baseline;gap:12px;padding:13px 0;font-size:21px;break-inside:avoid}
+  li .n{font-weight:700}
+  li .dots{flex:1;border-bottom:2px dotted #c3c8d0;transform:translateY(-5px)}
+  li .p{font:800 22px "Bricolage Grotesque","DM Sans",sans-serif}
+  .bar{position:sticky;top:0;background:#f4f6f9;border-bottom:1px solid #e3e6eb;padding:10px 16px;display:flex;gap:10px;justify-content:center;font-size:14px}
+  .bar button{font:700 14px "DM Sans",sans-serif;padding:9px 16px;border-radius:10px;border:0;background:#111418;color:#fff;cursor:pointer}
+  [contenteditable]:focus{outline:2px dashed #9bd7ff;outline-offset:4px}
+  @media print{.bar{display:none}.page{padding:0}}
+</style></head><body>
+<div class="bar"><span>Click the title or any name to edit it before printing.</span><button onclick="print()">Print</button></div>
+<div class="page"><h1 contenteditable="true">Price list</h1><p class="sub" contenteditable="true">All prices are per item</p>
+<ul>${rows.map(r => `<li><span class="n" contenteditable="true">${e(r.name)}</span><span class="dots"></span><span class="p" contenteditable="true">${e(r.price)}</span></li>`).join('')}</ul></div>
+</body></html>`);
+  w.document.close();
+  if (skipped > 0) showToast(`${skipped} full-calc save${skipped > 1 ? 's were' : ' was'} left out (they don\u2019t have one price)`);
 }
 </script>
 </body>

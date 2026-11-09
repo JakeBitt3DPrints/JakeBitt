@@ -44,6 +44,8 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,3.4vw,32px)
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .field{display:flex;flex-direction:column;gap:4px;flex:1 1 90px;min-width:0}
 .field span{font-size:12px;color:var(--muted)}
+input[type=text]{font:500 14px var(--f-body);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%;transition:border-color .15s}
+input[type=text]:focus{border-color:var(--accent);outline:none}
 input[type=number],select{font:500 14px var(--f-mono);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%;transition:border-color .15s}
 input[type=number]:focus,select:focus{border-color:var(--accent)}
 input:focus-visible,select:focus-visible,button:focus-visible,.drop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -88,6 +90,15 @@ input:focus-visible,select:focus-visible,button:focus-visible,.drop:focus-visibl
 .sheet canvas{background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35);max-width:100%;height:auto;display:block}
 .sheet span{font:500 12px var(--f-mono);color:#fff;opacity:.85}
 .empty{color:#fff;opacity:.85;padding:40px 10px;text-align:center}
+.mk-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.mk-open svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mk{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--field)}
+.mk[hidden]{display:none}
+.mk .field{flex:none}
+.mk-colors{display:flex;flex-wrap:wrap;gap:7px}
+.mk-colors button{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.mk-colors button[aria-checked="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--panel) inset}
+#mkPrev{width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.35)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <link rel="stylesheet" href="/assets/site.css">
@@ -119,6 +130,16 @@ input:focus-visible,select:focus-visible,button:focus-visible,.drop:focus-visibl
         <small>or click to choose · PNG, JPG, WebP, PDF · paste works too</small>
       </div>
       <input id="file" type="file" accept="image/*,application/pdf" multiple hidden>
+      <button class="btn alt mk-open" id="mkOpen" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7V4h14v3M12 4v16M9 20h6"/></svg>Make a text sign</button>
+      <div class="mk" id="mk" hidden>
+        <label class="field"><span>Big text</span><input id="mkTitle" type="text" maxlength="40" value="Keychains"></label>
+        <label class="field"><span>Price or second line</span><input id="mkPrice" type="text" maxlength="40" value="$5 each"></label>
+        <label class="field"><span>Small print (optional)</span><input id="mkNote" type="text" maxlength="70" placeholder="e.g. Custom colors available"></label>
+        <div class="field"><span>Color</span><div class="mk-colors" id="mkColors" role="radiogroup" aria-label="Sign color"></div></div>
+        <label class="check"><input type="checkbox" id="mkFrame" checked> Border</label>
+        <canvas id="mkPrev" aria-label="Sign preview"></canvas>
+        <div class="btnrow"><button class="btn" id="mkAdd" type="button">Add this sign</button><button class="btn alt" id="mkClose" type="button">Done</button></div>
+      </div>
       <div class="items" id="items"></div>
     </div>
 
@@ -412,7 +433,8 @@ function render(){
   const L = layout(), pages = paginate(L);
   const total = state.items.reduce((a,i)=>a+i.copies,0);
   const fmt = n => +n.toFixed(3);
-  $("summary").textContent = !L.count ? "Sign is bigger than the paper"
+  const badSize = !(state.cw > 0 && state.ch > 0);
+  $("summary").textContent = badSize ? "Enter a sign size above 0" : !L.count ? "Sign is bigger than the paper"
     : total ? `${total} sign${total>1?"s":""} → ${pages.length} sheet${pages.length>1?"s":""}` : "Add some images";
   $("detail").textContent = L.count ? `${fmt(state.cw)}″ × ${fmt(state.ch)}″ · ${L.count} per sheet${L.mixed?" (some turned sideways)":""}` : "";
   $("save").disabled = $("open").disabled = !pages.length;
@@ -485,7 +507,50 @@ $("mixed").onchange = e => { state.mixed = e.target.checked; state.items.forEach
 
 drawPresets(); addSamples(); drawItems(); render();
 document.fonts?.ready.then(() => { state.items.filter(i=>i.example).forEach((it,k)=>{ const c=sampleCanvas(k); it.src=c; it.thumb=thumb(c,c.width,c.height); it.cache={}; }); drawItems(); render(); });
+/* ---------- text sign maker ---------- */
+const MK_COLORS = ["#2f6b4f","#e2542b","#3a5ba8","#7a3fa0","#c2185b","#0f766e","#b45309","#1f2937","#ffffff"];
+let mkColor = MK_COLORS[0];
+function mkCanvas(maxPx){
+  const w = Math.max(.5, +$("cw").value || 4), h = Math.max(.5, +$("ch").value || 6);
+  const ppi = Math.min(300, maxPx / Math.max(w, h));
+  const c = document.createElement("canvas"); c.width = Math.round(w*ppi); c.height = Math.round(h*ppi);
+  const g = c.getContext("2d"), W = c.width, H = c.height, u = Math.min(W, H);
+  const light = mkColor === "#ffffff", ink = light ? "#111418" : "#ffffff";
+  g.fillStyle = mkColor; g.fillRect(0,0,W,H);
+  if ($("mkFrame").checked){ g.strokeStyle = light ? "#111418" : "#ffffff"; g.lineWidth = Math.max(2, u*.014); const m = u*.045; g.strokeRect(m, m, W-2*m, H-2*m); }
+  g.fillStyle = ink; g.textAlign = "center"; g.textBaseline = "middle";
+  const fit = (txt, weight, size, fam, maxW) => { let s = size; g.font = `${weight} ${s}px ${fam}`; while (s > 8 && g.measureText(txt).width > maxW) { s *= .94; g.font = `${weight} ${s}px ${fam}`; } return s; };
+  const title = $("mkTitle").value.trim(), price = $("mkPrice").value.trim(), note = $("mkNote").value.trim();
+  const maxW = W * .84, disp = "'Bricolage Grotesque','DM Sans',sans-serif", body = "'DM Sans',sans-serif";
+  const ts = title ? fit(title, 800, u*.2, disp, maxW) : 0, ps = price ? fit(price, 700, u*.12, body, maxW) : 0, ns = note ? fit(note, 500, u*.055, body, maxW) : 0;
+  const gap = u*.05, total = ts + (price ? gap + ps : 0) + (note ? gap*1.4 + ns : 0);
+  let y = H/2 - total/2;
+  if (title){ g.font = `800 ${ts}px ${disp}`; g.fillText(title, W/2, y + ts/2); y += ts + gap; }
+  if (price){ g.font = `700 ${ps}px ${body}`; g.fillText(price, W/2, y + ps/2); y += ps + gap*1.4; }
+  if (note){ g.globalAlpha = .85; g.font = `500 ${ns}px ${body}`; g.fillText(note, W/2, y + ns/2); g.globalAlpha = 1; }
+  return c;
+}
+function mkPreview(){ const c = mkCanvas(640), p = $("mkPrev"); p.width = c.width; p.height = c.height; p.getContext("2d").drawImage(c,0,0); }
+function mkInit(){
+  const box = $("mkColors");
+  box.innerHTML = MK_COLORS.map(c => `<button type="button" role="radio" aria-label="${c}" aria-checked="${c===mkColor}" style="background:${c}" data-c="${c}"></button>`).join("");
+  box.onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; mkColor = b.dataset.c; box.querySelectorAll("button").forEach(x => x.setAttribute("aria-checked", String(x === b))); mkPreview(); };
+  ["mkTitle","mkPrice","mkNote","mkFrame"].forEach(id => $(id).addEventListener("input", mkPreview));
+  ["cw","ch"].forEach(id => $(id).addEventListener("input", () => { if (!$("mk").hidden) mkPreview(); }));
+  $("mkOpen").onclick = () => { $("mk").hidden = false; $("mkOpen").hidden = true; mkPreview(); $("mkTitle").focus(); };
+  $("mkClose").onclick = () => { $("mk").hidden = true; $("mkOpen").hidden = false; };
+  $("mkAdd").onclick = () => {
+    if (!$("mkTitle").value.trim() && !$("mkPrice").value.trim()) { status("Type some text for the sign first", true); return; }
+    const c = mkCanvas(1800);
+    if (state.items.some(i => i.example)) state.items = state.items.filter(i => !i.example);
+    addItem(c, c.width, c.height, $("mkTitle").value.trim() || $("mkPrice").value.trim());
+    drawItems(); render(); status(`Added "${$("mkTitle").value.trim() || "sign"}"`);
+  };
+  document.fonts?.ready.then(() => { if (!$("mk").hidden) mkPreview(); });
+}
+mkInit();
 })();
+
 </script>
 </body>
 </html>
