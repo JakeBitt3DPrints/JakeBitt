@@ -1,0 +1,43 @@
+/* Shared bits for every jakebitt.com tool page.
+   Load after the page's own styles. */
+
+/* "Back to jakebitt.com" button — same on every tool */
+.jb-home {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  height: 36px; padding: 0 12px 0 5px; border-radius: 11px;
+  border: 1px solid #2a303a; background: #14171c; color: #ecf0f4;
+  font: 600 13.5px/1 "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none; white-space: nowrap; letter-spacing: 0;
+  transition: background .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.jb-home img { width: 26px; height: 26px; border-radius: 7px; display: block; flex-shrink: 0; }
+.jb-home svg { width: 15px; height: 15px; fill: none; stroke: #98a2b0; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s cubic-bezier(.22,.7,.2,1), stroke .2s; flex-shrink: 0; }
+.jb-home:focus-visible { outline: 2px solid #9bd7ff; outline-offset: 2px; }
+@media (hover: hover) {
+  .jb-home:hover { background: #1b1f26; border-color: #3a4250; }
+  .jb-home:hover svg { transform: translateX(-3px); stroke: #ecf0f4; }
+}
+.jb-home:active { transform: scale(.97); }
+/* compact: logo + arrow only */
+.jb-home.compact { padding: 0 8px 0 5px; gap: 5px; }
+.jb-home.compact span { display: none; }
+@media (max-width: 640px) {
+  .jb-home { height: 34px; padding: 0 8px 0 4px; gap: 5px; }
+  .jb-home span { display: none; }
+}
+
+/* ---------- shared details so every tool feels the same ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+::selection { background: rgba(155, 215, 255, .28); color: inherit; }
+input[type="range"], input[type="checkbox"], input[type="radio"], progress { accent-color: #9bd7ff; }
+* { scrollbar-width: thin; scrollbar-color: #323946 transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a303a; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: #3a4250; border: 2px solid transparent; background-clip: padding-box; }
+:root:not([data-theme="light"]) input::placeholder, :root:not([data-theme="light"]) textarea::placeholder { color: #667080; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .001s !important; animation-duration: .001s !important; animation-iteration-count: 1 !important; }
+}

@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Print Price Calculator</title>
+  <title>3D Print Pricing · jakebitt</title>
+  <meta name="theme-color" content="#0c0e12">
+  <link rel="icon" type="image/svg+xml" href="/img/jb.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:#0f172a;--surface:#1e293b;--surface2:#263348;--accent:#38bdf8;--accent2:#818cf8;
-      --text:#f8fafc;--muted:rgba(248,250,252,0.5);--faint:rgba(248,250,252,0.3);--border:rgba(56,189,248,0.15);
-      --input-bg:rgba(56,189,248,0.06);--green:#34d399;--yellow:#fbbf24;--orange:#fb923c;
+      --bg:#0c0e12;--surface:#13161b;--surface2:#191d24;--accent:#9bd7ff;--accent2:#a5b4fc;--ink:#06263a;
+      --text:#ecf0f4;--muted:#98a2b0;--faint:#667080;--border:#262c36;
+      --input-bg:#0f1216;--display:"Bricolage Grotesque","DM Sans",system-ui,sans-serif;--green:#34d399;--yellow:#fbbf24;--orange:#fb923c;
       --red:#f87171;--exp:#a78bfa;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -21,26 +23,32 @@
     .back-link:hover{color:var(--accent);border-color:var(--accent);}
     .topbar-right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
     .loc-pill{font-size:.72rem;color:var(--muted);padding:.35rem .7rem;border:1px solid var(--border);border-radius:2rem;cursor:pointer;background:none;font-family:inherit;}
-    .loc-pill:hover{color:var(--accent);border-color:var(--accent);}
+    .loc-pill{display:inline-flex;align-items:center;gap:.35rem;}
+    .loc-pill svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .loc-pill:hover{color:var(--text);border-color:#3a4250;}
     .icon-btn{background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;color:var(--muted);cursor:pointer;padding:.4rem .7rem;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:600;font-family:inherit;}
-    .icon-btn:hover{color:var(--accent);border-color:var(--accent);}
+    .icon-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+    .icon-btn:hover{color:var(--text);border-color:#3a4250;}
     .icon-btn:disabled{opacity:.5;cursor:wait;}
-    header{text-align:center;margin-bottom:2rem;}
-    .logo{font-size:2rem;font-weight:800;letter-spacing:-.05em;background:linear-gradient(to right,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem;}
-    .tagline{font-size:.85rem;color:var(--muted);}
+    header{max-width:960px;margin:0 auto 1.6rem;}
+    .logo{font:800 clamp(1.8rem,4vw,2.4rem)/1.1 var(--display);letter-spacing:-.03em;color:var(--text);margin-bottom:.35rem;}
+    .tagline{font-size:.95rem;color:var(--muted);}
     .mode-tabs{max-width:960px;margin:0 auto 1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;}
     .tab-btn{flex:1;padding:.6rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:.6rem;color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;min-width:90px;font-family:inherit;}
-    .tab-btn.active{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent);}
+    .tab-btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;}
+    .tab-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+    @media(hover:hover){.tab-btn:not(.active):hover{color:var(--text);border-color:#3a4250;}}
+    .tab-btn.active{background:var(--text);border-color:var(--text);color:var(--bg);}
     .calculator{max-width:960px;margin:0 auto;}
     .tab-content{display:none;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease;}
     .tab-content.active{display:block;}
     .tab-content.visible{opacity:1;transform:translateY(0);}
     .tab-content>*+*{margin-top:1.25rem;}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;}
-    .card-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
+    .card-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
     .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
     .sub-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:.25rem 0 .6rem;display:flex;align-items:center;gap:.5rem;}
-    .sub-title::after{content:'';flex:1;height:1px;background:rgba(56,189,248,.08);}
+    .sub-title::after{content:'';flex:1;height:1px;background:rgba(155,215,255,.08);}
     .mt{margin-top:1rem;} .mb{margin-bottom:1rem;}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
     .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
@@ -55,7 +63,7 @@
     input[type="color"]{height:38px;width:100%;padding:3px;background:var(--input-bg);border:1px solid var(--border);border-radius:.5rem;cursor:pointer;}
     select option{background:var(--surface);}
     input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
-    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15);}
+    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,215,255,.15);}
     .time-pair{display:flex;gap:.4rem;align-items:center;}
     .time-pair input{flex:1;}
     .time-pair span{font-size:.75rem;color:var(--muted);}
@@ -64,9 +72,9 @@
     .toggle-sub{font-size:.68rem;color:var(--muted);margin-top:.1rem;}
     .toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
     .toggle input{opacity:0;width:0;height:0;}
-    .toggle-slider{position:absolute;inset:0;background:rgba(248,250,252,.1);border:1px solid var(--border);border-radius:24px;cursor:pointer;transition:.2s;}
+    .toggle-slider{position:absolute;inset:0;background:#232932;border:1px solid var(--border);border-radius:24px;cursor:pointer;transition:.2s;}
     .toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s;}
-    .toggle input:checked+.toggle-slider{background:rgba(56,189,248,.2);border-color:var(--accent);}
+    .toggle input:checked+.toggle-slider{background:rgba(155,215,255,.2);border-color:var(--accent);}
     .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--accent);}
     .animated-val{transition:color .2s;}
     .animated-val.flash{color:var(--accent)!important;}
@@ -83,15 +91,16 @@
     @media(max-width:620px){
       .fil-grid,.part-grid,.xtra-grid{grid-template-columns:1fr 1fr;}
       .row-head.fil-grid,.row-head.part-grid,.row-head.xtra-grid{display:none;}
-      .line-item.fil-grid,.line-item.part-grid,.line-item.xtra-grid{background:rgba(15,23,42,.35);border:1px solid var(--border);border-radius:.6rem;padding:.6rem;}
+      .line-item.fil-grid,.line-item.part-grid,.line-item.xtra-grid{background:rgba(12,14,18,.35);border:1px solid var(--border);border-radius:.6rem;padding:.6rem;}
       .line-item.fil-grid>:first-child,.line-item.part-grid>:first-child,.line-item.xtra-grid>:first-child{grid-column:1/-1;}
     }
     .sel-wrap{display:flex;align-items:center;gap:.45rem;min-width:0;}
     .swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.25);display:inline-block;}
     .row-cost{font-size:.8rem;color:var(--green);font-weight:700;text-align:right;white-space:nowrap;}
     .add-btn{display:inline-flex;align-items:center;gap:.4rem;margin-top:.75rem;background:none;border:1px dashed var(--border);border-radius:.5rem;color:var(--muted);font-size:.78rem;padding:.45rem .85rem;cursor:pointer;transition:all .15s;font-family:inherit;}
+    .add-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
     .add-btn:hover{border-color:var(--accent);color:var(--accent);}
-    .remove-btn{background:none;border:none;cursor:pointer;color:rgba(248,250,252,.3);font-size:1.15rem;line-height:1;padding:0 .2rem;transition:color .15s;}
+    .remove-btn{background:none;border:none;cursor:pointer;color:#667080;font-size:1.15rem;line-height:1;padding:0 .2rem;transition:color .15s;}
     .remove-btn:hover{color:var(--red);}
     .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;}
     .btn-row .add-btn{flex:1;justify-content:center;margin-top:0;min-width:150px;}
@@ -102,17 +111,17 @@
     .price-card{border-radius:.75rem;padding:1.1rem;text-align:center;border:1px solid;transition:transform .15s;}
     .price-card:hover{transform:translateY(-2px);}
     .price-card.m50{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.25);}
-    .price-card.m60{background:rgba(56,189,248,.06);border-color:rgba(56,189,248,.3);}
+    .price-card.m60{background:rgba(155,215,255,.06);border-color:rgba(155,215,255,.3);}
     .price-card.m70{background:rgba(129,140,248,.06);border-color:rgba(129,140,248,.25);}
     .margin-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
     .m50 .margin-label,.m50 .price-value{color:var(--green);}
     .m60 .margin-label,.m60 .price-value{color:var(--accent);}
     .m70 .margin-label,.m70 .price-value{color:var(--accent2);}
-    .price-value{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;}
+    .price-value{font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.03em;}
     .price-sub{font-size:.7rem;color:var(--muted);margin-top:.25rem;}
-    .results-card{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(129,140,248,.08));border:1px solid rgba(56,189,248,.3);}
+    .results-card{background:linear-gradient(135deg,rgba(155,215,255,.08),rgba(129,140,248,.08));border:1px solid rgba(155,215,255,.3);}
     .cost-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:.75rem;margin-bottom:1.5rem;}
-    .cost-item{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:.85rem;}
+    .cost-item{background:rgba(12,14,18,.5);border:1px solid var(--border);border-radius:.75rem;padding:.85rem;}
     .cost-item .cost-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem;}
     .cost-item .cost-value{font-size:1.1rem;font-weight:700;color:var(--text);}
     .total-landed .cost-value{color:var(--accent);}
@@ -120,16 +129,16 @@
     .custom-margin-row label{white-space:nowrap;}
     input[type="range"]{flex:1;min-width:100px;accent-color:var(--accent);}
     .margin-display{font-size:1.3rem;font-weight:700;color:var(--accent2);}
-    .simple-big-result{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:.75rem;padding:1.5rem;text-align:center;}
+    .simple-big-result{background:rgba(12,14,18,.5);border:1px solid var(--border);border-radius:.75rem;padding:1.5rem;text-align:center;}
     .big-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.35rem;}
-    .big-price{font-size:3rem;font-weight:800;letter-spacing:-.04em;color:var(--accent);}
+    .big-price{font-family:var(--display);font-size:3rem;font-weight:800;letter-spacing:-.04em;color:var(--accent);}
     .price-note{font-size:.8rem;color:var(--muted);margin-top:.25rem;}
     .simple-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.75rem;margin-top:1.25rem;}
     .simple-stat{text-align:center;}
     .simple-stat-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
     .simple-stat-val{font-size:1rem;font-weight:700;margin-top:.1rem;}
     .chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem;justify-content:center;}
-    .chip{font-size:.72rem;background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:2rem;padding:.25rem .65rem;color:var(--muted);}
+    .chip{font-size:.72rem;background:rgba(12,14,18,.5);border:1px solid var(--border);border-radius:2rem;padding:.25rem .65rem;color:var(--muted);}
     .chip b{color:var(--text);font-weight:600;}
     .warn{font-size:.75rem;color:var(--orange);margin-top:.6rem;}
     .info-line{font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.5;}
@@ -140,8 +149,8 @@
     .instructions-card.open{max-height:1400px;padding:1.5rem;border-width:1px;margin-bottom:1.25rem;}
     .step-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;}
     .step-list li{display:flex;gap:.75rem;align-items:flex-start;}
-    .step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid var(--accent);color:var(--accent);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
-    .step-text{font-size:.83rem;color:rgba(248,250,252,.75);line-height:1.5;}
+    .step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(155,215,255,.15);border:1px solid var(--accent);color:var(--accent);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+    .step-text{font-size:.83rem;color:#c9d0d9;line-height:1.5;}
     .step-text strong{color:var(--text);}
     .tip-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:.6rem;padding:.75rem 1rem;margin-top:1rem;font-size:.8rem;color:rgba(251,191,36,.85);line-height:1.5;}
 
@@ -149,8 +158,8 @@
     .table-wrap{overflow-x:auto;}
     .bulk-table{width:100%;border-collapse:collapse;margin-top:.5rem;}
     .bulk-table th{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .6rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
-    .bulk-table td{font-size:.85rem;padding:.55rem .6rem;border-bottom:1px solid rgba(56,189,248,.06);white-space:nowrap;}
-    .bulk-table tr:hover td{background:rgba(56,189,248,.04);}
+    .bulk-table td{font-size:.85rem;padding:.55rem .6rem;border-bottom:1px solid rgba(155,215,255,.06);white-space:nowrap;}
+    .bulk-table tr:hover td{background:rgba(155,215,255,.04);}
     .qty-col{color:var(--muted);}
     .unit-col{color:var(--text);font-weight:600;}
     .total-col{color:var(--accent);font-weight:700;}
@@ -163,7 +172,7 @@
 
     /* lists */
     .saves-list,.lib-list{display:flex;flex-direction:column;gap:.55rem;}
-    .save-row,.lib-row{display:flex;gap:.6rem;align-items:center;background:rgba(15,23,42,.4);border:1px solid var(--border);border-radius:.6rem;padding:.7rem .9rem;animation:slideIn .2s ease;}
+    .save-row,.lib-row{display:flex;gap:.6rem;align-items:center;background:rgba(12,14,18,.4);border:1px solid var(--border);border-radius:.6rem;padding:.7rem .9rem;animation:slideIn .2s ease;}
     .save-row>div:first-child,.lib-row>div:first-child{flex:1;min-width:0;}
     .save-row-name,.lib-name{font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:.45rem;}
     .save-row-date,.lib-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem;}
@@ -176,9 +185,9 @@
     .empty-saves{font-size:.82rem;color:var(--muted);text-align:center;padding:1.25rem;}
     .saves-toolbar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
     .saves-toolbar input{flex:1;min-width:160px;}
-    .badge{display:inline-block;padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--accent);}
+    .badge{display:inline-block;padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;background:rgba(155,215,255,.1);border:1px solid rgba(155,215,255,.3);color:var(--accent);}
     .badge.star{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.35);color:var(--yellow);}
-    .form-box{background:rgba(15,23,42,.55);border:1px solid var(--border);border-radius:.75rem;padding:1.1rem;margin-top:1rem;display:none;animation:slideIn .2s ease;}
+    .form-box{background:rgba(12,14,18,.55);border:1px solid var(--border);border-radius:.75rem;padding:1.1rem;margin-top:1rem;display:none;animation:slideIn .2s ease;}
     .form-box.open{display:block;}
     .form-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--exp);margin-bottom:.8rem;}
 
@@ -193,35 +202,36 @@
     .close-btn:hover{color:var(--text);}
     .settings-group{display:flex;flex-direction:column;gap:1rem;}
     .settings-divider{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-top:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
-    .save-btn{width:100%;margin-top:1.25rem;padding:.7rem;background:rgba(56,189,248,.15);border:1px solid var(--accent);border-radius:.6rem;color:var(--accent);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
-    .save-btn:hover{background:rgba(56,189,248,.25);}
+    .save-btn{width:100%;margin-top:1.25rem;padding:.7rem;background:rgba(155,215,255,.15);border:1px solid var(--accent);border-radius:.6rem;color:var(--accent);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+    .save-btn:hover{background:rgba(155,215,255,.25);}
     .state-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;}
     .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:2rem;padding:.5rem 1.25rem;font-size:.82rem;color:var(--accent);font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:200;pointer-events:none;max-width:90vw;text-align:center;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   </style>
+  <link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
 <div class="topbar">
-  <a class="back-link" href="/">&#8592; jakebitt.com</a>
+  <a class="jb-home" href="/" title="Back to jakebitt.com"><img src="/img/jb.svg" alt=""><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>jakebitt</span></a>
   <div class="topbar-right">
-    <button class="loc-pill" id="locPill" onclick="openSettings()" title="Tax &amp; power location">&#128205; Set location</button>
-    <button class="icon-btn" onclick="openSettings()">&#9881; Settings</button>
-    <button class="icon-btn" onclick="toggleInstructions()">? Help</button>
+    <button class="loc-pill" id="locPill" onclick="openSettings()" title="Tax &amp; power location"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span id="locPillText">Set location</span></button>
+    <button class="icon-btn" onclick="openSettings()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+    <button class="icon-btn" onclick="toggleInstructions()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Help</button>
   </div>
 </div>
 
 <header>
-  <div class="logo">jakebitt</div>
-  <p class="tagline">3D Print Product Pricing Calculator</p>
+  <h1 class="logo">3D Print Pricing</h1>
+  <p class="tagline">Work out what a print costs you and what to charge for it.</p>
 </header>
 
 <div class="mode-tabs">
-  <button class="tab-btn active" id="tab-quick"    onclick="setMode('quick')">&#9889; Quick</button>
-  <button class="tab-btn"        id="tab-full"     onclick="setMode('full')">&#128295; Full Calc</button>
-  <button class="tab-btn"        id="tab-bulk"     onclick="setMode('bulk')">&#128230; Bulk</button>
-  <button class="tab-btn"        id="tab-profiles" onclick="setMode('profiles')">&#128438; Profiles</button>
-  <button class="tab-btn"        id="tab-saves"    onclick="setMode('saves')">&#128190; Saved</button>
+  <button class="tab-btn active" id="tab-quick"    onclick="setMode('quick')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Quick</button>
+  <button class="tab-btn"        id="tab-full"     onclick="setMode('full')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg>Full calc</button>
+  <button class="tab-btn"        id="tab-bulk"     onclick="setMode('bulk')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>Bulk</button>
+  <button class="tab-btn"        id="tab-profiles" onclick="setMode('profiles')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Profiles</button>
+  <button class="tab-btn"        id="tab-saves"    onclick="setMode('saves')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>Saved</button>
 </div>
 
 <div class="calculator">
@@ -236,7 +246,7 @@
       <li><span class="step-num">5</span><span class="step-text"><strong>Profiles</strong> &mdash; Save your printers (wattage, cost, lifespan) and filaments (spool price &amp; size). Star one of each as the default.</span></li>
       <li><span class="step-num">6</span><span class="step-text"><strong>Bulk &amp; Saved</strong> &mdash; Send any item's cost to Bulk to build a quantity discount table. Save prints to this browser and back up everything as a JSON file.</span></li>
     </ol>
-    <div class="tip-box">&#128161; <strong>Margin math:</strong> margin = profit &divide; pre-tax price. With fees built in: <em>Price = (Cost + fixed fees) &divide; (1 &minus; Margin &minus; fee% &times; (1 + tax))</em>. Fee % is charged on what the customer pays, including tax. Rounding applies to the sticker price; profit is recalculated from the rounded price. Tax and power rates are statewide averages (Tax Foundation July 2026, EIA July 2026) &mdash; check your exact local rate before filing.</div>
+    <div class="tip-box"><strong>Margin math:</strong> margin = profit &divide; pre-tax price. With fees built in: <em>Price = (Cost + fixed fees) &divide; (1 &minus; Margin &minus; fee% &times; (1 + tax))</em>. Fee % is charged on what the customer pays, including tax. Rounding applies to the sticker price; profit is recalculated from the rounded price. Tax and power rates are statewide averages (Tax Foundation July 2026, EIA July 2026) &mdash; check your exact local rate before filing.</div>
   </div>
 
   <!-- ===== QUICK ===== -->
@@ -284,9 +294,9 @@
       </div>
 
       <div class="btn-row">
-        <button class="add-btn" onclick="savePrint('quick')">&#128190; Save This Print</button>
-        <button class="add-btn" onclick="sendQuickToBulk()">&#128230; Send to Bulk Pricing</button>
-        <button class="add-btn" onclick="copySummary('quick')">&#128203; Copy Summary</button>
+        <button class="add-btn" onclick="savePrint('quick')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>Save this print</button>
+        <button class="add-btn" onclick="sendQuickToBulk()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>Send to bulk pricing</button>
+        <button class="add-btn" onclick="copySummary('quick')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy summary</button>
       </div>
     </div>
   </div>
@@ -366,9 +376,9 @@
       <div class="chips" id="f_chips"></div>
       <div class="warn" id="f_warn" style="display:none"></div>
       <div class="btn-row">
-        <button class="add-btn" onclick="savePrint('full')">&#128190; Save This Print</button>
-        <button class="add-btn" id="f_bulkBtn" onclick="sendFullToBulk()">&#128230; Send to Bulk Pricing</button>
-        <button class="add-btn" onclick="copySummary('full')">&#128203; Copy Summary</button>
+        <button class="add-btn" onclick="savePrint('full')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>Save this print</button>
+        <button class="add-btn" id="f_bulkBtn" onclick="sendFullToBulk()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>Send to bulk pricing</button>
+        <button class="add-btn" onclick="copySummary('full')"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy summary</button>
       </div>
     </div>
   </div>
@@ -401,7 +411,7 @@
   <!-- ===== PROFILES ===== -->
   <div class="tab-content" id="tab-content-profiles">
     <div class="card">
-      <div class="card-title">&#128438; Printers</div>
+      <div class="card-title">Printers</div>
       <div class="lib-list" id="printerList"></div>
       <button class="add-btn" onclick="openPrinterForm()">+ Add printer</button>
       <div class="form-box" id="printerForm">
@@ -425,7 +435,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title">&#129525; Filaments</div>
+      <div class="card-title">Filaments</div>
       <div class="lib-list" id="filamentList"></div>
       <button class="add-btn" onclick="openFilamentForm()">+ Add filament</button>
       <div class="form-box" id="filamentForm">
@@ -455,7 +465,7 @@
       <div class="card-title">Saved Prints</div>
       <div class="saves-toolbar">
         <input type="search" id="saveSearch" placeholder="Search saved prints..." oninput="renderSaves()">
-        <button class="icon-btn" style="color:var(--red)" onclick="clearAllSaves()">&#128465; Clear All</button>
+        <button class="icon-btn" style="color:var(--red)" onclick="clearAllSaves()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>Clear all</button>
       </div>
       <div class="saves-list" id="savesList"></div>
     </div>
@@ -484,7 +494,7 @@
       <div class="settings-divider">Location &mdash; Tax &amp; Power</div>
       <div class="state-row">
         <div class="field"><label>State</label><select id="cfg_state" onchange="updateCfgPreview()"></select></div>
-        <button class="icon-btn" id="detectBtn" style="height:38px" onclick="detectState()">&#128205; Detect</button>
+        <button class="icon-btn" id="detectBtn" style="height:38px" onclick="detectState()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Detect</button>
       </div>
       <div class="derived-row" id="cfg_preview">&#8212;</div>
       <div class="grid-2">
@@ -1063,9 +1073,9 @@ function recalcAll(){
 }
 function updateLocPill(){
   const s = STATES[settings.state];
-  $('locPill').textContent = s
-    ? `\uD83D\uDCCD ${settings.state} \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`
-    : `\uD83D\uDCCD Set location \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`;
+  $('locPillText').textContent = s
+    ? `${settings.state} \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`
+    : `Set location \u00b7 ${pct(taxRate(), 3)} tax \u00b7 ${(kwhRate() * 100).toFixed(1)}\u00a2/kWh`;
 }
 
 /* ===== BULK HANDOFF ===== */
@@ -1391,7 +1401,7 @@ async function detectState(){
       else if (j && j.country_code) code = 'nonUS';
     } catch {}
   }
-  btn.disabled = false; btn.innerHTML = '&#128205; Detect';
+  btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Detect';
   if (code === 'nonUS') { showToast('Looks like you\u2019re outside the US \u2014 use a custom tax and power rate'); return; }
   if (!code) { showToast('Couldn\u2019t detect \u2014 pick your state from the list'); return; }
   $('cfg_state').value = code; updateCfgPreview();

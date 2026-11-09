@@ -3,17 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Skin Studio | Minecraft Skin Editor</title>
+<title>Skin Studio · jakebitt</title>
+<meta name="theme-color" content="#0c0e12">
+<link rel="icon" type="image/svg+xml" href="/img/jb.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
 <meta name="description" content="Minecraft skin editor and maker. Paint in 3D or on the flat skin file, classic and slim models, HD skins, layers, color swapping, accessories, posing and player skin lookup.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root,[data-theme=midnight]{
-  --bg:#0b1220; --bg-img:radial-gradient(1200px 700px at 70% -20%,#14213d 0%,#0b1220 60%);
-  --panel:#111a2e; --panel2:#0e1626; --panel3:#0a111f; --edge:#1e2c48; --edge2:#2a3b5f;
-  --text:#e6ecf7; --muted:#8fa3c4; --dim:#5d7092; --accent:#38bdf8; --accent2:#a78bfa; --on-accent:#04121f;
-  --hover:#15223d; --active-bg:#10223b; --v3d-bg:radial-gradient(900px 600px at 50% 30%,#18284a 0%,#0b1220 70%); --v2d-bg:#0a0f1b;
-  --chk1:#2c3856; --chk2:#1b2540; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
-  --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --r:10px; --rs:8px; --shadow:0 12px 40px rgba(0,0,0,.5);
+  --bg:#0c0e12; --bg-img:none;
+  --panel:#13161b; --panel2:#101317; --panel3:#0c0e12; --edge:#232932; --edge2:#323946;
+  --text:#ecf0f4; --muted:#98a2b0; --dim:#667080; --accent:#9bd7ff; --accent2:#a5b4fc; --on-accent:#06263a;
+  --hover:#1b1f26; --active-bg:#1a222c; --v3d-bg:radial-gradient(900px 600px at 50% 30%,#1d2129 0%,#0c0e12 72%); --v2d-bg:#0a0b0e;
+  --chk1:#262b33; --chk2:#1a1e24; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --display:"Bricolage Grotesque","DM Sans",system-ui,sans-serif; --r:10px; --rs:8px; --shadow:0 12px 40px rgba(0,0,0,.5);
 }
 [data-theme=light]{
   --bg:#eef1f6; --bg-img:none; --panel:#ffffff; --panel2:#f5f7fb; --panel3:#ffffff; --edge:#d9dfea; --edge2:#c3cbda;
@@ -84,7 +89,7 @@ svg{display:block}
 /* top bar */
 .back{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--edge);color:var(--muted);text-decoration:none;flex-shrink:0}
 .back:hover{color:var(--accent);border-color:var(--accent)}
-.brand{display:flex;align-items:center;gap:7px;font-weight:800;font-size:15px;white-space:nowrap;padding:0 4px;color:var(--text)}
+.brand{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:-.015em;white-space:nowrap;padding:0 4px;color:var(--text)}
 .brand .logo{width:22px;height:22px;border-radius:5px;image-rendering:pixelated}
 .tb{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:var(--rs);border:1px solid var(--edge);background:var(--panel2);white-space:nowrap;flex-shrink:0;font-weight:600;font-size:12.5px;color:var(--text)}
 .tb:hover{border-color:var(--edge2);background:var(--hover)}
@@ -171,7 +176,32 @@ select.vb{padding:0 6px;appearance:auto}
 .drophint.show{display:flex}
 
 /* side panels */
-.ptabs{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;padding:6px;border-bottom:1px solid var(--edge);flex-shrink:0}
+.ptabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column;gap:2px;padding:6px;border-bottom:1px solid var(--edge);flex-shrink:0}
+.ptab-more{position:relative;display:flex}
+.ptab-mbtn{flex:1;border:none;background:none;border-radius:var(--rs);padding:6px 0 5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.01em;cursor:pointer}
+.ptab-mbtn .i{width:18px;height:18px}
+.ptab-mbtn:hover,.ptab-more.open .ptab-mbtn{background:var(--hover);color:var(--text)}
+.ptab-mbtn.active{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+.ptab-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:180px;padding:5px;background:var(--panel);border:1px solid var(--edge2);border-radius:var(--r);box-shadow:var(--shadow)}
+.ptab-more.open .ptab-menu{display:grid;gap:1px;animation:popIn .14s ease-out}
+.ptab-menu .ptab{flex-direction:row;justify-content:flex-start;gap:10px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--text);width:100%}
+.ptab-menu .ptab .i{width:17px;height:17px;color:var(--muted)}
+.ptab-menu .ptab.active .i{color:var(--accent)}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.vpop{position:relative;display:flex}
+.vmenu{display:none;position:absolute;bottom:calc(100% + 8px);right:0;z-index:30;padding:6px;background:var(--panel);border:1px solid var(--edge2);border-radius:var(--r);box-shadow:var(--shadow);min-width:190px}
+.vpop.open .vmenu{display:grid;gap:3px;animation:popUp .14s ease-out}
+@keyframes popUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.vmenu.cams{grid-template-columns:repeat(3,1fr);min-width:220px}
+.vmenu.cams .vb[data-cam=reset]{grid-column:1/-1}
+.vmenu .vb{width:100%;justify-content:flex-start;gap:9px;height:34px;padding:0 10px;font-size:13px}
+.vmenu.cams .vb{justify-content:center}
+.vmenu .vrow{display:flex;align-items:center;gap:10px;padding:2px 2px 6px 10px;margin-bottom:3px;border-bottom:1px solid var(--edge);font-size:13px;color:var(--muted)}
+.vmenu .vrow select{flex:1;width:auto}
+.vsep{width:1px;align-self:stretch;margin:4px 2px;background:var(--edge)}
+.vmenu.opts .vb[id]::after{content:"";margin-left:auto;width:16px;height:16px;border-radius:5px;border:1.5px solid var(--edge2);flex-shrink:0}
+.vmenu.opts .vb.on::after{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306263a' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--accent)}
+.vmenu .vb.on{color:var(--text);background:transparent}
 .ptab{border:none;background:none;border-radius:var(--rs);padding:6px 0 5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.01em}
 .ptab .i{width:18px;height:18px}
 .ptab:hover{background:var(--hover);color:var(--text)}
@@ -199,6 +229,7 @@ h3 .r{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500}
 .btn .i{width:14px;height:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+@media (max-width:480px){.grid3{grid-template-columns:1fr!important}}
 .card{background:var(--panel2);border:1px solid var(--edge);border-radius:var(--r);padding:10px}
 .lbl{font-size:11px;color:var(--muted);margin-bottom:4px;display:block}
 .check{display:flex;align-items:center;gap:8px;cursor:pointer;padding:3px 0;color:var(--text)}
@@ -429,6 +460,11 @@ details.guide .gb{animation:panelIn .2s ease}
   .ptabs{display:flex;overflow-x:auto;border-bottom:none;padding:4px;scrollbar-width:none}
   .ptabs::-webkit-scrollbar{display:none}
   .ptab{min-width:58px;flex-shrink:0}
+  .ptab-more,.ptab-menu,.ptab-more.open .ptab-menu{display:contents}
+  .ptab-mbtn{display:none}
+  .ptab-menu .ptab{flex-direction:column;justify-content:center;gap:3px;padding:6px 0 5px;font-size:10px;font-weight:700;color:var(--muted);width:auto}
+  .ptab-menu .ptab .i{width:18px;height:18px;color:inherit}
+  .ptab-menu .ptab.active{color:var(--accent)}
   .pbody{position:absolute;left:0;right:0;bottom:100%;height:min(48vh,500px);background:var(--panel);border-top:1px solid var(--edge2);border-radius:16px 16px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.45);display:none;z-index:30;padding-top:30px}
   [data-theme=minecraft] .pbody{border-radius:0}
   .side.open .pbody{display:block;animation:sheetUp .26s cubic-bezier(.2,.8,.2,1)}
@@ -445,11 +481,12 @@ details.guide .gb{animation:panelIn .2s ease}
   .themes{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 <div class="app" id="app">
   <header class="top">
-    <a class="back" href="/" title="Back to jakebitt.com"><svg class="i"><use href="#i-back"/></svg></a>
+    <a class="jb-home compact" href="/" title="Back to jakebitt.com"><img src="/img/jb.svg" alt=""><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>jakebitt</span></a>
     <div class="brand"><canvas class="logo" id="brandLogo" width="8" height="8"></canvas>Skin Studio</div>
     <div class="menu-wrap">
       <button class="tb" id="fileBtn"><svg class="i"><use href="#i-menu"/></svg><span class="lbl-txt">File</span></button>
@@ -495,21 +532,31 @@ details.guide .gb{animation:panelIn .2s ease}
         <div class="vlabel">3D view</div>
         <div class="pose-hint" id="poseHint"></div>
         <div class="vtools">
-          <select class="vb" id="poseSel" title="Pose"></select>
           <select class="vb" id="animSel" title="Animation">
             <option value="none">No animation</option><option value="idle">Idle</option><option value="walk">Walk</option><option value="run">Run</option><option value="wave">Wave</option><option value="dance">Dance</option>
           </select>
-          <button class="vb" id="explodeBtn" title="Pull parts apart to reach hidden faces"><svg class="i"><use href="#i-explode"/></svg></button>
           <button class="vb" id="spinBtn" title="Auto-rotate"><svg class="i"><use href="#i-rotate"/></svg></button>
-          <button class="vb m-hide" id="lightBtn" title="Shading on/off (off shows true colors)"><svg class="i"><use href="#i-sun"/></svg></button>
-          <button class="vb m-hide" id="grid3dBtn" title="Pixel grid on model"><svg class="i"><use href="#i-grid"/></svg></button>
-          <button class="vb" id="capeBtn" title="Show cape" style="display:none"><svg class="i"><use href="#i-cape"/></svg></button>
-          <button class="vb" data-cam="front" title="Front view">F</button>
-          <button class="vb" data-cam="back" title="Back view">B</button>
-          <button class="vb m-hide" data-cam="left" title="Left side">L</button>
-          <button class="vb m-hide" data-cam="right" title="Right side">R</button>
-          <button class="vb m-hide" data-cam="top" title="Top view">T</button>
-          <button class="vb" data-cam="reset" title="Reset camera"><svg class="i"><use href="#i-home"/></svg></button>
+          <div class="vpop">
+            <button class="vb vpop-btn" type="button" title="Camera angle"><svg class="i"><use href="#i-camera"/></svg><span class="m-hide">View</span></button>
+            <div class="vmenu cams">
+              <button class="vb" data-cam="front">Front</button>
+              <button class="vb" data-cam="back">Back</button>
+              <button class="vb" data-cam="left">Left</button>
+              <button class="vb" data-cam="right">Right</button>
+              <button class="vb" data-cam="top">Top</button>
+              <button class="vb" data-cam="reset"><svg class="i"><use href="#i-home"/></svg>Reset</button>
+            </div>
+          </div>
+          <div class="vpop">
+            <button class="vb vpop-btn" type="button" title="Display options"><svg class="i"><use href="#i-sliders"/></svg></button>
+            <div class="vmenu opts">
+              <label class="vrow"><span>Pose</span><select class="vb" id="poseSel" title="Pose"></select></label>
+              <button class="vb" id="explodeBtn"><svg class="i"><use href="#i-explode"/></svg>Pull parts apart</button>
+              <button class="vb" id="lightBtn"><svg class="i"><use href="#i-sun"/></svg>Shading</button>
+              <button class="vb" id="grid3dBtn"><svg class="i"><use href="#i-grid"/></svg>Pixel grid</button>
+              <button class="vb" id="capeBtn" style="display:none"><svg class="i"><use href="#i-cape"/></svg>Cape</button>
+            </div>
+          </div>
         </div>
       </section>
       <section class="view v2d" id="v2d">
@@ -525,9 +572,15 @@ details.guide .gb{animation:panelIn .2s ease}
           <button class="vb" data-sel="none" title="Clear selection"><svg class="i"><use href="#i-x"/></svg></button>
         </div>
         <div class="vtools">
-          <button class="vb" id="outlineBtn" title="Show part outlines"><svg class="i"><use href="#i-frame"/></svg><span class="m-hide">Parts</span></button>
-          <button class="vb m-hide" id="labelsBtn" title="Show part names"><svg class="i"><use href="#i-type"/></svg></button>
-          <button class="vb" id="grid2dBtn" title="Pixel grid"><svg class="i"><use href="#i-grid"/></svg></button>
+          <div class="vpop">
+            <button class="vb vpop-btn" type="button" title="Display options"><svg class="i"><use href="#i-sliders"/></svg><span class="m-hide">View</span></button>
+            <div class="vmenu opts">
+              <button class="vb" id="outlineBtn"><svg class="i"><use href="#i-frame"/></svg>Part outlines</button>
+              <button class="vb" id="labelsBtn"><svg class="i"><use href="#i-type"/></svg>Part names</button>
+              <button class="vb" id="grid2dBtn"><svg class="i"><use href="#i-grid"/></svg>Pixel grid</button>
+            </div>
+          </div>
+          <span class="vsep"></span>
           <button class="vb" id="zoomOut" title="Zoom out"><svg class="i"><use href="#i-minus"/></svg></button>
           <button class="vb" id="zoomFit" title="Fit to screen (F)">Fit</button>
           <button class="vb" id="zoomIn" title="Zoom in"><svg class="i"><use href="#i-plus"/></svg></button>
@@ -539,17 +592,22 @@ details.guide .gb{animation:panelIn .2s ease}
   <aside class="side" id="side">
     <div class="ptabs" id="ptabs">
       <button class="ptab" data-p="color"><svg class="i"><use href="#i-palette"/></svg>Color</button>
-      <button class="ptab" data-p="colors"><svg class="i"><use href="#i-drops"/></svg>Swap</button>
-      <button class="ptab adv" data-p="layers"><svg class="i"><use href="#i-layers"/></svg>Layers</button>
-      <button class="ptab" data-p="parts"><svg class="i"><use href="#i-person"/></svg>Parts</button>
       <button class="ptab" data-p="library"><svg class="i"><use href="#i-hat"/></svg>Library</button>
       <button class="ptab" data-p="pose"><svg class="i"><use href="#i-pose"/></svg>Pose</button>
-      <button class="ptab adv" data-p="transfer"><svg class="i"><use href="#i-copy"/></svg>Copy</button>
-      <button class="ptab adv" data-p="adjust"><svg class="i"><use href="#i-sliders"/></svg>Adjust</button>
-      <button class="ptab" data-p="extras"><svg class="i"><use href="#i-compass"/></svg>Extras</button>
-      <button class="ptab" data-p="skin"><svg class="i"><use href="#i-file"/></svg>Skin</button>
-      <button class="ptab" data-p="settings"><svg class="i"><use href="#i-settings"/></svg>Settings</button>
-      <button class="ptab" data-p="help"><svg class="i"><use href="#i-help"/></svg>Help</button>
+      <button class="ptab adv" data-p="layers"><svg class="i"><use href="#i-layers"/></svg>Layers</button>
+      <div class="ptab-more" id="ptabMore">
+        <button class="ptab-mbtn" id="ptabMoreBtn" type="button" aria-haspopup="true" aria-expanded="false"><svg class="i"><use href="#i-more"/></svg><span id="ptabMoreLbl">More</span></button>
+        <div class="ptab-menu" id="ptabMenu" role="menu">
+          <button class="ptab" data-p="colors"><svg class="i"><use href="#i-drops"/></svg>Recolor</button>
+          <button class="ptab" data-p="parts"><svg class="i"><use href="#i-person"/></svg>Parts</button>
+          <button class="ptab adv" data-p="transfer"><svg class="i"><use href="#i-copy"/></svg>Copy parts</button>
+          <button class="ptab adv" data-p="adjust"><svg class="i"><use href="#i-sliders"/></svg>Adjust</button>
+          <button class="ptab" data-p="extras"><svg class="i"><use href="#i-compass"/></svg>Extras</button>
+          <button class="ptab" data-p="skin"><svg class="i"><use href="#i-file"/></svg>Skin info</button>
+          <button class="ptab" data-p="settings"><svg class="i"><use href="#i-settings"/></svg>Settings</button>
+          <button class="ptab" data-p="help"><svg class="i"><use href="#i-help"/></svg>Help</button>
+        </div>
+      </div>
     </div>
     <div class="pbody" id="pbody">
       <button class="sheet-close" id="sheetClose" aria-label="Close panel"></button>
@@ -564,7 +622,7 @@ details.guide .gb{animation:panelIn .2s ease}
           <div class="big chk"><i id="cpBig"></i></div>
           <div class="grow">
             <div class="row"><input type="text" id="cpHex" class="grow" spellcheck="false" placeholder="#RRGGBB"><button class="btn sm" id="cpCopy" title="Copy color">Copy</button><button class="btn sm" id="cpPaste" title="Paste a color from your clipboard">Paste</button></div>
-            <div class="row" style="margin-top:5px">
+            <div class="row adv" style="margin-top:5px">
               <select id="cpCopyFmt" class="grow" title="Copy format">
                 <option value="hex">Copy as HEX</option><option value="hexa">HEX with alpha</option><option value="rgb">rgb()</option><option value="hsl">hsl()</option><option value="int">Decimal (dye/NBT)</option>
               </select>
@@ -572,11 +630,11 @@ details.guide .gb{animation:panelIn .2s ease}
             </div>
           </div>
         </div>
-        <div class="fields">
+        <div class="fields adv">
           <span>RGB</span><input type="number" id="cpR" min="0" max="255"><input type="number" id="cpG" min="0" max="255"><input type="number" id="cpB" min="0" max="255"><input type="number" id="cpA" min="0" max="255" title="Alpha 0-255">
           <span>HSL</span><input type="number" id="cpH" min="0" max="360"><input type="number" id="cpS" min="0" max="100"><input type="number" id="cpL" min="0" max="100"><span style="text-align:center;color:var(--dim)">%</span>
         </div>
-        <div class="hint">You can type or paste <b>#hex</b>, <b>rgb()</b>, <b>hsl()</b>, <b>r,g,b</b>, a decimal number or a color name like tomato.</div>
+        <div class="hint adv">You can type or paste <b>#hex</b>, <b>rgb()</b>, <b>hsl()</b>, <b>r,g,b</b>, a decimal number or a color name like tomato.</div>
         <h3>Recent</h3>
         <div class="swatches" id="recentSw"></div>
         <h3>My palette <span class="r"><button class="btn sm" id="savePalBtn"><svg class="i"><use href="#i-plus"/></svg>Add current</button></span></h3>
@@ -1226,7 +1284,7 @@ function updateUndoBtns() {
 
 /* ─────────────── global state ─────────────── */
 function defaultSettings() {
-  return { mode: 'advanced', theme: 'midnight', accent: '', bg: 'theme', bgColor: '#1e293b', nametag: false, shadow: true, invZoom: false,
+  return { mode: 'simple', theme: 'midnight', accent: '', bg: 'theme', bgColor: '#13161b', nametag: false, shadow: true, invZoom: false,
     dim: true, brush: 1, model: 'classic', hiColor: '#facc15', confirmClose: true, tips: true, keys: true, reduceMotion: false,
     hlStyle: 'dim', inertia: true, sens: 1, restorePoints: true, checkOnDownload: true, uiAnim: true };
 }
@@ -3075,6 +3133,7 @@ const ICONS = {
   grid: '<rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
   home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
   frame: '<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/>',
+  more: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
   type: '<path d="M5 7V4h14v3M12 4v16M9 20h6"/>',
   rotate: '<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v5h-5"/>',
   explode: '<rect x="9" y="9" width="6" height="6" rx="1"/><path d="M4 4l3 3M20 4l-3 3M4 20l3-3M20 20l-3-3"/>',
@@ -3991,7 +4050,7 @@ function initSkinPanel() {
    SETTINGS
    ===================================================================== */
 const THEMES = [
-  { id: 'midnight', name: 'Midnight', c: ['#0b1220', '#111a2e', '#38bdf8', '#a78bfa'] },
+  { id: 'midnight', name: 'Graphite', c: ['#0c0e12', '#13161b', '#9bd7ff', '#a5b4fc'] },
   { id: 'minecraft', name: 'Minecraft', c: ['#6f6f6f', '#c6c6c6', '#5a9a4f', '#8b8b8b'] },
   { id: 'light', name: 'Light', c: ['#eef1f6', '#ffffff', '#2563eb', '#7c3aed'] },
   { id: 'nether', name: 'Nether', c: ['#150808', '#1f0d0c', '#ff6a3d', '#ffb13b'] },
@@ -4137,11 +4196,25 @@ function initHelp() {
    PANELS / TABS
    ===================================================================== */
 let curPanel = 'color';
+function closePops(except) {
+  $$('.vpop.open, .ptab-more.open').forEach(el => { if (el !== except) { el.classList.remove('open'); const b = el.querySelector('[aria-expanded]'); if (b) b.setAttribute('aria-expanded', 'false'); } });
+}
+function initPops() {
+  $$('.vpop-btn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const w = b.closest('.vpop'); closePops(w); w.classList.toggle('open'); }));
+  const mb = $('#ptabMoreBtn');
+  if (mb) mb.addEventListener('click', e => { e.stopPropagation(); const w = $('#ptabMore'); closePops(w); const o = w.classList.toggle('open'); mb.setAttribute('aria-expanded', String(o)); });
+  $$('.vmenu [data-cam]').forEach(b => b.addEventListener('click', () => setTimeout(closePops, 0)));
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('.vpop, .ptab-more')) closePops(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePops(); });
+}
 function openPanel(p, toggle = false) {
   const side = $('#side');
   if (isMobile() && toggle && curPanel === p && side.classList.contains('open')) { side.classList.remove('open'); return; }
   curPanel = p;
   $$('.ptab').forEach(b => b.classList.toggle('active', b.dataset.p === p));
+  { const inMore = $(`#ptabMenu .ptab[data-p=${p}]`), mb = $('#ptabMoreBtn');
+    if (mb) { mb.classList.toggle('active', !!inMore); $('#ptabMoreLbl').textContent = inMore ? inMore.textContent.trim() : 'More'; }
+    closePops(); }
   $$('.panel').forEach(el => el.classList.toggle('active', el.dataset.p === p));
   if (isMobile()) side.classList.add('open');
   const tab = $(`.ptab[data-p=${p}]`); if (tab && isMobile()) tab.scrollIntoView({ inline: 'nearest', block: 'nearest' });
@@ -4559,7 +4632,7 @@ async function init() {
   injectSprite();
   const welcomed = loadPrefs();
   buildTools(); initPicker(); initSwatchClicks(); initColorsPanel(); initLayersPanel(); initPartsPanel(); initLibrary(); initPosePanel(); initTransfer(); initAdjust(); initExtras(); initSkinPanel(); initSettings(); initHelp(); initTabs(); initDialogs(); initKeys(); initChrome();
-  init3D(); init2D();
+  init3D(); init2D(); initPops();
   applySettings();
   setTool('pencil');
   setView(isMobile() && S.view === 'split' ? '3d' : S.view);
